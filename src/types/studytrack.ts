@@ -16,7 +16,12 @@ export interface University {
   name: string
   status: ApplicationStatus
   deadline: string
+  rawDeadline?: string | null
   portalUrl: string
+  price?: string | null
+  examRequirements?: string | null
+  city?: string | null
+  major?: string | null
   consultantNote?: string
   history: { date: string; event: string }[]
 }
@@ -30,6 +35,8 @@ export interface StudentDocument {
   fileUrl?: string | null
   fileName?: string | null
   uploadedAt?: string | null
+  targetUniversityId?: number | null
+  targetUniversityName?: string | null
   reviewComment?: string | null
   reviewFileUrl?: string | null
   reviewFileName?: string | null

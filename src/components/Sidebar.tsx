@@ -1,9 +1,10 @@
-import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { Switch } from '@/components/ui/switch'
 import { useState } from 'react'
 
 const menuItems = [
+  { id: 'learning-start', label: 'Начало обучения', icon: GraduationCap },
   { id: 'dashboard', label: 'Главная', icon: LayoutDashboard },
   { id: 'checklist', label: 'Чек-лист', icon: ClipboardList },
   { id: 'universities', label: 'Вузы', icon: School },

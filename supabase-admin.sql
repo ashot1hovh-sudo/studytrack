@@ -10,6 +10,21 @@ add column if not exists age integer;
 alter table public.students
 add column if not exists program text;
 
+alter table public.universities
+add column if not exists price text;
+
+alter table public.universities
+add column if not exists exam_requirements text;
+
+alter table public.universities
+add column if not exists city text;
+
+alter table public.universities
+add column if not exists major text;
+
+alter table public.documents
+add column if not exists target_university_id bigint references public.universities(id) on delete set null;
+
 drop policy if exists "Consultants can read all students" on public.students;
 create policy "Consultants can read all students"
 on public.students for select
@@ -40,5 +55,4 @@ using (
 
 -- Run this after creating your admin auth user. Replace the email if needed.
 -- update public.students set role = 'consultant' where email = 'admin@gmail.com';
-
 

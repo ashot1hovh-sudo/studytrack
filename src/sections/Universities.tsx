@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '@/context/AppContext'
-import { ExternalLink, Clock, ChevronRight, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { ExternalLink, Clock, ChevronRight, X, Plus } from 'lucide-react'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
-import type { University } from '@/types/studytrack'
+import type { ApplicationStatus, University } from '@/types/studytrack'
 
 const statusConfig = {
   applied: { label: 'Подана заявка', variant: 'warning' as const, color: 'bg-study-orange/10 text-study-orange border-study-orange/30' },
@@ -17,8 +16,20 @@ export default function Universities() {
   const { isParentMode } = useApp()
   const [universities, setUniversities] = useState<University[]>([])
   const [selectedUni, setSelectedUni] = useState<University | null>(null)
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [newUniversity, setNewUniversity] = useState({
+    name: '',
+    deadline: '',
+    price: '',
+    examRequirements: '',
+    city: '',
+    major: '',
+    portalUrl: '',
+  })
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const loadUniversities = () => {
     setIsLoading(true)
@@ -41,9 +52,73 @@ export default function Universities() {
     loadUniversities()
   }, [])
 
+  const addUniversity = async () => {
+    setIsSaving(true)
+    setFormError(null)
+
+    try {
+      const response = await fetch('/api/universities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUniversity),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось добавить вуз')
+
+      setUniversities((current) => [...current, data.university])
+      setNewUniversity({
+        name: '',
+        deadline: '',
+        price: '',
+        examRequirements: '',
+        city: '',
+        major: '',
+        portalUrl: '',
+      })
+      setIsAddOpen(false)
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Не удалось добавить вуз')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const updateUniversityStatus = async (university: University, status: ApplicationStatus) => {
+    setFormError(null)
+
+    try {
+      const response = await fetch(`/api/universities/${university.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось обновить статус')
+
+      const nextUniversity = { ...university, status }
+      setSelectedUni(nextUniversity)
+      setUniversities((current) =>
+        current.map((item) => (item.id === university.id ? nextUniversity : item))
+      )
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Не удалось обновить статус')
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
-      <h2 className="text-base sm:text-lg font-bold text-study-dark mb-3 sm:mb-4">Вузы — воронка заявок</h2>
+      <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
+        <h2 className="text-base sm:text-lg font-bold text-study-dark">Вузы — воронка заявок</h2>
+        {!isParentMode && (
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="w-9 h-9 rounded-lg bg-study-brown text-white flex items-center justify-center hover:bg-study-brown/90"
+            title="Добавить вуз"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        )}
+      </div>
 
       {isLoading && <LoadingState heightClass="h-40" />}
 
@@ -54,13 +129,12 @@ export default function Universities() {
       {!isLoading && !error && universities.length === 0 && (
         <EmptyState
           title="Список вузов пока пуст"
-          description="Когда консультант добавит заявки, они появятся здесь."
+          description="Нажмите плюс, чтобы добавить первый вуз."
         />
       )}
 
       {!error && universities.length > 0 && <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
         {universities.map((uni) => {
-          const status = statusConfig[uni.status]
           return (
             <button
               key={uni.id}
@@ -69,9 +143,6 @@ export default function Universities() {
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className="font-semibold text-study-dark text-sm leading-tight pr-1">{uni.name}</h3>
-                <Badge className={`${status.color} text-[10px] sm:text-xs shrink-0`}>
-                  {status.label}
-                </Badge>
               </div>
 
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-study-gray mt-2">
@@ -79,6 +150,11 @@ export default function Universities() {
                   <Clock className="w-3.5 h-3.5" />
                   <span>{uni.deadline}</span>
                 </div>
+                {uni.city && (
+                  <div className="flex items-center gap-1">
+                    <span>{uni.city}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1 group/link hover:text-study-green transition-colors">
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span className="text-xs">Портал</span>
@@ -115,9 +191,7 @@ export default function Universities() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="text-base sm:text-lg font-bold text-study-dark leading-tight">{selectedUni.name}</h3>
-                  <Badge className={`${statusConfig[selectedUni.status].color} mt-2 text-xs`}>
-                    {statusConfig[selectedUni.status].label}
-                  </Badge>
+                  <p className="text-xs text-study-gray mt-1">Статус можно менять вручную</p>
                 </div>
                 <button
                   onClick={() => setSelectedUni(null)}
@@ -129,6 +203,20 @@ export default function Universities() {
             </div>
 
             <div className="p-4 sm:p-6 space-y-4">
+              <div>
+                <label className="text-xs font-medium text-study-dark mb-1.5 block">Статус для себя</label>
+                <select
+                  value={selectedUni.status}
+                  onChange={(event) => updateUniversityStatus(selectedUni, event.target.value as ApplicationStatus)}
+                  className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                >
+                  {Object.entries(statusConfig).map(([value, config]) => (
+                    <option key={value} value={value}>{config.label}</option>
+                  ))}
+                </select>
+                {formError && <p className="text-xs text-study-red mt-2">{formError}</p>}
+              </div>
+
               <div className="space-y-2.5 text-sm">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-study-gray shrink-0" />
@@ -140,6 +228,18 @@ export default function Universities() {
                     Портал вуза
                   </a>
                 </div>
+                {selectedUni.price && (
+                  <div className="text-study-dark">Стоимость: <span className="font-medium">{selectedUni.price}</span></div>
+                )}
+                {selectedUni.examRequirements && (
+                  <div className="text-study-dark">Экзамены: <span className="font-medium">{selectedUni.examRequirements}</span></div>
+                )}
+                {selectedUni.city && (
+                  <div className="text-study-dark">Город: <span className="font-medium">{selectedUni.city}</span></div>
+                )}
+                {selectedUni.major && (
+                  <div className="text-study-dark">Специальность: <span className="font-medium">{selectedUni.major}</span></div>
+                )}
               </div>
 
               {!isParentMode && selectedUni.consultantNote && (
@@ -172,6 +272,87 @@ export default function Universities() {
                 className="w-full py-3 text-sm font-medium text-study-dark bg-study-bg rounded-xl"
               >
                 Закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isAddOpen && (
+        <div
+          className="fixed inset-0 bg-study-dark/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setIsAddOpen(false)}
+        >
+          <div
+            className="bg-white sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 sm:p-6 border-b border-study-lightgray flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-study-dark">Добавить вуз</h3>
+                <p className="text-sm text-study-gray mt-1">Заполните данные выбранного университета</p>
+              </div>
+              <button onClick={() => setIsAddOpen(false)} className="w-8 h-8 rounded-full hover:bg-study-bg flex items-center justify-center">
+                <X className="w-5 h-5 text-study-gray" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6 space-y-3">
+              <input
+                value={newUniversity.name}
+                onChange={(event) => setNewUniversity((current) => ({ ...current, name: event.target.value }))}
+                placeholder="Название университета"
+                className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+              />
+              <div className="grid sm:grid-cols-2 gap-3">
+                <input
+                  type="date"
+                  value={newUniversity.deadline}
+                  onChange={(event) => setNewUniversity((current) => ({ ...current, deadline: event.target.value }))}
+                  className="rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                />
+                <input
+                  value={newUniversity.price}
+                  onChange={(event) => setNewUniversity((current) => ({ ...current, price: event.target.value }))}
+                  placeholder="Стоимость за год/семестр"
+                  className="rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                />
+              </div>
+              <input
+                value={newUniversity.examRequirements}
+                onChange={(event) => setNewUniversity((current) => ({ ...current, examRequirements: event.target.value }))}
+                placeholder="Экзамены и требования, например HSK / IELTS"
+                className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+              />
+              <div className="grid sm:grid-cols-2 gap-3">
+                <input
+                  value={newUniversity.city}
+                  onChange={(event) => setNewUniversity((current) => ({ ...current, city: event.target.value }))}
+                  placeholder="Город"
+                  className="rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                />
+                <input
+                  value={newUniversity.major}
+                  onChange={(event) => setNewUniversity((current) => ({ ...current, major: event.target.value }))}
+                  placeholder="Специальность"
+                  className="rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                />
+              </div>
+              <input
+                value={newUniversity.portalUrl}
+                onChange={(event) => setNewUniversity((current) => ({ ...current, portalUrl: event.target.value }))}
+                placeholder="Ссылка на портал"
+                className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+              />
+
+              {formError && <p className="rounded-xl bg-study-red/10 px-3 py-2 text-sm font-semibold text-study-red">{formError}</p>}
+
+              <button
+                onClick={addUniversity}
+                disabled={!newUniversity.name || isSaving}
+                className="w-full rounded-xl bg-study-green text-white py-3 text-sm font-bold disabled:opacity-50"
+              >
+                {isSaving ? 'Добавляем...' : 'Добавить вуз'}
               </button>
             </div>
           </div>

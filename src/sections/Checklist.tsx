@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '@/context/AppContext'
-import { Check, X, FileText, ArrowUp, ExternalLink, Trash2 } from 'lucide-react'
+import { Check, X, FileText, ArrowUp, ExternalLink, Trash2, Plus } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
-import type { StudentDocument } from '@/types/studytrack'
+import type { StudentDocument, University } from '@/types/studytrack'
 
 const statusConfig = {
   not_started: { label: 'Не начато', icon: X, color: 'text-study-gray bg-study-lightgray' },
@@ -15,9 +15,17 @@ const statusConfig = {
 export default function Checklist() {
   const { isParentMode } = useApp()
   const [documents, setDocuments] = useState<StudentDocument[]>([])
+  const [universities, setUniversities] = useState<University[]>([])
   const [selectedDoc, setSelectedDoc] = useState<StudentDocument | null>(null)
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [newDocument, setNewDocument] = useState({
+    name: '',
+    deadline: '',
+    targetUniversityId: 'all',
+  })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isOpening, setIsOpening] = useState(false)
@@ -45,8 +53,16 @@ export default function Checklist() {
       .finally(() => setIsLoading(false))
   }
 
+  const loadUniversities = () => {
+    fetch('/api/universities')
+      .then((response) => (response.ok ? response.json() : { universities: [] }))
+      .then((data) => setUniversities(data.universities ?? []))
+      .catch(() => setUniversities([]))
+  }
+
   useEffect(() => {
     loadDocuments()
+    loadUniversities()
   }, [])
 
   const openUploadModal = (document: StudentDocument) => {
@@ -172,6 +188,57 @@ export default function Checklist() {
     }
   }
 
+  const addDocument = async () => {
+    setIsSaving(true)
+    setUploadError(null)
+
+    try {
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newDocument.name,
+          deadline: newDocument.deadline,
+          targetUniversityId: newDocument.targetUniversityId === 'all' ? null : newDocument.targetUniversityId,
+        }),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось добавить документ')
+
+      setDocuments((current) => [...current, data.document])
+      setNewDocument({ name: '', deadline: '', targetUniversityId: 'all' })
+      setIsAddOpen(false)
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Не удалось добавить документ')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const toggleDocument = async (document: StudentDocument) => {
+    const nextStatus = document.status === 'completed' ? 'not_started' : 'completed'
+    setUploadError(null)
+
+    setDocuments((current) =>
+      current.map((item) => (item.id === document.id ? { ...item, status: nextStatus } : item))
+    )
+
+    try {
+      const response = await fetch(`/api/documents/${document.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus }),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось обновить документ')
+    } catch (err) {
+      setDocuments((current) =>
+        current.map((item) => (item.id === document.id ? document : item))
+      )
+      setUploadError(err instanceof Error ? err.message : 'Не удалось обновить документ')
+    }
+  }
+
   const completedCount = documents.filter((d) => d.status === 'completed').length
   const progress = documents.length > 0 ? (completedCount / documents.length) * 100 : 0
 
@@ -221,7 +288,16 @@ export default function Checklist() {
     <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
       <div className="flex items-center justify-between mb-3 sm:mb-4">
         <h2 className="text-base sm:text-lg font-bold text-study-dark">Чек-лист документов</h2>
-        <span className="text-xs text-study-gray">{completedCount}/{documents.length}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-study-gray">{completedCount}/{documents.length}</span>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="w-8 h-8 rounded-lg bg-study-brown text-white flex items-center justify-center hover:bg-study-brown/90"
+            title="Добавить документ"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div className="mb-3 sm:mb-4">
@@ -231,37 +307,36 @@ export default function Checklist() {
       {documents.length === 0 && (
         <EmptyState
           title="Чек-лист документов пока пуст"
-          description="Когда консультант добавит документы, они появятся здесь."
+          description="Нажмите плюс, чтобы добавить первый документ."
         />
       )}
 
       {documents.length > 0 && <div className="space-y-1">
         {documents.map((doc) => {
-          const isReturned = doc.status === 'in_progress' && Boolean(doc.reviewComment)
-          const visibleComment = Boolean(doc.reviewComment) && doc.status !== 'completed'
-          const status = isReturned
-            ? { label: 'Возвращено', icon: X, color: 'text-study-red bg-study-red/10' }
-            : statusConfig[doc.status]
+          const isDone = doc.status === 'completed'
+          const status = isDone
+            ? { label: 'Готово', icon: Check, color: 'text-study-green bg-study-green/10' }
+            : { label: 'Не готово', icon: X, color: 'text-study-gray bg-study-lightgray' }
           const Icon = status.icon
           return (
             <button
               key={doc.id}
-              onClick={() => doc.status !== 'completed' && openUploadModal(doc)}
+              onClick={() => toggleDocument(doc)}
               className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-study-bg transition-colors text-left active:bg-study-bg/70"
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${status.color}`}>
                 <Icon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium truncate ${doc.status === 'completed' ? 'text-study-gray line-through' : 'text-study-dark'}`}>
+                <p className={`text-sm font-medium truncate ${isDone ? 'text-study-gray line-through' : 'text-study-dark'}`}>
                   {doc.name}
                 </p>
                 {doc.deadline && (
                   <p className="text-xs text-study-gray">Дедлайн: {doc.deadline}</p>
                 )}
-                {visibleComment && (
-                  <p className="text-xs text-study-red mt-0.5 truncate">Комментарий: {doc.reviewComment}</p>
-                )}
+                <p className="text-xs text-study-gray">
+                  Вуз: {doc.targetUniversityName ?? 'Все'}
+                </p>
               </div>
               <span className={`text-xs font-medium shrink-0 ${status.color.split(' ')[0]}`}>
                 {status.label}
@@ -410,6 +485,63 @@ export default function Checklist() {
                   {isUploading ? 'Загрузка...' : selectedDoc.fileUrl ? 'Заменить' : 'Загрузить'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isAddOpen && (
+        <div
+          className="fixed inset-0 bg-study-dark/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setIsAddOpen(false)}
+        >
+          <div
+            className="bg-white sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 sm:p-6 border-b border-study-lightgray flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-study-dark">Добавить документ</h3>
+                <p className="text-sm text-study-gray mt-1">Укажите документ и к какому вузу он относится</p>
+              </div>
+              <button onClick={() => setIsAddOpen(false)} className="w-8 h-8 rounded-full hover:bg-study-bg flex items-center justify-center">
+                <X className="w-5 h-5 text-study-gray" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6 space-y-3">
+              <input
+                value={newDocument.name}
+                onChange={(event) => setNewDocument((current) => ({ ...current, name: event.target.value }))}
+                placeholder="Название документа"
+                className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+              />
+              <input
+                type="date"
+                value={newDocument.deadline}
+                onChange={(event) => setNewDocument((current) => ({ ...current, deadline: event.target.value }))}
+                className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+              />
+              <select
+                value={newDocument.targetUniversityId}
+                onChange={(event) => setNewDocument((current) => ({ ...current, targetUniversityId: event.target.value }))}
+                className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+              >
+                <option value="all">Все вузы</option>
+                {universities.map((university) => (
+                  <option key={university.id} value={university.id}>{university.name}</option>
+                ))}
+              </select>
+
+              {uploadError && <p className="rounded-xl bg-study-red/10 px-3 py-2 text-sm font-semibold text-study-red">{uploadError}</p>}
+
+              <button
+                onClick={addDocument}
+                disabled={!newDocument.name || isSaving}
+                className="w-full rounded-xl bg-study-green text-white py-3 text-sm font-bold disabled:opacity-50"
+              >
+                {isSaving ? 'Добавляем...' : 'Добавить документ'}
+              </button>
             </div>
           </div>
         </div>

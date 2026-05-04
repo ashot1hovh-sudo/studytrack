@@ -5,12 +5,17 @@ import Roadmap from '@/sections/Roadmap'
 import Universities from '@/sections/Universities'
 import Checklist from '@/sections/Checklist'
 import Deadlines from '@/sections/Deadlines'
+import LearningStart from '@/sections/LearningStart'
 
 export default function Dashboard() {
   const { activeTab, isParentMode, user } = useApp()
   const isDashboard = activeTab === 'dashboard'
 
   const pageMeta = {
+    'learning-start': {
+      title: 'Начало обучения',
+      subtitle: 'Стартовые материалы и доступ к tutorial-модулям',
+    },
     dashboard: {
       title: `Добро пожаловать, ${user?.fullName?.split(' ')[0] ?? 'студент'}`,
       subtitle: isParentMode
@@ -60,6 +65,12 @@ export default function Dashboard() {
           <p className="text-xs sm:text-sm text-study-dark">
             Режим родителя: показаны только общий прогресс, статус вузов и дедлайны. Загрузка документов и внутренние заметки скрыты.
           </p>
+        </div>
+      )}
+
+      {activeTab === 'learning-start' && (
+        <div className="max-w-6xl">
+          <LearningStart />
         </div>
       )}
 

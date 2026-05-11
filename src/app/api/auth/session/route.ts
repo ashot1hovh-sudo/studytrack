@@ -14,13 +14,16 @@ export async function GET() {
         email: user.email,
         fullName: 'Admin',
         role: 'consultant',
+        serviceType: 'premium',
+        subscriptionStatus: 'active',
+        pinCode: null,
       },
     })
   }
 
   const { data: student } = await supabase
     .from('students')
-    .select('id,email,full_name,role')
+    .select('id,email,full_name,role,service_type,subscription_status,pin_code')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -30,6 +33,9 @@ export async function GET() {
       email: user.email,
       fullName: student?.full_name ?? user.email ?? 'Студент',
       role: student?.role ?? 'student',
+      serviceType: student?.service_type ?? 'premium',
+      subscriptionStatus: student?.subscription_status ?? 'active',
+      pinCode: student?.pin_code ?? null,
     },
   })
 }

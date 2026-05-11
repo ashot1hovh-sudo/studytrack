@@ -21,17 +21,17 @@ export async function GET() {
 
   const studentsResult = await supabase
     .from('students')
-    .select('id,email,full_name,role,age,program')
+    .select('id,email,full_name,role,age,program,service_type,subscription_status,pin_code')
     .neq('email', 'admin@gmail.com')
     .order('created_at', { ascending: false })
 
   students = studentsResult.data
   studentsError = studentsResult.error
 
-  if (studentsError?.message.includes('students.age') || studentsError?.message.includes('students.program')) {
+  if (studentsError?.message.includes('students.age') || studentsError?.message.includes('students.program') || studentsError?.message.includes('students.service_type') || studentsError?.message.includes('pin_code')) {
     const fallback = await supabase
       .from('students')
-      .select('id,email,full_name,role')
+      .select('id,email,full_name,role,service_type,subscription_status')
       .neq('email', 'admin@gmail.com')
       .order('created_at', { ascending: false })
 
@@ -66,6 +66,9 @@ export async function GET() {
         fullName: student.full_name,
         age: 'age' in student ? student.age : null,
         program: 'program' in student ? student.program : null,
+        serviceType: 'service_type' in student ? student.service_type : 'premium',
+        subscriptionStatus: 'subscription_status' in student ? student.subscription_status : 'active',
+        pinCode: 'pin_code' in student ? (student as Record<string, unknown>).pin_code as string | null : null,
         documentsTotal: studentDocuments.length,
         documentsCompleted: studentDocuments.filter((document) => document.status === 'completed').length,
         documentsPendingReview: studentDocuments.filter((document) => document.status === 'uploaded').length,

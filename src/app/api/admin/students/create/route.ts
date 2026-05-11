@@ -72,6 +72,9 @@ export async function POST(request: Request) {
     age,
     program,
     role: 'student',
+    service_type: 'premium',
+    subscription_status: 'active',
+    pin_code: null,
   })
 
   if (profileError) {

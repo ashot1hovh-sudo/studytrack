@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertCircle, Check, ExternalLink, FileText, GraduationCap, LogOut, RefreshCw, UserPlus, X } from 'lucide-react'
+import { AlertCircle, Check, ExternalLink, FileText, GraduationCap, LogOut, RefreshCw, Trash2, UserPlus, X } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import type { AdminStudentSummary, AdminUniversity, AdminUpload, ApplicationStatus, DocumentStatus, StudentDocument } from '@/types/studytrack'
@@ -63,8 +63,11 @@ const emptyStudentForm = {
   customDocument: '',
 }
 
+type AdminTab = 'premium' | 'diy'
+
 export default function AdminDashboard() {
   const { user, logout } = useApp()
+  const [adminTab, setAdminTab] = useState<AdminTab>('premium')
   const [students, setStudents] = useState<AdminStudentSummary[]>([])
   const [selectedStudent, setSelectedStudent] = useState<AdminStudentSummary | null>(null)
   const [activeUniversityId, setActiveUniversityId] = useState<number | null>(null)
@@ -86,6 +89,11 @@ export default function AdminDashboard() {
   const [newStudent, setNewStudent] = useState(emptyStudentForm)
   const [createError, setCreateError] = useState<string | null>(null)
   const [isCreatingStudent, setIsCreatingStudent] = useState(false)
+  const [diyPinInputs, setDiyPinInputs] = useState<Record<string, string>>({})
+  const [diyPinSaved, setDiyPinSaved] = useState<Record<string, boolean>>({})
+  const [diyPinErrors, setDiyPinErrors] = useState<Record<string, string>>({})
+
+  const filteredStudents = students.filter((s) => s.serviceType === adminTab)
 
   const loadDashboard = () => {
     setIsLoading(true)
@@ -457,6 +465,58 @@ export default function AdminDashboard() {
     }
   }
 
+  const updateDiySubscription = async (studentId: string, pinCode: string) => {
+    setDiyPinErrors((current) => ({ ...current, [studentId]: '' }))
+    try {
+      const response = await fetch('/api/admin/students/update-subscription', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId,
+          subscriptionStatus: 'trial',
+          pinCode: pinCode.trim(),
+        }),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось сохранить PIN')
+
+      setStudents((current) =>
+        current.map((s) =>
+          s.id === studentId ? { ...s, subscriptionStatus: 'trial' as const, pinCode: pinCode.trim() || null } : s
+        )
+      )
+      setDiyPinInputs((current) => ({ ...current, [studentId]: '' }))
+      setDiyPinSaved((current) => ({ ...current, [studentId]: true }))
+      setTimeout(() => setDiyPinSaved((current) => ({ ...current, [studentId]: false })), 2000)
+    } catch (err) {
+      setDiyPinErrors((current) => ({
+        ...current,
+        [studentId]: err instanceof Error ? err.message : 'Не удалось сохранить PIN',
+      }))
+    }
+  }
+
+  const deleteStudent = async (studentId: string) => {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/students/delete?id=${studentId}`, {
+        method: 'DELETE',
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось удалить пользователя')
+
+      setStudents((current) => current.filter((s) => s.id !== studentId))
+      if (selectedStudent?.id === studentId) {
+        setSelectedStudent(null)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось удалить пользователя')
+    }
+  }
+
   const addDocumentToNewStudent = (documentName: string) => {
     const name = documentName.trim()
     if (!name) return
@@ -507,9 +567,36 @@ export default function AdminDashboard() {
         {isLoading && <div className="bg-white rounded-xl card-shadow p-4 sm:p-6"><LoadingState heightClass="h-56" /></div>}
         {!isLoading && error && <ErrorState title="Ошибка админ-панели" description={error} onAction={loadDashboard} />}
 
+        {/* Tabs */}
+        {!isLoading && !error && (
+          <div className="mb-5 p-1 bg-white rounded-xl card-shadow inline-flex">
+            <button
+              onClick={() => { setAdminTab('premium'); setSelectedStudent(null) }}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                adminTab === 'premium'
+                  ? 'bg-study-brown text-white'
+                  : 'text-study-gray hover:text-study-dark'
+              }`}
+            >
+              Премиум клиенты
+            </button>
+            <button
+              onClick={() => { setAdminTab('diy'); setSelectedStudent(null) }}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                adminTab === 'diy'
+                  ? 'bg-study-brown text-white'
+                  : 'text-study-gray hover:text-study-dark'
+              }`}
+            >
+              DIY клиенты
+            </button>
+          </div>
+        )}
+
         {!isLoading && !error && (
           <div className="grid lg:grid-cols-[1fr_460px] gap-5">
             <div className="space-y-5">
+              {adminTab === 'premium' && (
               <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
@@ -649,26 +736,29 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
+              )}
 
               <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-study-dark">Студенты</h2>
-                <span className="text-sm text-study-gray">{students.length}</span>
+                <h2 className="text-lg font-bold text-study-dark">
+                  {adminTab === 'premium' ? 'Премиум клиенты' : 'DIY клиенты'}
+                </h2>
+                <span className="text-sm text-study-gray">{filteredStudents.length}</span>
               </div>
 
               {students.length === 0 ? (
                 <EmptyState title="Студентов пока нет" description="Когда появятся клиенты, они будут здесь." />
               ) : (
                 <div className="space-y-3">
-                  {students.map((student) => {
+                  {filteredStudents.map((student) => {
                     const progress = student.documentsTotal > 0
                       ? Math.round((student.documentsCompleted / student.documentsTotal) * 100)
                       : 0
 
+                    const isDiy = student.serviceType === 'diy'
                     return (
-                      <button
+                      <div
                         key={student.id}
-                        onClick={() => loadStudentUniversities(student)}
                         className={`w-full text-left border rounded-xl p-4 transition-colors ${
                           selectedStudent?.id === student.id
                             ? 'border-study-brown bg-study-brown/5'
@@ -677,11 +767,24 @@ export default function AdminDashboard() {
                       >
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                           <div className="flex items-start gap-3 flex-1 min-w-0">
-                            <div className="w-10 h-10 rounded-full bg-study-green/10 flex items-center justify-center shrink-0">
-                              <GraduationCap className="w-5 h-5 text-study-green" />
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isDiy ? 'bg-study-orange/10' : 'bg-study-green/10'}`}>
+                              <GraduationCap className={`w-5 h-5 ${isDiy ? 'text-study-orange' : 'text-study-green'}`} />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-semibold text-study-dark truncate">{student.fullName}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-study-dark truncate">{student.fullName}</p>
+                                {isDiy && (
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                                    student.subscriptionStatus === 'trial'
+                                      ? 'bg-study-orange/10 text-study-orange'
+                                      : student.subscriptionStatus === 'active'
+                                        ? 'bg-study-green/10 text-study-green'
+                                        : 'bg-study-gray/10 text-study-gray'
+                                  }`}>
+                                    {student.subscriptionStatus === 'trial' ? 'Пробный период' : student.subscriptionStatus === 'active' ? 'Активна' : 'Неактивна'}
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-sm text-study-gray truncate">{student.email}</p>
                               {(student.program || student.age) && (
                                 <p className="text-xs text-study-gray mt-1">
@@ -691,34 +794,70 @@ export default function AdminDashboard() {
                               )}
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:w-[520px]">
-                            <div className="bg-study-bg rounded-lg p-2">
-                              <p className="text-[11px] text-study-gray">Документы</p>
-                              <p className="text-sm font-bold text-study-dark">{student.documentsCompleted}/{student.documentsTotal}</p>
+                          {isDiy ? (
+                            <div className="flex flex-col gap-2">
+                              {student.pinCode && (
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-study-bg rounded-lg border border-study-lightgray w-fit">
+                                  <span className="text-xs text-study-gray">PIN:</span>
+                                  <span className="text-sm font-bold text-study-dark tracking-widest">{student.pinCode}</span>
+                                </div>
+                              )}
+                              <div className="flex flex-row gap-2 items-center">
+                                <input
+                                  type="text"
+                                  value={diyPinInputs[student.id] ?? ''}
+                                  onChange={(e) => setDiyPinInputs((current) => ({ ...current, [student.id]: e.target.value }))}
+                                  placeholder={student.pinCode ? 'Новый PIN' : 'PIN-код'}
+                                  className="rounded-lg border border-study-lightgray px-3 py-2 text-sm w-32"
+                                />
+                                <button
+                                  onClick={() => updateDiySubscription(student.id, diyPinInputs[student.id] ?? '')}
+                                  disabled={!diyPinInputs[student.id]?.trim()}
+                                  className="rounded-lg bg-study-brown text-white text-xs font-semibold px-3 py-2 disabled:opacity-50"
+                                >
+                                  Сохранить PIN
+                                </button>
+                                {diyPinSaved[student.id] && (
+                                  <span className="text-xs font-semibold text-study-green flex items-center gap-1">
+                                    <Check className="w-3.5 h-3.5" /> Сохранён
+                                  </span>
+                                )}
+                                {diyPinErrors[student.id] && (
+                                  <span className="text-xs font-semibold text-study-red">{diyPinErrors[student.id]}</span>
+                                )}
+                              </div>
                             </div>
-                            <div className="bg-study-bg rounded-lg p-2">
-                              <p className="text-[11px] text-study-gray">Прогресс</p>
-                              <p className="text-sm font-bold text-study-dark">{progress}%</p>
-                            </div>
-                            <div className="bg-study-bg rounded-lg p-2">
-                              <p className="text-[11px] text-study-gray">Вузы</p>
-                              <p className="text-sm font-bold text-study-dark">{student.universitiesTotal}</p>
-                            </div>
-                            <div className={`rounded-lg p-2 ${student.documentsPendingReview > 0 ? 'bg-study-orange/10' : 'bg-study-bg'}`}>
-                              <p className="text-[11px] text-study-gray">Проверка</p>
-                              <p className={`text-sm font-bold ${student.documentsPendingReview > 0 ? 'text-study-orange' : 'text-study-dark'}`}>
-                                {student.documentsPendingReview}
-                              </p>
-                            </div>
-                          </div>
-                          {student.urgentDeadlines > 0 && (
-                            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-study-orange">
-                              <AlertCircle className="w-3.5 h-3.5" />
-                              {student.urgentDeadlines}
+                          ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:w-[520px]">
+                              <div className="bg-study-bg rounded-lg p-2">
+                                <p className="text-[11px] text-study-gray">Документы</p>
+                                <p className="text-sm font-bold text-study-dark">{student.documentsCompleted}/{student.documentsTotal}</p>
+                              </div>
+                              <div className="bg-study-bg rounded-lg p-2">
+                                <p className="text-[11px] text-study-gray">Прогресс</p>
+                                <p className="text-sm font-bold text-study-dark">{progress}%</p>
+                              </div>
+                              <div className="bg-study-bg rounded-lg p-2">
+                                <p className="text-[11px] text-study-gray">Вузы</p>
+                                <p className="text-sm font-bold text-study-dark">{student.universitiesTotal}</p>
+                              </div>
+                              <div className={`rounded-lg p-2 ${student.documentsPendingReview > 0 ? 'bg-study-orange/10' : 'bg-study-bg'}`}>
+                                <p className="text-[11px] text-study-gray">Проверка</p>
+                                <p className={`text-sm font-bold ${student.documentsPendingReview > 0 ? 'text-study-orange' : 'text-study-dark'}`}>
+                                  {student.documentsPendingReview}
+                                </p>
+                              </div>
                             </div>
                           )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteStudent(student.id) }}
+                            className="w-8 h-8 rounded-lg hover:bg-study-red/10 flex items-center justify-center text-study-gray hover:text-study-red transition-colors shrink-0"
+                            title="Удалить пользователя"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                      </button>
+                      </div>
                     )
                   })}
                 </div>
@@ -726,6 +865,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+            {adminTab === 'premium' && (
             <div className="bg-white rounded-xl card-shadow p-4 sm:p-6 h-fit">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-study-dark">Новые загрузки</h2>
@@ -813,10 +953,11 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+            )}
           </div>
         )}
 
-        {!isLoading && !error && selectedStudent && (
+        {!isLoading && !error && selectedStudent && adminTab === 'premium' && (
           <div className="mt-5 bg-white rounded-xl card-shadow p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
               <div>

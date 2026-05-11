@@ -1,9 +1,9 @@
-import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap, Lock } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { Switch } from '@/components/ui/switch'
 import { useState } from 'react'
 
-const menuItems = [
+const baseMenuItems = [
   { id: 'learning-start', label: 'Начало обучения', icon: GraduationCap },
   { id: 'dashboard', label: 'Главная', icon: LayoutDashboard },
   { id: 'checklist', label: 'Чек-лист', icon: ClipboardList },
@@ -14,6 +14,13 @@ const menuItems = [
 export default function Sidebar() {
   const { activeTab, setActiveTab, isParentMode, setIsParentMode, user, logout } = useApp()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const menuItems = [
+    ...baseMenuItems,
+    ...(user?.serviceType === 'diy' && user.subscriptionStatus === 'active'
+      ? [{ id: 'paid-modules', label: 'Платные модули', icon: Lock }]
+      : []),
+  ]
 
   return (
     <>

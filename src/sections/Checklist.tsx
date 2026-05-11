@@ -12,8 +12,15 @@ const statusConfig = {
   uploaded: { label: 'На рассмотрении', icon: FileText, color: 'text-study-brown bg-study-brown/10' },
 }
 
+// DIY users see simplified statuses without upload workflow
+const diyStatusConfig = {
+  not_started: { label: 'Не готово', icon: X, color: 'text-study-gray bg-study-lightgray' },
+  completed: { label: 'Готово', icon: Check, color: 'text-study-green bg-study-green/10' },
+}
+
 export default function Checklist() {
-  const { isParentMode } = useApp()
+  const { isParentMode, user } = useApp()
+  const isPremium = user?.serviceType === 'premium'
   const [documents, setDocuments] = useState<StudentDocument[]>([])
   const [universities, setUniversities] = useState<University[]>([])
   const [selectedDoc, setSelectedDoc] = useState<StudentDocument | null>(null)
@@ -66,6 +73,7 @@ export default function Checklist() {
   }, [])
 
   const openUploadModal = (document: StudentDocument) => {
+    if (!isPremium) return
     setSelectedDoc(document)
     setSelectedFile(null)
     setUploadError(null)
@@ -314,14 +322,15 @@ export default function Checklist() {
       {documents.length > 0 && <div className="space-y-1">
         {documents.map((doc) => {
           const isDone = doc.status === 'completed'
+          const config = isPremium ? statusConfig : diyStatusConfig
           const status = isDone
-            ? { label: 'Готово', icon: Check, color: 'text-study-green bg-study-green/10' }
-            : { label: 'Не готово', icon: X, color: 'text-study-gray bg-study-lightgray' }
+            ? config.completed
+            : config.not_started
           const Icon = status.icon
           return (
             <button
               key={doc.id}
-              onClick={() => toggleDocument(doc)}
+              onClick={() => isPremium ? openUploadModal(doc) : toggleDocument(doc)}
               className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-study-bg transition-colors text-left active:bg-study-bg/70"
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${status.color}`}>

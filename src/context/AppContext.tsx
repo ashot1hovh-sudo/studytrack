@@ -11,7 +11,9 @@ interface AppState {
   user: StudentProfile | null
   login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
+  verifyPin: (pin: string) => Promise<{ ok: boolean; error?: string }>
   loginError: string | null
+  isAdmin: boolean
 }
 
 const AppContext = createContext<AppState | undefined>(undefined)
@@ -23,6 +25,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [user, setUser] = useState<StudentProfile | null>(null)
   const [loginError, setLoginError] = useState<string | null>(null)
+
+  const isAdmin = user?.role === 'consultant'
 
   const refreshSession = useCallback(async () => {
     try {
@@ -77,6 +81,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoginError(null)
   }
 
+  const verifyPin = async (pin: string): Promise<{ ok: boolean; error?: string }> => {
+    const response = await fetch('/api/auth/verify-pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pinCode: pin }),
+    })
+    const data = await response.json().catch(() => null)
+    if (response.ok) {
+      await refreshSession()
+      return { ok: true }
+    }
+    return { ok: false, error: data?.error ?? 'Неверный PIN-код' }
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -89,7 +107,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         user,
         login,
         logout,
+        verifyPin,
         loginError,
+        isAdmin,
       }}
     >
       {children}

@@ -9,6 +9,9 @@ export interface StudentProfile {
   role: 'student' | 'parent' | 'consultant'
   age?: number | null
   program?: 'language_year' | 'bachelor' | 'master' | null
+  serviceType: 'diy' | 'premium'
+  subscriptionStatus: 'trial' | 'active' | 'inactive'
+  pinCode?: string | null
 }
 
 export interface University {
@@ -66,6 +69,9 @@ export interface AdminStudentSummary {
   fullName: string
   age?: number | null
   program?: 'language_year' | 'bachelor' | 'master' | null
+  serviceType: 'diy' | 'premium'
+  subscriptionStatus: 'trial' | 'active' | 'inactive'
+  pinCode?: string | null
   documentsTotal: number
   documentsCompleted: number
   documentsPendingReview: number

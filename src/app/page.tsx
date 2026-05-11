@@ -21,7 +21,7 @@ function AppContent() {
     return <Login />
   }
 
-  if (user?.email === 'admin@gmail.com') {
+  if (user?.role === 'consultant') {
     return <AdminDashboard />
   }
 

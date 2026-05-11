@@ -6,12 +6,17 @@ import Universities from '@/sections/Universities'
 import Checklist from '@/sections/Checklist'
 import Deadlines from '@/sections/Deadlines'
 import LearningStart from '@/sections/LearningStart'
+import PaidModules from '@/sections/PaidModules'
 
 export default function Dashboard() {
   const { activeTab, isParentMode, user } = useApp()
   const isDashboard = activeTab === 'dashboard'
 
   const pageMeta = {
+    'paid-modules': {
+      title: 'Платные модули',
+      subtitle: 'Материалы, доступные по подписке',
+    },
     'learning-start': {
       title: 'Начало обучения',
       subtitle: 'Стартовые материалы и доступ к tutorial-модулям',
@@ -42,7 +47,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto pt-16 lg:pt-6 pb-24 lg:pb-6">
+    <div className="flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-6 pb-24 lg:pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5">
         <div>
@@ -65,6 +70,40 @@ export default function Dashboard() {
           <p className="text-xs sm:text-sm text-study-dark">
             Режим родителя: показаны только общий прогресс, статус вузов и дедлайны. Загрузка документов и внутренние заметки скрыты.
           </p>
+        </div>
+      )}
+
+      {user?.serviceType === 'diy' && (
+        <div className={`mb-5 p-3 sm:p-4 rounded-xl border flex items-start gap-3 ${
+          user.subscriptionStatus === 'trial'
+            ? 'bg-study-orange/10 border-study-orange/20'
+            : user.subscriptionStatus === 'active'
+              ? 'bg-study-green/10 border-study-green/20'
+              : 'bg-study-gray/10 border-study-gray/20'
+        }`}>
+          <AlertTriangle className={`w-5 h-5 shrink-0 mt-0.5 ${
+            user.subscriptionStatus === 'trial'
+              ? 'text-study-orange'
+              : user.subscriptionStatus === 'active'
+                ? 'text-study-green'
+                : 'text-study-gray'
+          }`} />
+          <div className="text-xs sm:text-sm text-study-dark">
+            <p className="font-semibold">
+              {user.subscriptionStatus === 'trial'
+                ? 'Пробный период'
+                : user.subscriptionStatus === 'active'
+                  ? 'Подписка активна'
+                  : 'Подписка неактивна'}
+            </p>
+            <p className="mt-0.5">
+              {user.subscriptionStatus === 'trial'
+                ? 'У вас есть доступ к бесплатным материалам. Для полного доступа свяжитесь с консультантом.'
+                : user.subscriptionStatus === 'active'
+                  ? 'У вас полный доступ ко всем материалам.'
+                  : 'Ваш доступ ограничен. Свяжитесь с консультантом для продления.'}
+            </p>
+          </div>
         </div>
       )}
 
@@ -112,6 +151,12 @@ export default function Dashboard() {
       )}
 
       {activeTab === 'deadlines' && <Deadlines />}
+
+      {activeTab === 'paid-modules' && (
+        <div className="max-w-5xl">
+          <PaidModules />
+        </div>
+      )}
     </div>
   )
 }

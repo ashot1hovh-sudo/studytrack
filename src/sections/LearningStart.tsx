@@ -88,8 +88,10 @@ const sharedLessons = [
   { id: 11, lessonId: 'b11', title: 'Подготовка к интервью',             description: 'Как подготовиться к интервью' },
 ]
 
+const languageYearLessons = sharedLessons.filter((l) => l.lessonId !== 'b7')
+
 const moduleBoxesByModuleId: Record<string, typeof sharedLessons> = {
-  'language-year': sharedLessons,
+  'language-year': languageYearLessons,
   'prevuz': sharedLessons,
   'bachelor': sharedLessons,
 }

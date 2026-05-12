@@ -1,8 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useApp } from '@/context/AppContext'
 import { ExternalLink, Clock, ChevronRight, X, Plus } from 'lucide-react'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import type { ApplicationStatus, University } from '@/types/studytrack'
+import uniDb from '@/data/universities.json'
+
+type UniDbEntry = typeof uniDb[0]
+
+function getDbSuggestions(query: string): UniDbEntry[] {
+  const q = query.toLowerCase().trim()
+  if (!q || q.length < 2) return []
+  return uniDb.filter(
+    (u) =>
+      u.nameRu.toLowerCase().includes(q) ||
+      u.nameEn.toLowerCase().includes(q) ||
+      u.city.toLowerCase().includes(q),
+  ).slice(0, 6)
+}
+
+function buildPrice(u: UniDbEntry): string {
+  const parts: string[] = []
+  if (u.tuitionBachelor) parts.push(`Бакалавр: ${u.tuitionBachelor}`)
+  if (u.tuitionLanguageYear) parts.push(`Яз. год: ${u.tuitionLanguageYear}`)
+  return parts.join(' / ')
+}
 
 const statusConfig = {
   applied: { label: 'Подана заявка', variant: 'warning' as const, color: 'bg-study-orange/10 text-study-orange border-study-orange/30' },
@@ -26,6 +47,8 @@ export default function Universities() {
     major: '',
     portalUrl: '',
   })
+  const [suggestions, setSuggestions] = useState<UniDbEntry[]>([])
+  const suggestionsRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -298,12 +321,44 @@ export default function Universities() {
             </div>
 
             <div className="p-4 sm:p-6 space-y-3">
-              <input
-                value={newUniversity.name}
-                onChange={(event) => setNewUniversity((current) => ({ ...current, name: event.target.value }))}
-                placeholder="Название университета"
-                className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
-              />
+              <div className="relative" ref={suggestionsRef}>
+                <input
+                  value={newUniversity.name}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setNewUniversity((current) => ({ ...current, name: val }))
+                    setSuggestions(getDbSuggestions(val))
+                  }}
+                  onBlur={() => setTimeout(() => setSuggestions([]), 150)}
+                  placeholder="Начните вводить название университета..."
+                  className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                  autoComplete="off"
+                />
+                {suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl card-shadow-hover border border-study-lightgray z-10 overflow-hidden">
+                    {suggestions.map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onMouseDown={() => {
+                          setNewUniversity((current) => ({
+                            ...current,
+                            name: u.nameRu,
+                            city: u.city,
+                            portalUrl: u.url,
+                            price: buildPrice(u),
+                          }))
+                          setSuggestions([])
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-study-bg transition-colors border-b border-study-lightgray last:border-0"
+                      >
+                        <p className="text-sm font-medium text-study-dark">{u.nameRu}</p>
+                        <p className="text-xs text-study-gray mt-0.5">{u.city} · {u.nameEn}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <input
                   type="date"

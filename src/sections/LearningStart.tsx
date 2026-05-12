@@ -67,7 +67,6 @@ import FinanceChecklist from '@/components/modules/finance/FinanceChecklist'
 import InterviewTypesCards from '@/components/modules/interview/InterviewTypesCards'
 import InterviewPrepFlow from '@/components/modules/interview/InterviewPrepFlow'
 import TechCheckCard from '@/components/modules/interview/TechCheckCard'
-import UniversityDatabase from '@/components/UniversityDatabase'
 
 const lockedModules = [
   { id: 'language-year', title: 'Языковой год: Туториал', description: 'Полный гайд по языковому году в Китае' },
@@ -102,7 +101,6 @@ export default function LearningStart() {
   const isPremium = user?.serviceType === 'premium'
   const isSubscribed = isPremium || user?.subscriptionStatus === 'active'
 
-  const [showUniversityDB, setShowUniversityDB] = useState(false)
   const [activeModule, setActiveModule] = useState<typeof lockedModules[0] | null>(null)
   const [lockedBox, setLockedBox] = useState<{ id: number; lessonId: string; title: string; description: string } | null>(null)
   const [pinCode, setPinCode] = useState('')
@@ -189,10 +187,6 @@ export default function LearningStart() {
         )}
       </div>
     )
-  }
-
-  if (showUniversityDB) {
-    return <UniversityDatabase onBack={() => setShowUniversityDB(false)} />
   }
 
   // Module detail view
@@ -381,18 +375,15 @@ export default function LearningStart() {
 
       {/* Free info cards */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <button
-          onClick={() => setShowUniversityDB(true)}
-          className="text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
-        >
+        <button className="text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="w-12 h-12 rounded-xl bg-study-green/10 flex items-center justify-center shrink-0">
               <Building2 className="w-6 h-6 text-study-green" />
             </div>
             <span className="text-xs font-bold text-study-green bg-study-green/10 rounded-full px-2.5 py-1">Бесплатно</span>
           </div>
-          <p className="font-bold text-study-dark">База университетов Китая</p>
-          <p className="text-sm text-study-gray mt-1">Поиск и сравнение 45+ университетов</p>
+          <p className="font-bold text-study-dark">10 Бюджетных ВУЗов в Китае</p>
+          <p className="text-sm text-study-gray mt-1">языковой год + бакалавриат</p>
         </button>
 
         <button

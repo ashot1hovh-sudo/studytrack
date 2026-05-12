@@ -634,6 +634,37 @@ function ProtectedLesson({
 }) {
   const prevent = (event: React.SyntheticEvent) => event.preventDefault()
   const [isTocOpen, setIsTocOpen] = useState(true)
+
+  // AI Summary (b1 pilot)
+  const AI_SUMMARY: Record<string, string> = {
+    'b1': `Этот урок помогает объективно оценить ваши шансы на поступление в Китай — до того, как вы потратите время и деньги на документы.
+
+Ключевые факторы оценки:
+• Средний балл аттестата (GPA). Ниже 3.5 — вузы топ-уровня закрыты, но есть хорошие варианты в провинции.
+• Языковой уровень. HSK 4+ или IELTS 6.0+ открывают большинство программ. Без сертификата — только языковой год.
+• Специальность. Технические и медицинские направления требуют более сильного профиля, чем бизнес или гуманитарные.
+• Тип программы. Языковой год — самый доступный вход; бакалавриат — требует более полного пакета.
+
+Вывод: большинство студентов поступают при правильном выборе уровня вуза. Переоценка своих шансов — главная причина провала. Начните с реалистичного списка, и расширяйте его по мере роста профиля.`,
+  }
+  const summaryText = AI_SUMMARY[lessonKey] ?? null
+  const [summaryPhase, setSummaryPhase] = useState<'idle' | 'loading' | 'typing'>('idle')
+  const [displayedSummary, setDisplayedSummary] = useState('')
+
+  const startSummary = () => {
+    if (summaryPhase !== 'idle' || !summaryText) return
+    setSummaryPhase('loading')
+    setDisplayedSummary('')
+    setTimeout(() => {
+      setSummaryPhase('typing')
+      let i = 0
+      const interval = setInterval(() => {
+        i++
+        setDisplayedSummary(summaryText.slice(0, i))
+        if (i >= summaryText.length) clearInterval(interval)
+      }, 18)
+    }, 2500)
+  }
   const headings = blocks
     .map((block, index) => (
       block.type === 'heading' && /^(\d+\.|Блок\s+\d+)/i.test(block.text)
@@ -1105,8 +1136,33 @@ function ProtectedLesson({
         </div>
 
         <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-study-brown mb-2">Защищенный урок</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-study-dark mb-6">{title}</h1>
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-study-brown">Защищенный урок</p>
+            {summaryText && summaryPhase === 'idle' && (
+              <button
+                onClick={startSummary}
+                className="pointer-events-auto shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-study-brown/10 hover:bg-study-brown/20 text-study-brown text-xs font-semibold transition-colors"
+              >
+                <span>✦</span>
+                <span>Краткое резюме</span>
+              </button>
+            )}
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-study-dark mb-4">{title}</h1>
+
+          {summaryPhase === 'loading' && (
+            <div className="mb-6 rounded-xl bg-study-brown/5 border border-study-brown/15 px-5 py-4 flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full border-2 border-study-brown border-t-transparent animate-spin shrink-0" />
+              <p className="text-sm text-study-gray">Готовлю краткое резюме...</p>
+            </div>
+          )}
+
+          {summaryPhase === 'typing' && (
+            <div className="mb-6 rounded-xl bg-study-brown/5 border border-study-brown/15 px-5 py-4">
+              <p className="text-xs font-bold text-study-brown mb-2 uppercase tracking-wide">✦ Краткое резюме</p>
+              <p className="text-sm text-study-dark leading-relaxed whitespace-pre-line">{displayedSummary}<span className="inline-block w-0.5 h-4 bg-study-brown ml-0.5 animate-pulse align-middle" /></p>
+            </div>
+          )}
 
           <div className="space-y-4 text-study-dark">
             {blocks.map((block, index) => {

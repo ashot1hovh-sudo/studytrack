@@ -75,17 +75,17 @@ const lockedModules = [
 ]
 
 const sharedLessons = [
-  { id: 1,  lessonId: 'b1',  title: 'Оценка шансов',                    description: 'Как оценить свои шансы на поступление' },
-  { id: 2,  lessonId: 'b2',  title: 'Основной перечень документов',      description: 'Список документов для поступления' },
-  { id: 3,  lessonId: 'b3',  title: 'Школьные документы',                description: 'Как подготовить школьные документы' },
-  { id: 4,  lessonId: 'b4',  title: 'Справка о несудимости',             description: 'Как подготовить справку о несудимости' },
-  { id: 5,  lessonId: 'b5',  title: 'Медицинское обследование',          description: 'Как пройти медицинское обследование' },
-  { id: 6,  lessonId: 'b6',  title: 'Мотивационное письмо',              description: 'Как написать мотивационное письмо' },
-  { id: 7,  lessonId: 'b7',  title: 'Рекомендательные письма',           description: 'Как получить рекомендательные письма' },
-  { id: 8,  lessonId: 'b8',  title: 'Видео-визитка',                     description: 'Как записать видео-визитку' },
-  { id: 9,  lessonId: 'b9',  title: 'Резюме',                            description: 'Как написать резюме' },
-  { id: 10, lessonId: 'b10', title: 'Финансовые документы',              description: 'Как сделать финансовые документы' },
-  { id: 11, lessonId: 'b11', title: 'Подготовка к интервью',             description: 'Как подготовиться к интервью' },
+  { id: 1, lessonId: 'b1', title: 'Оценка шансов', description: 'Как оценить свои шансы на поступление' },
+  { id: 2, lessonId: 'b2', title: 'Основной перечень документов', description: 'Список документов для поступления' },
+  { id: 3, lessonId: 'b3', title: 'Школьные документы', description: 'Как подготовить школьные документы' },
+  { id: 4, lessonId: 'b4', title: 'Справка о несудимости', description: 'Как подготовить справку о несудимости' },
+  { id: 5, lessonId: 'b5', title: 'Медицинское обследование', description: 'Как пройти медицинское обследование' },
+  { id: 6, lessonId: 'b6', title: 'Мотивационное письмо', description: 'Как написать мотивационное письмо' },
+  { id: 7, lessonId: 'b7', title: 'Рекомендательные письма', description: 'Как получить рекомендательные письма' },
+  { id: 8, lessonId: 'b8', title: 'Видео-визитка', description: 'Как записать видео-визитку' },
+  { id: 9, lessonId: 'b9', title: 'Резюме', description: 'Как написать резюме' },
+  { id: 10, lessonId: 'b10', title: 'Финансовые документы', description: 'Как сделать финансовые документы' },
+  { id: 11, lessonId: 'b11', title: 'Подготовка к интервью', description: 'Как подготовиться к интервью' },
 ]
 
 const languageYearLessons = sharedLessons.filter((l) => l.lessonId !== 'b7' && l.lessonId !== 'b11')
@@ -127,7 +127,7 @@ export default function LearningStart() {
   }
 
   const openTelegram = () => {
-    window.open('https://t.me/', '_blank', 'noopener,noreferrer')
+    window.open('https://t.me/ash_china', '_blank', 'noopener,noreferrer')
   }
 
   const verifyPin = async () => {
@@ -1109,231 +1109,231 @@ function ProtectedLesson({
           <h1 className="text-2xl sm:text-3xl font-bold text-study-dark mb-6">{title}</h1>
 
           <div className="space-y-4 text-study-dark">
-          {blocks.map((block, index) => {
-            if (block.type === 'heading') {
-              const size = block.level === 1 ? 'text-2xl mt-8' : block.level === 2 ? 'text-xl mt-7' : 'text-lg mt-5'
-              const blockNumber = block.text.match(/^Блок\s+(\d+)/i)?.[1]
-              if (blockNumber) currentBlockNumber = Number(blockNumber)
-              if (lessonKey === 'how-to-choose') {
-                const sm = block.text.match(/^(\d+)\./)
-                if (sm) { currentSectionNumber = Number(sm[1]); currentStepNumber = null }
-                const stm = block.text.match(/^Шаг\s+(\d+)/i)
-                if (stm) currentStepNumber = Number(stm[1])
-              }
-              if (lessonKey === 'b1') {
-                const subm = block.text.match(/^(\d+)\.(\d+)\./)
-                if (subm) {
-                  b1SectionNumber = Number(subm[1])
-                  b1SubsectionCode = `${subm[1]}.${subm[2]}`
-                } else {
-                  const topm = block.text.match(/^(\d+)\./)
-                  if (topm) { b1SectionNumber = Number(topm[1]); b1SubsectionCode = null }
+            {blocks.map((block, index) => {
+              if (block.type === 'heading') {
+                const size = block.level === 1 ? 'text-2xl mt-8' : block.level === 2 ? 'text-xl mt-7' : 'text-lg mt-5'
+                const blockNumber = block.text.match(/^Блок\s+(\d+)/i)?.[1]
+                if (blockNumber) currentBlockNumber = Number(blockNumber)
+                if (lessonKey === 'how-to-choose') {
+                  const sm = block.text.match(/^(\d+)\./)
+                  if (sm) { currentSectionNumber = Number(sm[1]); currentStepNumber = null }
+                  const stm = block.text.match(/^Шаг\s+(\d+)/i)
+                  if (stm) currentStepNumber = Number(stm[1])
                 }
-              }
-              if (lessonKey === 'b2') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  if (numbered) {
-                    b2SectionNumber = Number(numbered[1])
-                    b2SectionName = null
+                if (lessonKey === 'b1') {
+                  const subm = block.text.match(/^(\d+)\.(\d+)\./)
+                  if (subm) {
+                    b1SectionNumber = Number(subm[1])
+                    b1SubsectionCode = `${subm[1]}.${subm[2]}`
                   } else {
-                    b2SectionNumber = null
-                    b2SectionName = block.text.toLowerCase().includes('правило') ? 'rules' : null
+                    const topm = block.text.match(/^(\d+)\./)
+                    if (topm) { b1SectionNumber = Number(topm[1]); b1SubsectionCode = null }
                   }
-                  b2SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b2SubsectionIndex += 1
                 }
-              }
-              if (lessonKey === 'b3') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b3SectionNumber = numbered ? Number(numbered[1]) : null
-                  b3SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b3SubsectionIndex += 1
+                if (lessonKey === 'b2') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    if (numbered) {
+                      b2SectionNumber = Number(numbered[1])
+                      b2SectionName = null
+                    } else {
+                      b2SectionNumber = null
+                      b2SectionName = block.text.toLowerCase().includes('правило') ? 'rules' : null
+                    }
+                    b2SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b2SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b4') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b4SectionNumber = numbered ? Number(numbered[1]) : null
-                  b4SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b4SubsectionIndex += 1
+                if (lessonKey === 'b3') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b3SectionNumber = numbered ? Number(numbered[1]) : null
+                    b3SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b3SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b5') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b5SectionNumber = numbered ? Number(numbered[1]) : null
-                  b5SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b5SubsectionIndex += 1
+                if (lessonKey === 'b4') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b4SectionNumber = numbered ? Number(numbered[1]) : null
+                    b4SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b4SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b6') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b6SectionNumber = numbered ? Number(numbered[1]) : null
-                  b6SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b6SubsectionIndex += 1
+                if (lessonKey === 'b5') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b5SectionNumber = numbered ? Number(numbered[1]) : null
+                    b5SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b5SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b7') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b7SectionNumber = numbered ? Number(numbered[1]) : null
-                  b7SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b7SubsectionIndex += 1
+                if (lessonKey === 'b6') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b6SectionNumber = numbered ? Number(numbered[1]) : null
+                    b6SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b6SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b8') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b8SectionNumber = numbered ? Number(numbered[1]) : null
-                  b8SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b8SubsectionIndex += 1
+                if (lessonKey === 'b7') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b7SectionNumber = numbered ? Number(numbered[1]) : null
+                    b7SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b7SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b9') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b9SectionNumber = numbered ? Number(numbered[1]) : null
-                  b9SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b9SubsectionIndex += 1
+                if (lessonKey === 'b8') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b8SectionNumber = numbered ? Number(numbered[1]) : null
+                    b8SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b8SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b10') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b10SectionNumber = numbered ? Number(numbered[1]) : null
-                  b10SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b10SubsectionIndex += 1
+                if (lessonKey === 'b9') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b9SectionNumber = numbered ? Number(numbered[1]) : null
+                    b9SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b9SubsectionIndex += 1
+                  }
                 }
-              }
-              if (lessonKey === 'b11') {
-                if (block.level === 1) {
-                  const numbered = block.text.match(/^(\d+)\./)
-                  b11SectionNumber = numbered ? Number(numbered[1]) : null
-                  b11SubsectionIndex = 0
-                } else if (block.level === 2) {
-                  b11SubsectionIndex += 1
+                if (lessonKey === 'b10') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b10SectionNumber = numbered ? Number(numbered[1]) : null
+                    b10SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b10SubsectionIndex += 1
+                  }
                 }
+                if (lessonKey === 'b11') {
+                  if (block.level === 1) {
+                    const numbered = block.text.match(/^(\d+)\./)
+                    b11SectionNumber = numbered ? Number(numbered[1]) : null
+                    b11SubsectionIndex = 0
+                  } else if (block.level === 2) {
+                    b11SubsectionIndex += 1
+                  }
+                }
+                return (
+                  <h2 key={index} id={`lesson-heading-${index}`} className={`${size} scroll-mt-6 font-bold text-study-dark`}>
+                    {block.text}
+                  </h2>
+                )
               }
-              return (
-                <h2 key={index} id={`lesson-heading-${index}`} className={`${size} scroll-mt-6 font-bold text-study-dark`}>
-                  {block.text}
-                </h2>
-              )
-            }
 
-            if (block.type === 'slideshow') {
-              return <CitySlideshow key={index} images={block.images} />
-            }
+              if (block.type === 'slideshow') {
+                return <CitySlideshow key={index} images={block.images} />
+              }
 
-            const renderWithInfographic = (content: React.ReactNode) => {
-              const blockNumber = currentBlockNumber
-              const showInfographic = blockNumber ? shouldInsertInfographic(block, blockNumber) : false
-              const howToChooseComp = lessonKey === 'how-to-choose' ? shouldInsertHowToChooseComponent(block) : null
-              const b1Comp = lessonKey === 'b1' ? shouldInsertB1Component(block) : null
-              const b2Comp = lessonKey === 'b2' ? shouldInsertB2Component(block) : null
-              const b3Comp = lessonKey === 'b3' ? shouldInsertB3Component(block) : null
-              const b4Comp = lessonKey === 'b4' ? shouldInsertB4Component(block) : null
-              const b5Comp = lessonKey === 'b5' ? shouldInsertB5Component(block) : null
-              const b6Comp = lessonKey === 'b6' ? shouldInsertB6Component(block) : null
-              const b7Comp = lessonKey === 'b7' ? shouldInsertB7Component(block) : null
-              const b8Comp = lessonKey === 'b8' ? shouldInsertB8Component(block) : null
-              const b9Comp = lessonKey === 'b9' ? shouldInsertB9Component(block) : null
-              const b10Comp = lessonKey === 'b10' ? shouldInsertB10Component(block) : null
-              const b11Comp = lessonKey === 'b11' ? shouldInsertB11Component(block) : null
-              return (
-                <div key={index} className="space-y-4">
-                  {content}
-                  {showInfographic && blockNumber && <LessonInfographic blockNumber={blockNumber} />}
-                  {howToChooseComp === 'DirectionCitiesMatrix' && <DirectionCitiesMatrix />}
-                  {howToChooseComp === 'ProgramCategorySignals' && <ProgramCategorySignals />}
-                  {howToChooseComp === 'UniversitySignsComparison' && <UniversitySignsComparison />}
-                  {howToChooseComp === 'ProgramComparisonTable' && <ProgramComparisonTable />}
-                  {b1Comp === 'AdmissionBenchmarks' && <AdmissionBenchmarks />}
-                  {b1Comp === 'StudentProfileTable' && <StudentProfileTable />}
-                  {b1Comp === 'ProfileLevelCards' && <ProfileLevelCards />}
-                  {b1Comp === 'BachelorOrGapYear' && <BachelorOrGapYear />}
-                  {b2Comp === 'ImportantRulesCards' && <ImportantRulesCards />}
-                  {b2Comp === 'DocumentCards' && <DocumentCards />}
-                  {b2Comp === 'PreparationTimeline' && <PreparationTimeline />}
-                  {b3Comp === 'SituationSelector' && <SituationSelector />}
-                  {b3Comp === 'GradingSystemCards' && <GradingSystemCards />}
-                  {b3Comp === 'ScanChecklist' && <ScanChecklist />}
-                  {b4Comp === 'OrderFlowDiagram' && <OrderFlowDiagram />}
-                  {b4Comp === 'FormatChoiceCards' && <FormatChoiceCards />}
-                  {b4Comp === 'TimingWarningCard' && <TimingWarningCard />}
-                  {b5Comp === 'MedExamFlow' && <MedExamFlow />}
-                  {b5Comp === 'DoctorsTable' && <DoctorsTable />}
-                  {b5Comp === 'MedFormChecklist' && <MedFormChecklist />}
-                  {b6Comp === 'GoodBadExamples' && <GoodBadExamples />}
-                  {b6Comp === 'LetterStructureBlocks' && <LetterStructureBlocks />}
-                  {b6Comp === 'FiveQuestionsCard' && <FiveQuestionsCard />}
-                  {b7Comp === 'GoodBadRecommendation' && <GoodBadRecommendation />}
-                  {b7Comp === 'RecommendationStructure' && <RecommendationStructure />}
-                  {b7Comp === 'RecommendationChecklist' && <RecommendationChecklist />}
-                  {b8Comp === 'VideoScriptFlow' && <VideoScriptFlow />}
-                  {b8Comp === 'VideoTechCard' && <VideoTechCard />}
-                  {b8Comp === 'VideoAvoidList' && <VideoAvoidList />}
-                  {b9Comp === 'StrongVerbsCard' && <StrongVerbsCard />}
-                  {b9Comp === 'ResultExamples' && <ResultExamples />}
-                  {b9Comp === 'CVStructureList' && <CVStructureList />}
-                  {b10Comp === 'DocLinkFlow' && <DocLinkFlow />}
-                  {b10Comp === 'AmountGuideCard' && <AmountGuideCard />}
-                  {b10Comp === 'FinanceChecklist' && <FinanceChecklist />}
-                  {b11Comp === 'InterviewTypesCards' && <InterviewTypesCards />}
-                  {b11Comp === 'InterviewPrepFlow' && <InterviewPrepFlow />}
-                  {b11Comp === 'TechCheckCard' && <TechCheckCard />}
-                </div>
-              )
-            }
+              const renderWithInfographic = (content: React.ReactNode) => {
+                const blockNumber = currentBlockNumber
+                const showInfographic = blockNumber ? shouldInsertInfographic(block, blockNumber) : false
+                const howToChooseComp = lessonKey === 'how-to-choose' ? shouldInsertHowToChooseComponent(block) : null
+                const b1Comp = lessonKey === 'b1' ? shouldInsertB1Component(block) : null
+                const b2Comp = lessonKey === 'b2' ? shouldInsertB2Component(block) : null
+                const b3Comp = lessonKey === 'b3' ? shouldInsertB3Component(block) : null
+                const b4Comp = lessonKey === 'b4' ? shouldInsertB4Component(block) : null
+                const b5Comp = lessonKey === 'b5' ? shouldInsertB5Component(block) : null
+                const b6Comp = lessonKey === 'b6' ? shouldInsertB6Component(block) : null
+                const b7Comp = lessonKey === 'b7' ? shouldInsertB7Component(block) : null
+                const b8Comp = lessonKey === 'b8' ? shouldInsertB8Component(block) : null
+                const b9Comp = lessonKey === 'b9' ? shouldInsertB9Component(block) : null
+                const b10Comp = lessonKey === 'b10' ? shouldInsertB10Component(block) : null
+                const b11Comp = lessonKey === 'b11' ? shouldInsertB11Component(block) : null
+                return (
+                  <div key={index} className="space-y-4">
+                    {content}
+                    {showInfographic && blockNumber && <LessonInfographic blockNumber={blockNumber} />}
+                    {howToChooseComp === 'DirectionCitiesMatrix' && <DirectionCitiesMatrix />}
+                    {howToChooseComp === 'ProgramCategorySignals' && <ProgramCategorySignals />}
+                    {howToChooseComp === 'UniversitySignsComparison' && <UniversitySignsComparison />}
+                    {howToChooseComp === 'ProgramComparisonTable' && <ProgramComparisonTable />}
+                    {b1Comp === 'AdmissionBenchmarks' && <AdmissionBenchmarks />}
+                    {b1Comp === 'StudentProfileTable' && <StudentProfileTable />}
+                    {b1Comp === 'ProfileLevelCards' && <ProfileLevelCards />}
+                    {b1Comp === 'BachelorOrGapYear' && <BachelorOrGapYear />}
+                    {b2Comp === 'ImportantRulesCards' && <ImportantRulesCards />}
+                    {b2Comp === 'DocumentCards' && <DocumentCards />}
+                    {b2Comp === 'PreparationTimeline' && <PreparationTimeline />}
+                    {b3Comp === 'SituationSelector' && <SituationSelector />}
+                    {b3Comp === 'GradingSystemCards' && <GradingSystemCards />}
+                    {b3Comp === 'ScanChecklist' && <ScanChecklist />}
+                    {b4Comp === 'OrderFlowDiagram' && <OrderFlowDiagram />}
+                    {b4Comp === 'FormatChoiceCards' && <FormatChoiceCards />}
+                    {b4Comp === 'TimingWarningCard' && <TimingWarningCard />}
+                    {b5Comp === 'MedExamFlow' && <MedExamFlow />}
+                    {b5Comp === 'DoctorsTable' && <DoctorsTable />}
+                    {b5Comp === 'MedFormChecklist' && <MedFormChecklist />}
+                    {b6Comp === 'GoodBadExamples' && <GoodBadExamples />}
+                    {b6Comp === 'LetterStructureBlocks' && <LetterStructureBlocks />}
+                    {b6Comp === 'FiveQuestionsCard' && <FiveQuestionsCard />}
+                    {b7Comp === 'GoodBadRecommendation' && <GoodBadRecommendation />}
+                    {b7Comp === 'RecommendationStructure' && <RecommendationStructure />}
+                    {b7Comp === 'RecommendationChecklist' && <RecommendationChecklist />}
+                    {b8Comp === 'VideoScriptFlow' && <VideoScriptFlow />}
+                    {b8Comp === 'VideoTechCard' && <VideoTechCard />}
+                    {b8Comp === 'VideoAvoidList' && <VideoAvoidList />}
+                    {b9Comp === 'StrongVerbsCard' && <StrongVerbsCard />}
+                    {b9Comp === 'ResultExamples' && <ResultExamples />}
+                    {b9Comp === 'CVStructureList' && <CVStructureList />}
+                    {b10Comp === 'DocLinkFlow' && <DocLinkFlow />}
+                    {b10Comp === 'AmountGuideCard' && <AmountGuideCard />}
+                    {b10Comp === 'FinanceChecklist' && <FinanceChecklist />}
+                    {b11Comp === 'InterviewTypesCards' && <InterviewTypesCards />}
+                    {b11Comp === 'InterviewPrepFlow' && <InterviewPrepFlow />}
+                    {b11Comp === 'TechCheckCard' && <TechCheckCard />}
+                  </div>
+                )
+              }
 
-            if (block.type === 'paragraph') {
-              return renderWithInfographic(<p className="text-sm sm:text-base leading-7 text-study-dark">{block.text}</p>)
-            }
+              if (block.type === 'paragraph') {
+                return renderWithInfographic(<p className="text-sm sm:text-base leading-7 text-study-dark">{block.text}</p>)
+              }
 
-            if (block.type === 'list') {
-              return renderWithInfographic(
-                <ul className="space-y-2 pl-5 list-disc text-sm sm:text-base leading-7">
-                  {block.items.map((item, itemIndex) => (
-                    <li key={itemIndex}>{item}</li>
-                  ))}
-                </ul>,
-              )
-            }
+              if (block.type === 'list') {
+                return renderWithInfographic(
+                  <ul className="space-y-2 pl-5 list-disc text-sm sm:text-base leading-7">
+                    {block.items.map((item, itemIndex) => (
+                      <li key={itemIndex}>{item}</li>
+                    ))}
+                  </ul>,
+                )
+              }
 
-            if (block.type === 'table') {
-              return renderWithInfographic(
-                <div className="overflow-x-auto rounded-xl border border-study-lightgray">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {block.rows.map((row, rowIndex) => (
-                        <tr key={rowIndex} className={rowIndex === 0 ? 'bg-study-bg font-bold' : 'bg-white'}>
-                          {row.map((cell, cellIndex) => (
-                            <td key={cellIndex} className="border-t border-study-lightgray px-3 py-2 align-top">
-                              {cell}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>,
-              )
-            }
+              if (block.type === 'table') {
+                return renderWithInfographic(
+                  <div className="overflow-x-auto rounded-xl border border-study-lightgray">
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {block.rows.map((row, rowIndex) => (
+                          <tr key={rowIndex} className={rowIndex === 0 ? 'bg-study-bg font-bold' : 'bg-white'}>
+                            {row.map((cell, cellIndex) => (
+                              <td key={cellIndex} className="border-t border-study-lightgray px-3 py-2 align-top">
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>,
+                )
+              }
 
-            return <hr key={index} className="border-study-lightgray my-8" />
-          })}
+              return <hr key={index} className="border-study-lightgray my-8" />
+            })}
           </div>
         </div>
       </article>

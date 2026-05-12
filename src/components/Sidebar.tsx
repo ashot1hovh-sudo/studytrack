@@ -79,10 +79,10 @@ export default function Sidebar() {
 
         {/* Consultant Contact */}
         <div className="px-4 py-3 mx-3 mb-3 bg-study-green/10 rounded-lg">
-          <button className="flex items-center gap-2 text-xs font-medium text-study-green w-full">
+          <a href="https://t.me/ash_china" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-medium text-study-green w-full">
             <MessageCircle className="w-4 h-4" />
             <span>Написать консультанту</span>
-          </button>
+          </a>
         </div>
 
         {/* User */}
@@ -171,10 +171,10 @@ export default function Sidebar() {
           </div>
 
           <div className="mx-4 mt-3 p-4 bg-study-green/10 rounded-xl">
-            <button className="flex items-center gap-3 text-sm font-medium text-study-green">
+            <a href="https://t.me/ash_china" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm font-medium text-study-green">
               <MessageCircle className="w-5 h-5" />
               <span>Написать консультанту</span>
-            </button>
+            </a>
           </div>
 
           <div className="absolute bottom-8 left-4 flex items-center gap-3">

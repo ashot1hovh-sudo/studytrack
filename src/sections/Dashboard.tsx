@@ -58,10 +58,10 @@ export default function Dashboard() {
             {pageMeta.subtitle}
           </p>
         </div>
-        <button className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-study-dark bg-white rounded-lg card-shadow hover:card-shadow-hover transition-all">
+        <a href="https://t.me/ash_china" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-study-dark bg-white rounded-lg card-shadow hover:card-shadow-hover transition-all">
           <MessageCircle className="w-4 h-4" />
           <span>Написать консультанту</span>
-        </button>
+        </a>
       </div>
 
       {isParentMode && (

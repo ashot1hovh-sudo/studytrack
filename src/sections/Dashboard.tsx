@@ -1,5 +1,5 @@
 import { useApp } from '@/context/AppContext'
-import { MessageCircle, AlertTriangle } from 'lucide-react'
+import { MessageCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import NextActionBanner from '@/sections/NextActionBanner'
 import Roadmap from '@/sections/Roadmap'
 import Universities from '@/sections/Universities'
@@ -81,13 +81,12 @@ export default function Dashboard() {
               ? 'bg-study-green/10 border-study-green/20'
               : 'bg-study-gray/10 border-study-gray/20'
         }`}>
-          <AlertTriangle className={`w-5 h-5 shrink-0 mt-0.5 ${
-            user.subscriptionStatus === 'trial'
-              ? 'text-study-orange'
-              : user.subscriptionStatus === 'active'
-                ? 'text-study-green'
-                : 'text-study-gray'
-          }`} />
+          {user.subscriptionStatus === 'active'
+            ? <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-study-green" />
+            : <AlertTriangle className={`w-5 h-5 shrink-0 mt-0.5 ${
+                user.subscriptionStatus === 'trial' ? 'text-study-orange' : 'text-study-gray'
+              }`} />
+          }
           <div className="text-xs sm:text-sm text-study-dark">
             <p className="font-semibold">
               {user.subscriptionStatus === 'trial'

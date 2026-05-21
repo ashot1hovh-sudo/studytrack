@@ -1,0 +1,4147 @@
+{
+  "meta": {
+    "generated": "2026-05-21",
+    "totalUniversities": 188,
+    "source": "All English-taught programs in China - expanded v2"
+  },
+  "universitiesNoEnglish": [
+    {
+      "name": "Anhui Agricultural University",
+      "city": "Хэфэй"
+    },
+    {
+      "name": "Anhui Normal University",
+      "city": "Уху"
+    },
+    {
+      "name": "Anhui University",
+      "city": "Хэфэй"
+    },
+    {
+      "name": "Beijing Forestry University",
+      "city": "Пекин"
+    },
+    {
+      "name": "Beijing Jiaotong University",
+      "city": "Пекин"
+    },
+    {
+      "name": "Beijing Normal University",
+      "city": "Пекин"
+    },
+    {
+      "name": "Central South University",
+      "city": "Чанша"
+    },
+    {
+      "name": "Changsha University of Science and Technology",
+      "city": "Чанша"
+    },
+    {
+      "name": "Chengdu University of Technology",
+      "city": "Чэнду"
+    },
+    {
+      "name": "China Agricultural University",
+      "city": "Пекин"
+    },
+    {
+      "name": "China Foreign Affairs University",
+      "city": "Пекин"
+    },
+    {
+      "name": "China University of Geosciences Beijing",
+      "city": "Пекин"
+    },
+    {
+      "name": "China University of Geosciences, Beijing",
+      "city": "Пекин"
+    },
+    {
+      "name": "China University of Mining and Technology Beijing",
+      "city": "Пекин"
+    },
+    {
+      "name": "China University of Mining and Technology, Beijing",
+      "city": "Пекин"
+    },
+    {
+      "name": "Chongqing University",
+      "city": "Чунцин"
+    },
+    {
+      "name": "Communication University of China",
+      "city": "Пекин"
+    },
+    {
+      "name": "Dalian Maritime University",
+      "city": "Далянь"
+    },
+    {
+      "name": "Fujian Agriculture and Forestry University",
+      "city": "Фучжоу"
+    },
+    {
+      "name": "Fujian Normal University",
+      "city": "Фучжоу"
+    },
+    {
+      "name": "Fuzhou University",
+      "city": "Фучжоу"
+    },
+    {
+      "name": "Guangxi Normal University",
+      "city": "Гуйлинь"
+    },
+    {
+      "name": "Guangxi University",
+      "city": "Наньнин"
+    },
+    {
+      "name": "Guangzhou University",
+      "city": "Гуанчжоу"
+    },
+    {
+      "name": "Guizhou University",
+      "city": "Гуйян"
+    },
+    {
+      "name": "Hebei University",
+      "city": "Баодин"
+    },
+    {
+      "name": "Henan Agricultural University",
+      "city": "Чжэнчжоу"
+    },
+    {
+      "name": "Hohai University",
+      "city": "Нанкин"
+    },
+    {
+      "name": "Huazhong Agricultural University",
+      "city": "Ухань"
+    },
+    {
+      "name": "Hubei University",
+      "city": "Ухань"
+    },
+    {
+      "name": "Hunan Normal University",
+      "city": "Чанша"
+    },
+    {
+      "name": "Inner Mongolia University",
+      "city": "Хух-Хото"
+    },
+    {
+      "name": "Kunming University of Science and Technology",
+      "city": "Куньмин"
+    },
+    {
+      "name": "Lanzhou University",
+      "city": "Ланьчжоу"
+    },
+    {
+      "name": "Nanjing Agricultural University",
+      "city": "Нанкин"
+    },
+    {
+      "name": "Nanjing Forestry University",
+      "city": "Нанкин"
+    },
+    {
+      "name": "Nanjing University",
+      "city": "Нанкин"
+    },
+    {
+      "name": "Nantong University",
+      "city": "Наньтун"
+    },
+    {
+      "name": "Ningxia University",
+      "city": "Иньчуань"
+    },
+    {
+      "name": "North University of China",
+      "city": "Тайюань"
+    },
+    {
+      "name": "Northeast Agricultural University",
+      "city": "Харбин"
+    },
+    {
+      "name": "Northeast Normal University",
+      "city": "Чанчунь"
+    },
+    {
+      "name": "Northwest A&F University",
+      "city": "Яньлин"
+    },
+    {
+      "name": "Northwest University",
+      "city": "Сиань"
+    },
+    {
+      "name": "Peking University",
+      "city": "Пекин"
+    },
+    {
+      "name": "Qilu University of Technology",
+      "city": "Цзинань"
+    },
+    {
+      "name": "Shaanxi Normal University",
+      "city": "Сиань"
+    },
+    {
+      "name": "Shaanxi University of Science and Technology",
+      "city": "Сиань"
+    },
+    {
+      "name": "Shandong Agricultural University",
+      "city": "Тайань"
+    },
+    {
+      "name": "Shanghai International Studies University",
+      "city": "Шанхай"
+    },
+    {
+      "name": "Shanghai Ocean University",
+      "city": "Шанхай"
+    },
+    {
+      "name": "ShanghaiTech University",
+      "city": "Шанхай"
+    },
+    {
+      "name": "Shanxi University",
+      "city": "Тайюань"
+    },
+    {
+      "name": "Sichuan Agricultural University",
+      "city": "Я'ань"
+    },
+    {
+      "name": "Soochow University",
+      "city": "Сучжоу"
+    },
+    {
+      "name": "South China Agricultural University",
+      "city": "Гуанчжоу"
+    },
+    {
+      "name": "South China Normal University",
+      "city": "Гуанчжоу"
+    },
+    {
+      "name": "Southern University of Science and Technology",
+      "city": "Шэньчжэнь"
+    },
+    {
+      "name": "Sun Yat-sen University",
+      "city": "Гуанчжоу"
+    },
+    {
+      "name": "University of Science and Technology of China",
+      "city": "Хэфэй"
+    },
+    {
+      "name": "University of Shanghai for Science and Technology",
+      "city": "Шанхай"
+    },
+    {
+      "name": "Wuhan University of Science and Technology",
+      "city": "Ухань"
+    },
+    {
+      "name": "Xi'an University of Architecture and Technology",
+      "city": "Сиань"
+    },
+    {
+      "name": "Xi'an University of Technology",
+      "city": "Сиань"
+    },
+    {
+      "name": "Xiangtan University",
+      "city": "Сянтань"
+    },
+    {
+      "name": "Xinjiang University",
+      "city": "Урумчи"
+    },
+    {
+      "name": "Zhejiang A&F University",
+      "city": "Ханчжоу"
+    },
+    {
+      "name": "Zhejiang Normal University",
+      "city": "Цзиньхуа"
+    }
+  ],
+  "majors": [
+    {
+      "id": "business",
+      "label": "Business Administration",
+      "icon": "💼",
+      "color": "#e67e22",
+      "bg": "linear-gradient(135deg,#b7450a,#e67e22)",
+      "programs": [
+        {
+          "id": "bus-bba",
+          "label": "Business Administration & Management",
+          "universities": [
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Renmin University of China",
+              "city": "Пекин",
+              "url": "http://iso.ruc.edu.cn/ENGLISH/Apply/UndergraduateprograminEnglish/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Sichuan University",
+              "city": "Чэнду",
+              "url": "https://global.scu.edu.cn/oso/article/index/1055",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hunan University",
+              "city": "Чанша",
+              "url": "https://www-en.hnu.edu.cn/info/1039/4580.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Northwestern Polytechnical University",
+              "city": "Сиань",
+              "url": "https://studyat.nwpu.edu.cn/info/1203/5301.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China Normal University",
+              "city": "Шанхай",
+              "url": "https://lxs.ecnu.edu.cn/2e/76/c47108a667254/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China Normal University",
+              "city": "Шанхай",
+              "url": "https://lxs.ecnu.edu.cn/2e/76/c47108a667254/page.htm",
+              "isDualDegree": true,
+              "dualDegreeNote": "Двойной диплом с emlyon Business School (Франция)",
+              "tuition": null
+            },
+            {
+              "name": "Shanghai University",
+              "city": "Шанхай",
+              "url": "https://shusilc.shu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shanghai University",
+              "city": "Шанхай",
+              "url": "https://shusilc.shu.edu.cn/",
+              "isDualDegree": true,
+              "dualDegreeNote": "Двойной диплом с австралийским университетом (программа не уточнена)",
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Wuhan University of Technology",
+              "city": "Ухань",
+              "url": "http://sie.whut.edu.cn/english/ist/unde/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Posts and Telecommunications",
+              "city": "Нанкин",
+              "url": "https://exchange.njupt.edu.cn/EV/2026/0109/c15183a296175/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "North China Electric Power University",
+              "city": "Пекин",
+              "url": "https://studyatncepu.ncepu.edu.cn/Admissions/YearlyAdmission/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nankai University",
+              "city": "Тяньцзинь",
+              "url": "https://ensie.nankai.edu.cn/info/1089/1167.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University",
+              "city": "Ханчжоу",
+              "url": "https://iczu.zju.edu.cn/admissionsen/weaturedwwrograms/list.htm",
+              "isDualDegree": true,
+              "dualDegreeNote": "Biological Sciences — двойной диплом с университетом Великобритании",
+              "tuition": null
+            },
+            {
+              "name": "Shandong University",
+              "city": "Цзинань",
+              "url": "https://www.istudy.sdu.edu.cn/English/Programs/Degree_Programs/Bachelor_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Jiaotong University",
+              "city": "Чэнду",
+              "url": "https://sie.swjtu.edu.cn/info/1014/3082.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ocean University of China",
+              "city": "Циндао",
+              "url": "https://sie.ouc.edu.cn/english/2026/0226/c18028a515837/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shenzhen University",
+              "city": "Шэньчжэнь",
+              "url": "https://lxs.szu.edu.cn/info/1277/4098.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hainan University",
+              "city": "Хайкоу",
+              "url": "https://en.hainanu.edu.cn/Admission/InternationalStudents/ProgramInformation/Degree_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong Normal University",
+              "city": "Цзинань",
+              "url": "http://en.cie.sdnu.edu.cn/PROGRAMS1/English_taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Sci-Tech University",
+              "city": "Ханчжоу",
+              "url": "https://admission.zstu.edu.cn/En/ApplicationInfo/252",
+              "isDualDegree": true,
+              "dualDegreeNote": "Fashion Design and Engineering — двойной диплом с американским университетом",
+              "tuition": null
+            },
+            {
+              "name": "Jiangxi Normal University",
+              "city": "Наньчан",
+              "url": "https://laihua.jxnu.edu.cn/_t2013/MajorsOffered/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tiangong University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tiangong.edu.cn/ProgramsinEnglish/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huaqiao University",
+              "city": "Сямэнь",
+              "url": "https://en.hqu.edu.cn/info/1006/10001.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University of Science and Technology",
+              "city": "Чжэньцзян",
+              "url": "https://admission.just.edu.cn/2026/0409/c10116a372087/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chongqing University of Posts and Telecommunications",
+              "city": "Чунцин",
+              "url": "https://english.cqupt.edu.cn/International_Student/Admissions/Undergraduate_Admissions.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "University of International Business and Economics",
+              "city": "Пекин",
+              "url": "https://sie.uibe.edu.cn/en/xmjs/bkxlxm/76722.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwestern University of Finance and Economics",
+              "city": "Чэнду",
+              "url": "https://e.swufe.edu.cn/Admissions/Degree_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Dongbei University of Finance and Economics",
+              "city": "Далянь",
+              "url": "https://sie.dufe.edu.cn/en/studyad/emp/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangxi University of Finance and Economics",
+              "city": "Наньчан",
+              "url": "https://oesenglish.jxufe.edu.cn/news-show-38.html",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Gongshang University",
+              "city": "Ханчжоу",
+              "url": "https://sie.zjgsu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing International Studies University",
+              "city": "Пекин",
+              "url": "https://admission.bisu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "bus-trade",
+          "label": "International Trade & Business",
+          "universities": [
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Institute of Technology",
+              "city": "Пекин",
+              "url": "https://isc.bit.edu.cn/docs//2025-10/4ac3a8207cc64b318d1336201984f472.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Science and Technology",
+              "city": "Нанкин",
+              "url": "https://english.njust.edu.cn/602/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Aeronautics and Astronautics",
+              "city": "Нанкин",
+              "url": "https://en.nuaa.edu.cn/pdf/Undergraduate2.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "South China University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://sie.scut.edu.cn/2021/0602/c29044a431737/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ocean University of China",
+              "city": "Циндао",
+              "url": "https://sie.ouc.edu.cn/english/2026/0226/c18028a515837/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum, Beijing",
+              "city": "Пекин",
+              "url": "https://www.cup.edu.cn/overseas/Admission/UP2/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing University of Technology",
+              "city": "Пекин",
+              "url": "https://isa.bjut.edu.cn/en/info/1144/2542.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shenzhen University",
+              "city": "Шэньчжэнь",
+              "url": "https://lxs.szu.edu.cn/info/1277/4098.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Normal University",
+              "city": "Нанкин",
+              "url": "https://en.njnu.edu.cn/admissions/bachelors-degree-program-curriculum-in-international-economics-and-trade-delivered-in",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shanghai University",
+              "city": "Шанхай",
+              "url": "https://shusilc.shu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Tech University",
+              "city": "Нанкин",
+              "url": "https://coe.njtech.edu.cn/en/info/1027/1246.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Guangdong University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://iec.gdut.edu.cn/EN/Home/Admission/Degree_programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Taiyuan University of Technology",
+              "city": "Тайюань",
+              "url": "http://is.tyut.edu.cn/html/article_content/202605/6B86A9FF2F5A4850B814BFFA0F84D85E.shtml",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Information Science and Technology",
+              "city": "Нанкин",
+              "url": "https://gjy.nuist.edu.cn/english/7321/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huazhong University of Science and Technology",
+              "city": "Ухань",
+              "url": "https://iso.hust.edu.cn/Programs/English_medium_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum Beijing",
+              "city": "Пекин",
+              "url": "https://www.cup.edu.cn/overseas/Admission/UP2/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Shandong Normal University",
+              "city": "Цзинань",
+              "url": "http://en.cie.sdnu.edu.cn/PROGRAMS1/English_taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Sci-Tech University",
+              "city": "Ханчжоу",
+              "url": "https://admission.zstu.edu.cn/En/ApplicationInfo/252",
+              "isDualDegree": true,
+              "dualDegreeNote": "Fashion Design and Engineering — двойной диплом с американским университетом",
+              "tuition": null
+            },
+            {
+              "name": "Northeast Forestry University",
+              "city": "Харбин",
+              "url": "https://siee.nefu.edu.cn/English/Programs/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hangzhou Normal University",
+              "city": "Ханчжоу",
+              "url": "https://international.hznu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Petroleum University",
+              "city": "Наньчун",
+              "url": "https://www.swpu.edu.cn/oice/lxSWPU/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangxi Normal University",
+              "city": "Наньчан",
+              "url": "https://laihua.jxnu.edu.cn/_t2013/MajorsOffered/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tiangong University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tiangong.edu.cn/ProgramsinEnglish/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huaqiao University",
+              "city": "Сямэнь",
+              "url": "https://en.hqu.edu.cn/info/1006/10001.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "bus-finance",
+          "label": "Finance, Accounting & Insurance",
+          "universities": [
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jinan University (Accounting)",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": true,
+              "dualDegreeNote": "Accounting — профессиональный трек CPA Canada",
+              "tuition": null
+            },
+            {
+              "name": "Shanghai University",
+              "city": "Шанхай",
+              "url": "https://shusilc.shu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Fudan University",
+              "city": "Шанхай",
+              "url": "https://iso.fudan.edu.cn/isoenglish/93/09/c16217a758537/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/#/programmes/biopharmaceutical-engineering",
+              "isDualDegree": true,
+              "dualDegreeNote": "Artificial Intelligence + Finance — двойной диплом",
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "bus-logistics",
+          "label": "Logistics & Supply Chain",
+          "universities": [
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nankai University",
+              "city": "Тяньцзинь",
+              "url": "https://ensie.nankai.edu.cn/info/1089/1167.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Jiaotong University",
+              "city": "Чэнду",
+              "url": "https://sie.swjtu.edu.cn/info/1014/3082.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ocean University of China",
+              "city": "Циндао",
+              "url": "https://sie.ouc.edu.cn/english/2026/0226/c18028a515837/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wuhan University of Technology",
+              "city": "Ухань",
+              "url": "http://sie.whut.edu.cn/english/ist/unde/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "bus-tourism",
+          "label": "Tourism & Hotel Management",
+          "universities": [
+            {
+              "name": "Sichuan University",
+              "city": "Чэнду",
+              "url": "https://global.scu.edu.cn/oso/article/index/1055",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University",
+              "city": "Цзинань",
+              "url": "https://www.istudy.sdu.edu.cn/English/Programs/Degree_Programs/Bachelor_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ocean University of China",
+              "city": "Циндао",
+              "url": "https://sie.ouc.edu.cn/english/2026/0226/c18028a515837/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hainan University",
+              "city": "Хайкоу",
+              "url": "https://en.hainanu.edu.cn/Admission/InternationalStudents/ProgramInformation/Degree_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong Normal University",
+              "city": "Цзинань",
+              "url": "http://en.cie.sdnu.edu.cn/PROGRAMS1/English_taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "bus-marketing",
+          "label": "Marketing, HR & E-Commerce",
+          "universities": [
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shanghai University",
+              "city": "Шанхай",
+              "url": "https://shusilc.shu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Posts and Telecommunications",
+              "city": "Нанкин",
+              "url": "https://exchange.njupt.edu.cn/EV/2026/0109/c15183a296175/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong Normal University",
+              "city": "Цзинань",
+              "url": "http://en.cie.sdnu.edu.cn/PROGRAMS1/English_taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chongqing University of Posts and Telecommunications",
+              "city": "Чунцин",
+              "url": "https://english.cqupt.edu.cn/International_Student/Admissions/Undergraduate_Admissions.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "economics",
+      "label": "Economics",
+      "icon": "📊",
+      "color": "#3498db",
+      "bg": "linear-gradient(135deg,#1a5fa8,#3498db)",
+      "programs": [
+        {
+          "id": "eco-general",
+          "label": "Economics",
+          "universities": [
+            {
+              "name": "Tsinghua University",
+              "city": "Пекин",
+              "url": "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm",
+              "isDualDegree": true,
+              "dualDegreeNote": "Двойной диплом с Китайским университетом Гонконга (CUHK)",
+              "tuition": null
+            },
+            {
+              "name": "Fudan University",
+              "city": "Шанхай",
+              "url": "https://iso.fudan.edu.cn/isoenglish/93/09/c16217a758537/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wuhan University of Technology",
+              "city": "Ухань",
+              "url": "http://sie.whut.edu.cn/english/ist/unde/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huazhong University of Science and Technology",
+              "city": "Ухань",
+              "url": "https://iso.hust.edu.cn/Programs/English_medium_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Institute of Technology",
+              "city": "Пекин",
+              "url": "https://isc.bit.edu.cn/docs//2025-10/4ac3a8207cc64b318d1336201984f472.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "South China University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://sie.scut.edu.cn/2021/0602/c29044a431737/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Science and Technology",
+              "city": "Нанкин",
+              "url": "https://english.njust.edu.cn/602/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/#/programmes/biopharmaceutical-engineering",
+              "isDualDegree": true,
+              "dualDegreeNote": "Artificial Intelligence + Finance — двойной диплом",
+              "tuition": null
+            },
+            {
+              "name": "Ocean University of China",
+              "city": "Циндао",
+              "url": "https://sie.ouc.edu.cn/english/2026/0226/c18028a515837/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Normal University",
+              "city": "Нанкин",
+              "url": "https://en.njnu.edu.cn/admissions/bachelors-degree-program-curriculum-in-international-economics-and-trade-delivered-in",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": true,
+              "dualDegreeNote": "Accounting — программа CPA Canada",
+              "tuition": null
+            },
+            {
+              "name": "Shanghai University",
+              "city": "Шанхай",
+              "url": "https://shusilc.shu.edu.cn/",
+              "isDualDegree": true,
+              "dualDegreeNote": "Business Administration — двойной диплом с австралийским университетом",
+              "tuition": null
+            },
+            {
+              "name": "Beijing University of Technology",
+              "city": "Пекин",
+              "url": "https://isa.bjut.edu.cn/en/info/1144/2542.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shenzhen University",
+              "city": "Шэньчжэнь",
+              "url": "https://lxs.szu.edu.cn/info/1277/4098.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Guangdong University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://iec.gdut.edu.cn/EN/Home/Admission/Degree_programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Taiyuan University of Technology",
+              "city": "Тайюань",
+              "url": "http://is.tyut.edu.cn/html/article_content/202605/6B86A9FF2F5A4850B814BFFA0F84D85E.shtml",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong Normal University",
+              "city": "Цзинань",
+              "url": "http://en.cie.sdnu.edu.cn/PROGRAMS1/English_taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Sci-Tech University",
+              "city": "Ханчжоу",
+              "url": "https://admission.zstu.edu.cn/En/ApplicationInfo/252",
+              "isDualDegree": true,
+              "dualDegreeNote": "Fashion Design and Engineering — двойной диплом с американским университетом",
+              "tuition": null
+            },
+            {
+              "name": "Northeast Forestry University",
+              "city": "Харбин",
+              "url": "https://siee.nefu.edu.cn/English/Programs/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hangzhou Normal University",
+              "city": "Ханчжоу",
+              "url": "https://international.hznu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Petroleum University",
+              "city": "Наньчун",
+              "url": "https://www.swpu.edu.cn/oice/lxSWPU/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangxi Normal University",
+              "city": "Наньчан",
+              "url": "https://laihua.jxnu.edu.cn/_t2013/MajorsOffered/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huaqiao University",
+              "city": "Сямэнь",
+              "url": "https://en.hqu.edu.cn/info/1006/10001.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eco-fintech",
+          "label": "Financial Engineering & Fintech",
+          "universities": [
+            {
+              "name": "Fudan University",
+              "city": "Шанхай",
+              "url": "https://iso.fudan.edu.cn/isoenglish/93/09/c16217a758537/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/",
+              "isDualDegree": true,
+              "dualDegreeNote": "Двойной диплом внутри ECUST: AI (BEng) + Finance (BEcon)",
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eco-digital",
+          "label": "Digital Economy",
+          "universities": [
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eco-pubfin",
+          "label": "Public Finance",
+          "universities": [
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "medicine",
+      "label": "Medicine & Health Sciences",
+      "icon": "⚕️",
+      "color": "#e74c3c",
+      "bg": "linear-gradient(135deg,#a01010,#e74c3c)",
+      "programs": [
+        {
+          "id": "med-mbbs",
+          "label": "MBBS (English-medium)",
+          "universities": [
+            {
+              "name": "Zhejiang University",
+              "city": "Ханчжоу",
+              "url": "https://iczu.zju.edu.cn/admissionsen/weaturedwwrograms/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Fudan University",
+              "city": "Шанхай",
+              "url": "https://iso.fudan.edu.cn/isoenglish/93/09/c16217a758537/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wuhan University",
+              "city": "Ухань",
+              "url": "https://admission.whu.edu.cn/info/1121/1011.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huazhong University of Science and Technology",
+              "city": "Ухань",
+              "url": "https://iso.hust.edu.cn/Programs/English_medium_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Xi'an Jiaotong University",
+              "city": "Сиань",
+              "url": "https://sie.xjtu.edu.cn/en/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southeast University",
+              "city": "Нанкин",
+              "url": "https://cis.seu.edu.cn/hwenglish/14047/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Sichuan University",
+              "city": "Чэнду",
+              "url": "https://global.scu.edu.cn/oso/article/index/1055",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tongji University",
+              "city": "Шанхай",
+              "url": "https://study.tongji.edu.cn/English/ADMISSION/Degree_programs_English_taught/Undergraduate_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University",
+              "city": "Цзинань",
+              "url": "https://www.istudy.sdu.edu.cn/English/Programs/Degree_Programs/Bachelor_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Xiamen University",
+              "city": "Сямынь",
+              "url": "https://admissions.xmu.edu.cn/Programs/English_Medium_Bachelor_s.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jilin University",
+              "city": "Чанчунь",
+              "url": "https://jilinuniversity.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Qingdao University",
+              "city": "Циндао",
+              "url": "https://istudy.qdu.edu.cn/en/article?cid=13&pid=7",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shihezi University",
+              "city": "Шихэцзы",
+              "url": "https://shzuni.com/admission-process/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Capital Medical University",
+              "city": "Пекин",
+              "url": "https://gjxy.ccmu.edu.cn/zsxx_8209/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southern Medical University",
+              "city": "Гуанчжоу",
+              "url": "https://istudy.smu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Medical University",
+              "city": "Нанкин",
+              "url": "https://e-sie.njmu.edu.cn/18094/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tianjin Medical University",
+              "city": "Тяньцзинь",
+              "url": "https://www.imstmu.edu.cn/archives/507",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China Medical University Shenyang",
+              "city": "Шэньян",
+              "url": "https://www.cmu.edu.cn/intleduschool/Admissio/Undergraduate_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Guangzhou Medical University",
+              "city": "Гуанчжоу",
+              "url": "https://en.gzhmu.edu.cn/info/1661/3891.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "med-pharmacy",
+          "label": "Pharmacy & Pharmaceutical Sciences",
+          "universities": [
+            {
+              "name": "Huazhong University of Science and Technology",
+              "city": "Ухань",
+              "url": "https://iso.hust.edu.cn/Programs/English_medium_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tianjin University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tju.edu.cn/info/1017/11196.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Dalian University of Technology",
+              "city": "Далянь",
+              "url": "https://sie.dlut.edu.cn/English/Admissions/Degree_Programs/Bachelor_Programs1.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Nanjing Tech University",
+              "city": "Нанкин",
+              "url": "https://coe.njtech.edu.cn/en/info/1027/1246.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong Normal University",
+              "city": "Цзинань",
+              "url": "http://en.cie.sdnu.edu.cn/PROGRAMS1/English_taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "med-dental",
+          "label": "Stomatology & Dental Surgery",
+          "universities": [
+            {
+              "name": "Sichuan University",
+              "city": "Чэнду",
+              "url": "https://global.scu.edu.cn/oso/article/index/1055",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University",
+              "city": "Цзинань",
+              "url": "https://www.istudy.sdu.edu.cn/English/Programs/Degree_Programs/Bachelor_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southern Medical University",
+              "city": "Гуанчжоу",
+              "url": "https://istudy.smu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tianjin Medical University",
+              "city": "Тяньцзинь",
+              "url": "https://www.imstmu.edu.cn/archives/507",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China Medical University Shenyang",
+              "city": "Шэньян",
+              "url": "https://www.cmu.edu.cn/intleduschool/Admissio/Undergraduate_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "med-nursing",
+          "label": "Nursing & Allied Health Sciences",
+          "universities": [
+            {
+              "name": "Shandong University",
+              "city": "Цзинань",
+              "url": "https://www.istudy.sdu.edu.cn/English/Programs/Degree_Programs/Bachelor_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University (Anesthesiology & Medical Imaging)",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hangzhou Normal University",
+              "city": "Ханчжоу",
+              "url": "https://international.hznu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "med-clinical",
+          "label": "Clinical Medicine",
+          "universities": [
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "label": "Engineering & Technology",
+      "icon": "⚙️",
+      "color": "#2ecc71",
+      "bg": "linear-gradient(135deg,#0e7a40,#2ecc71)",
+      "programs": [
+        {
+          "id": "eng-cs-ai",
+          "label": "Computer Science & AI",
+          "universities": [
+            {
+              "name": "Tsinghua University",
+              "city": "Пекин",
+              "url": "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Fudan University",
+              "city": "Шанхай",
+              "url": "https://iso.fudan.edu.cn/isoenglish/93/09/c16217a758537/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Institute of Technology",
+              "city": "Пекин",
+              "url": "https://isc.bit.edu.cn/docs//2025-10/4ac3a8207cc64b318d1336201984f472.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "South China University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://sie.scut.edu.cn/2021/0602/c29044a431737/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "University of Electronic Science and Technology of China",
+              "city": "Чэнду",
+              "url": "https://en.uestc.edu.cn/info/1097/3174.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Engineering University",
+              "city": "Харбин",
+              "url": "https://studyheu.hrbeu.edu.cn/en/info/1044/1211.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest University",
+              "city": "Чунцин",
+              "url": "https://swu.17gz.org/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum, Beijing",
+              "city": "Пекин",
+              "url": "https://www.cup.edu.cn/overseas/Admission/UP2/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Taiyuan University of Technology",
+              "city": "Тайюань",
+              "url": "http://is.tyut.edu.cn/html/article_content/202605/6B86A9FF2F5A4850B814BFFA0F84D85E.shtml",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Information Science and Technology",
+              "city": "Нанкин",
+              "url": "https://gjy.nuist.edu.cn/english/7321/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Xidian University",
+              "city": "Сиань",
+              "url": "https://en.xidian.edu.cn/Admission/International_Applicants/Undergraduate_Programs/Major___Programs_Available.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing University of Chemical Technology",
+              "city": "Пекин",
+              "url": "https://apply.buct.edu.cn/UndergraduatePrograms/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ocean University of China",
+              "city": "Циндао",
+              "url": "https://sie.ouc.edu.cn/english/2026/0226/c18028a515837/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Tech University",
+              "city": "Нанкин",
+              "url": "https://coe.njtech.edu.cn/en/info/1027/1246.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wuhan University of Technology",
+              "city": "Ухань",
+              "url": "http://sie.whut.edu.cn/english/ist/unde/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing University of Posts and Telecommunications",
+              "city": "Пекин",
+              "url": "https://ois.bupt.edu.cn/Admissions.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Northwestern Polytechnical University",
+              "city": "Сиань",
+              "url": "https://studyat.nwpu.edu.cn/info/1203/5301.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Aeronautics and Astronautics",
+              "city": "Нанкин",
+              "url": "https://en.nuaa.edu.cn/pdf/Undergraduate2.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum Beijing",
+              "city": "Пекин",
+              "url": "https://www.cup.edu.cn/overseas/Admission/UP2/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Posts and Telecommunications",
+              "city": "Нанкин",
+              "url": "https://exchange.njupt.edu.cn/EV/2026/0109/c15183a296175/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Sci-Tech University",
+              "city": "Ханчжоу",
+              "url": "https://admission.zstu.edu.cn/En/ApplicationInfo/252",
+              "isDualDegree": true,
+              "dualDegreeNote": "Fashion Design and Engineering — двойной диплом с американским университетом",
+              "tuition": null
+            },
+            {
+              "name": "Hangzhou Normal University",
+              "city": "Ханчжоу",
+              "url": "https://international.hznu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Petroleum University",
+              "city": "Наньчун",
+              "url": "https://www.swpu.edu.cn/oice/lxSWPU/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangxi Normal University",
+              "city": "Наньчан",
+              "url": "https://laihua.jxnu.edu.cn/_t2013/MajorsOffered/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tiangong University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tiangong.edu.cn/ProgramsinEnglish/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University of Science and Technology",
+              "city": "Чжэньцзян",
+              "url": "https://admission.just.edu.cn/2026/0409/c10116a372087/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chongqing University of Posts and Telecommunications",
+              "city": "Чунцин",
+              "url": "https://english.cqupt.edu.cn/International_Student/Admissions/Undergraduate_Admissions.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-software",
+          "label": "Software Engineering",
+          "universities": [
+            {
+              "name": "Sichuan University",
+              "city": "Чэнду",
+              "url": "https://global.scu.edu.cn/oso/article/index/1055",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "University of Electronic Science and Technology of China",
+              "city": "Чэнду",
+              "url": "https://en.uestc.edu.cn/info/1097/3174.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Northeastern University",
+              "city": "Шэньян",
+              "url": "http://studyinneu.neu.edu.cn/html/article_content/202604/55185DB2D9B14A00AD885F95988B76F8.shtml",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Science and Technology",
+              "city": "Нанкин",
+              "url": "https://english.njust.edu.cn/602/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yunnan University",
+              "city": "Куньмин",
+              "url": "http://english.ynu.edu.cn/ynuundergraduate.html",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 16000
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Qingdao University",
+              "city": "Циндао",
+              "url": "https://istudy.qdu.edu.cn/en/article?cid=13&pid=7",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Changchun University of Science and Technology",
+              "city": "Чанчунь",
+              "url": "https://sie.cust.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University of Science and Technology",
+              "city": "Циндао",
+              "url": "https://sdust.at0086.cn/StuApplication/Login.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-civil",
+          "label": "Civil & Construction Engineering",
+          "universities": [
+            {
+              "name": "Shanghai Jiao Tong University",
+              "city": "Шанхай",
+              "url": "https://en.sjtu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tongji University",
+              "city": "Шанхай",
+              "url": "https://study.tongji.edu.cn/English/ADMISSION/Degree_programs_English_taught/Undergraduate_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Sichuan University",
+              "city": "Чэнду",
+              "url": "https://global.scu.edu.cn/oso/article/index/1055",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhengzhou University",
+              "city": "Чжэнчжоу",
+              "url": "http://international.zzu.edu.cn/en/admission/index?cid=17&pid=12&spid=4&degree_id=3",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Tech University",
+              "city": "Нанкин",
+              "url": "https://coe.njtech.edu.cn/en/info/1027/1246.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wuhan University of Technology",
+              "city": "Ухань",
+              "url": "http://sie.whut.edu.cn/english/ist/unde/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Dalian University of Technology",
+              "city": "Далянь",
+              "url": "https://sie.dlut.edu.cn/English/Admissions/Degree_Programs/Bachelor_Programs1.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hainan University",
+              "city": "Хайкоу",
+              "url": "https://en.hainanu.edu.cn/Admission/InternationalStudents/ProgramInformation/Degree_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Petroleum University",
+              "city": "Наньчун",
+              "url": "https://www.swpu.edu.cn/oice/lxSWPU/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shanghai Normal University",
+              "city": "Шанхай",
+              "url": "https://iao.shnu.edu.cn/qyyskxm/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University of Science and Technology",
+              "city": "Циндао",
+              "url": "https://sdust.at0086.cn/StuApplication/Login.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-mechanical",
+          "label": "Mechanical & Manufacturing Engineering",
+          "universities": [
+            {
+              "name": "Shanghai Jiao Tong University",
+              "city": "Шанхай",
+              "url": "https://en.sjtu.edu.cn/",
+              "isDualDegree": true,
+              "dualDegreeNote": "Двойной диплом с Мичиганским университетом (США)",
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Institute of Technology",
+              "city": "Пекин",
+              "url": "https://isc.bit.edu.cn/docs//2025-10/4ac3a8207cc64b318d1336201984f472.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Northwestern Polytechnical University",
+              "city": "Сиань",
+              "url": "https://studyat.nwpu.edu.cn/info/1203/5301.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Dalian University of Technology",
+              "city": "Далянь",
+              "url": "https://sie.dlut.edu.cn/English/Admissions/Degree_Programs/Bachelor_Programs1.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Mining and Technology",
+              "city": "Сюйчжоу",
+              "url": "https://sac.cumt.edu.cn/en/info/1004/1012.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 14600
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Science and Technology",
+              "city": "Нанкин",
+              "url": "https://english.njust.edu.cn/602/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Aeronautics and Astronautics",
+              "city": "Нанкин",
+              "url": "https://en.nuaa.edu.cn/pdf/Undergraduate2.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Tech University",
+              "city": "Нанкин",
+              "url": "https://coe.njtech.edu.cn/en/info/1027/1246.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum, East China",
+              "city": "Циндао",
+              "url": "https://cie.upc.edu.cn/en/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "South China University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://sie.scut.edu.cn/2021/0602/c29044a431737/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huazhong University of Science and Technology",
+              "city": "Ухань",
+              "url": "https://iso.hust.edu.cn/Programs/English_medium_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Xi'an Jiaotong University",
+              "city": "Сиань",
+              "url": "https://sie.xjtu.edu.cn/en/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University",
+              "city": "Цзинань",
+              "url": "https://www.istudy.sdu.edu.cn/English/Programs/Degree_Programs/Bachelor_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangnan University",
+              "city": "Уси",
+              "url": "https://studyabroad.jiangnan.edu.cn/en/Admission/List_of_English_Taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wuhan University of Technology",
+              "city": "Ухань",
+              "url": "http://sie.whut.edu.cn/english/ist/unde/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum East China",
+              "city": "Циндао",
+              "url": "https://cie.upc.edu.cn/en/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "North China Electric Power University",
+              "city": "Пекин",
+              "url": "https://studyatncepu.ncepu.edu.cn/Admissions/YearlyAdmission/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yanshan University",
+              "city": "Циньхуандао",
+              "url": "https://ies.ysu.edu.cn/en/Bachelor.jsp?urltype=tree.TreeTempUrl&wbtreeid=1049",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Sci-Tech University",
+              "city": "Ханчжоу",
+              "url": "https://admission.zstu.edu.cn/En/ApplicationInfo/252",
+              "isDualDegree": true,
+              "dualDegreeNote": "Fashion Design and Engineering — двойной диплом с американским университетом",
+              "tuition": null
+            },
+            {
+              "name": "Southwest Petroleum University",
+              "city": "Наньчун",
+              "url": "https://www.swpu.edu.cn/oice/lxSWPU/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tiangong University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tiangong.edu.cn/ProgramsinEnglish/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University of Science and Technology",
+              "city": "Циндао",
+              "url": "https://sdust.at0086.cn/StuApplication/Login.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-electrical",
+          "label": "Electrical & Electronics Engineering",
+          "universities": [
+            {
+              "name": "Xi'an Jiaotong University",
+              "city": "Сиань",
+              "url": "https://sie.xjtu.edu.cn/en/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Institute of Technology",
+              "city": "Пекин",
+              "url": "https://isc.bit.edu.cn/docs//2025-10/4ac3a8207cc64b318d1336201984f472.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "University of Electronic Science and Technology of China",
+              "city": "Чэнду",
+              "url": "https://en.uestc.edu.cn/info/1097/3174.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "North China Electric Power University",
+              "city": "Пекин",
+              "url": "https://studyatncepu.ncepu.edu.cn/Admissions/YearlyAdmission/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "Nanjing University of Information Science and Technology",
+              "city": "Нанкин",
+              "url": "https://gjy.nuist.edu.cn/english/7321/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Aeronautics and Astronautics",
+              "city": "Нанкин",
+              "url": "https://en.nuaa.edu.cn/pdf/Undergraduate2.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Geosciences, Wuhan",
+              "city": "Ухань",
+              "url": null,
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huazhong University of Science and Technology",
+              "city": "Ухань",
+              "url": "https://iso.hust.edu.cn/Programs/English_medium_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Posts and Telecommunications",
+              "city": "Нанкин",
+              "url": "https://exchange.njupt.edu.cn/EV/2026/0109/c15183a296175/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Northwestern Polytechnical University",
+              "city": "Сиань",
+              "url": "https://studyat.nwpu.edu.cn/info/1203/5301.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Geosciences Wuhan",
+              "city": "Ухань",
+              "url": null,
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hebei University of Technology",
+              "city": "Тяньцзинь",
+              "url": "https://sie.hebut.edu.cn/xzzx/1b030dd5b36d454e949a68345736978d.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Petroleum University",
+              "city": "Наньчун",
+              "url": "https://www.swpu.edu.cn/oice/lxSWPU/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tiangong University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tiangong.edu.cn/ProgramsinEnglish/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University of Science and Technology",
+              "city": "Циндао",
+              "url": "https://sdust.at0086.cn/StuApplication/Login.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-chemical",
+          "label": "Chemical, Materials & Energy Engineering",
+          "universities": [
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tianjin University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tju.edu.cn/info/1017/11196.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Dalian University of Technology",
+              "city": "Далянь",
+              "url": "https://sie.dlut.edu.cn/English/Admissions/Degree_Programs/Bachelor_Programs1.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing University of Chemical Technology",
+              "city": "Пекин",
+              "url": "https://apply.buct.edu.cn/UndergraduatePrograms/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Technology",
+              "city": "Ханчжоу",
+              "url": "https://www.gjxy.zjut.edu.cn/index.php/en/prospectivestudents/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 18800
+            },
+            {
+              "name": "University of Science and Technology Beijing",
+              "city": "Пекин",
+              "url": "https://iscen.ustb.edu.cn/Admissions/6af7b4dc01f248db8976d07d4fb4e592.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Northwestern Polytechnical University",
+              "city": "Сиань",
+              "url": "https://studyat.nwpu.edu.cn/info/1203/5301.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Xi'an Jiaotong University",
+              "city": "Сиань",
+              "url": "https://sie.xjtu.edu.cn/en/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing Tech University",
+              "city": "Нанкин",
+              "url": "https://coe.njtech.edu.cn/en/info/1027/1246.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Mining and Technology",
+              "city": "Сюйчжоу",
+              "url": "https://sac.cumt.edu.cn/en/info/1004/1012.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 14600
+            },
+            {
+              "name": "China University of Petroleum, Beijing",
+              "city": "Пекин",
+              "url": "https://www.cup.edu.cn/overseas/Admission/UP2/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum, East China",
+              "city": "Циндао",
+              "url": "https://cie.upc.edu.cn/en/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "South China University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://sie.scut.edu.cn/2021/0602/c29044a431737/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangnan University",
+              "city": "Уси",
+              "url": "https://studyabroad.jiangnan.edu.cn/en/Admission/List_of_English_Taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum Beijing",
+              "city": "Пекин",
+              "url": "https://www.cup.edu.cn/overseas/Admission/UP2/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "China University of Petroleum East China",
+              "city": "Циндао",
+              "url": "https://cie.upc.edu.cn/en/index.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yanshan University",
+              "city": "Циньхуандао",
+              "url": "https://ies.ysu.edu.cn/en/Bachelor.jsp?urltype=tree.TreeTempUrl&wbtreeid=1049",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest Petroleum University",
+              "city": "Наньчун",
+              "url": "https://www.swpu.edu.cn/oice/lxSWPU/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shanghai Normal University",
+              "city": "Шанхай",
+              "url": "https://iao.shnu.edu.cn/qyyskxm/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tiangong University",
+              "city": "Тяньцзинь",
+              "url": "https://en.tiangong.edu.cn/ProgramsinEnglish/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shandong University of Science and Technology",
+              "city": "Циндао",
+              "url": "https://sdust.at0086.cn/StuApplication/Login.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-aerospace",
+          "label": "Aerospace & Aviation Engineering",
+          "universities": [
+            {
+              "name": "Northwestern Polytechnical University",
+              "city": "Сиань",
+              "url": "https://studyat.nwpu.edu.cn/info/1203/5301.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Aeronautics and Astronautics",
+              "city": "Нанкин",
+              "url": "https://en.nuaa.edu.cn/pdf/Undergraduate2.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Institute of Technology",
+              "city": "Пекин",
+              "url": "https://isc.bit.edu.cn/docs//2025-10/4ac3a8207cc64b318d1336201984f472.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-biomedical",
+          "label": "Biomedical & Life Sciences",
+          "universities": [
+            {
+              "name": "Zhejiang University",
+              "city": "Ханчжоу",
+              "url": "https://iczu.zju.edu.cn/admissionsen/weaturedwwrograms/list.htm",
+              "isDualDegree": true,
+              "dualDegreeNote": "Двойной диплом с университетом Великобритании (Biological Sciences)",
+              "tuition": null
+            },
+            {
+              "name": "Dalian University of Technology",
+              "city": "Далянь",
+              "url": "https://sie.dlut.edu.cn/English/Admissions/Degree_Programs/Bachelor_Programs1.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nankai University",
+              "city": "Тяньцзинь",
+              "url": "https://ensie.nankai.edu.cn/info/1089/1167.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yangzhou University",
+              "city": "Янчжоу",
+              "url": "https://coe.yzu.edu.cn/en/info/1016/1661.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "South China University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://sie.scut.edu.cn/2021/0602/c29044a431737/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Huazhong University of Science and Technology",
+              "city": "Ухань",
+              "url": "https://iso.hust.edu.cn/Programs/English_medium_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing University of Chemical Technology",
+              "city": "Пекин",
+              "url": "https://apply.buct.edu.cn/UndergraduatePrograms/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "eng-design",
+          "label": "Architecture & Design",
+          "universities": [
+            {
+              "name": "Tongji University",
+              "city": "Шанхай",
+              "url": "https://study.tongji.edu.cn/English/ADMISSION/Degree_programs_English_taught/Undergraduate_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Tsinghua University",
+              "city": "Пекин",
+              "url": "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Xiamen University",
+              "city": "Сямынь",
+              "url": "https://admissions.xmu.edu.cn/Programs/English_Medium_Bachelor_s.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China Normal University",
+              "city": "Шанхай",
+              "url": "https://lxs.ecnu.edu.cn/2e/76/c47108a667254/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangnan University",
+              "city": "Уси",
+              "url": "https://studyabroad.jiangnan.edu.cn/en/Admission/List_of_English_Taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Donghua University",
+              "city": "Шанхай",
+              "url": "https://english.dhu.edu.cn/admissions/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "East China University of Science and Technology",
+              "city": "Шанхай",
+              "url": "https://cie.ecust.edu.cn/jmd/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beihang University",
+              "city": "Пекин",
+              "url": "https://is.buaa.edu.cn/en/lxsq/Undergraduate.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Institute of Technology",
+              "city": "Пекин",
+              "url": "https://isc.bit.edu.cn/docs//2025-10/4ac3a8207cc64b318d1336201984f472.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "South China University of Technology",
+              "city": "Гуанчжоу",
+              "url": "https://sie.scut.edu.cn/2021/0602/c29044a431737/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Aeronautics and Astronautics",
+              "city": "Нанкин",
+              "url": "https://en.nuaa.edu.cn/pdf/Undergraduate2.pdf",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Engineering University",
+              "city": "Харбин",
+              "url": "https://studyheu.hrbeu.edu.cn/en/info/1044/1211.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest University",
+              "city": "Чунцин",
+              "url": "https://swu.17gz.org/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangsu University",
+              "city": "Чжэньцзян",
+              "url": "https://oec.ujs.edu.cn/en/PROGRAMS/Bachelor.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Information Science and Technology",
+              "city": "Нанкин",
+              "url": "https://gjy.nuist.edu.cn/english/7321/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yanshan University",
+              "city": "Циньхуандао",
+              "url": "https://ies.ysu.edu.cn/en/Bachelor.jsp?urltype=tree.TreeTempUrl&wbtreeid=1049",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Sci-Tech University",
+              "city": "Ханчжоу",
+              "url": "https://admission.zstu.edu.cn/En/ApplicationInfo/252",
+              "isDualDegree": true,
+              "dualDegreeNote": "Fashion Design and Engineering — двойной диплом с американским университетом",
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "law",
+      "label": "Law & Social Sciences",
+      "icon": "⚖️",
+      "color": "#9b59b6",
+      "bg": "linear-gradient(135deg,#5b1e8a,#9b59b6)",
+      "programs": [
+        {
+          "id": "law-english",
+          "label": "English Language & Translation",
+          "universities": [
+            {
+              "name": "Nankai University",
+              "city": "Тяньцзинь",
+              "url": "https://ensie.nankai.edu.cn/info/1089/1167.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Northwestern Polytechnical University",
+              "city": "Сиань",
+              "url": "https://studyat.nwpu.edu.cn/info/1203/5301.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Central China Normal University",
+              "city": "Ухань",
+              "url": "https://english.ccnu.edu.cn/Admission/Top_College_Introduction.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwest University",
+              "city": "Чунцин",
+              "url": "https://swu.17gz.org/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Ningbo University",
+              "city": "Нинбо",
+              "url": "https://is.nbu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Hefei University of Technology",
+              "city": "Хэфэй",
+              "url": "https://iec.hfut.edu.cn/gjy/2022/0927/c13686a283998/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Henan University",
+              "city": "Кайфын",
+              "url": "https://isclc.henu.edu.cn/info/1028/1490.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Yanshan University",
+              "city": "Циньхуандао",
+              "url": "https://ies.ysu.edu.cn/en/Bachelor.jsp?urltype=tree.TreeTempUrl&wbtreeid=1049",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Liaoning University",
+              "city": "Шэньян",
+              "url": "https://ie.lnu.edu.cn/info/13200/2207.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chongqing University of Posts and Telecommunications",
+              "city": "Чунцин",
+              "url": "https://english.cqupt.edu.cn/International_Student/Admissions/Undergraduate_Admissions.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "law-intrel",
+          "label": "International Relations & Global Governance",
+          "universities": [
+            {
+              "name": "Fudan University",
+              "city": "Шанхай",
+              "url": "https://iso.fudan.edu.cn/isoenglish/93/09/c16217a758537/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "law-politics",
+          "label": "Politics, Economics & Sociology",
+          "universities": [
+            {
+              "name": "Tsinghua University",
+              "city": "Пекин",
+              "url": "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "law-pubadmin",
+          "label": "Public Administration & Geography",
+          "universities": [
+            {
+              "name": "Hainan University",
+              "city": "Хайкоу",
+              "url": "https://en.hainanu.edu.cn/Admission/InternationalStudents/ProgramInformation/Degree_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Chang'an University",
+              "city": "Сиань",
+              "url": "https://ies.chd.edu.cn/en/8902/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shanghai Normal University",
+              "city": "Шанхай",
+              "url": "https://iao.shnu.edu.cn/qyyskxm/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "law-journalism",
+          "label": "Journalism & Global Communication",
+          "universities": [
+            {
+              "name": "Jinan University",
+              "city": "Гуанчжоу",
+              "url": "https://english.jnu.edu.cn/_s93/2016/1015/c1880a18300/page.psp",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University",
+              "city": "Ханчжоу",
+              "url": "https://iczu.zju.edu.cn/admissionsen/weaturedwwrograms/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Harbin Institute of Technology",
+              "city": "Харбин",
+              "url": "https://en.hit.edu.cn/2025/0604/c11958a238191/page.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Xiamen University",
+              "city": "Сямэнь",
+              "url": "https://admissions.xmu.edu.cn/Programs/English_Medium_Bachelor_s.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang University of Science and Technology",
+              "city": "Ханчжоу",
+              "url": "https://ies.zust.edu.cn/StudywithUS/English_taught_Programs/Bachelor_Programs/Bachelor_Program_Profile.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Communication University of Zhejiang",
+              "city": "Ханчжоу",
+              "url": "https://docs.google.com/spreadsheets/d/1EYjoaPw36DHDtBYDCQGizhKAdVSNZHFTQLVocAo4Zbc/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "law-russian",
+          "label": "Russian Language & Literature",
+          "universities": [
+            {
+              "name": "Nanchang University",
+              "city": "Наньчан",
+              "url": "https://iec.ncu.edu.cn/lxnd/zsjz.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "law-psychology",
+          "label": "Психология и соц. науки",
+          "universities": [
+            {
+              "name": "Wenzhou University",
+              "city": "Вэньчжоу",
+              "url": "https://cic.wzu.edu.cn/prospective/International_Catalog.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "finance",
+      "label": "Финансы и экономика",
+      "icon": "🏦",
+      "color": "#0f766e",
+      "bg": "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
+      "programs": [
+        {
+          "id": "fin-general",
+          "label": "Финансы и экономика",
+          "universities": [
+            {
+              "name": "Shanghai University of Finance and Economics",
+              "city": "Шанхай",
+              "url": "https://intlstu.sufe.edu.cn/12486/list1.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Central University of Finance and Economics",
+              "city": "Пекин",
+              "url": "http://sice.cufe.edu.cn/admissions/info/1045/3451.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "University of International Business and Economics",
+              "city": "Пекин",
+              "url": "https://sie.uibe.edu.cn/en/xmjs/bkxlxm/76722.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Southwestern University of Finance and Economics",
+              "city": "Чэнду",
+              "url": "https://e.swufe.edu.cn/Admissions/Degree_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangxi University of Finance and Economics",
+              "city": "Наньчан",
+              "url": "https://oesenglish.jxufe.edu.cn/news-show-38.html",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Gongshang University",
+              "city": "Ханчжоу",
+              "url": "https://sie.zjgsu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Foreign Studies University",
+              "city": "Пекин",
+              "url": "https://osao.bfsu.edu.cn/Academics/Undergraduate__Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Language and Culture University",
+              "city": "Пекин",
+              "url": "https://admission.blcu.edu.cn/en/UndergraduateProgramswTaughtinEnglishw/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing International Studies University",
+              "city": "Пекин",
+              "url": "https://admission.bisu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "fin-trade",
+          "label": "Международный бизнес",
+          "universities": [
+            {
+              "name": "Shanghai University of Finance and Economics",
+              "city": "Шанхай",
+              "url": "https://intlstu.sufe.edu.cn/12486/list1.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "University of International Business and Economics",
+              "city": "Пекин",
+              "url": "https://sie.uibe.edu.cn/en/xmjs/bkxlxm/76722.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Dongbei University of Finance and Economics",
+              "city": "Далянь",
+              "url": "https://sie.dufe.edu.cn/en/studyad/emp/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Jiangxi University of Finance and Economics",
+              "city": "Наньчан",
+              "url": "https://oesenglish.jxufe.edu.cn/news-show-38.html",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Gongshang University",
+              "city": "Ханчжоу",
+              "url": "https://sie.zjgsu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Nanjing University of Finance and Economics",
+              "city": "Нанкин",
+              "url": "https://english.nufe.edu.cn/Admission1/International_Student_Admission.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Foreign Studies University",
+              "city": "Пекин",
+              "url": "https://osao.bfsu.edu.cn/Academics/Undergraduate__Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Beijing Language and Culture University",
+              "city": "Пекин",
+              "url": "https://admission.blcu.edu.cn/en/UndergraduateProgramswTaughtinEnglishw/list.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Guangdong University of Foreign Studies",
+              "city": "Гуанчжоу",
+              "url": "https://iie-en.gdufs.edu.cn/info/1132/1951.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "fin-accounting",
+          "label": "Учёт и аудит",
+          "universities": [
+            {
+              "name": "Southwestern University of Finance and Economics",
+              "city": "Чэнду",
+              "url": "https://e.swufe.edu.cn/Admissions/Degree_Programs.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Zhejiang Gongshang University",
+              "city": "Ханчжоу",
+              "url": "https://sie.zjgsu.edu.cn/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            }
+          ]
+        },
+        {
+          "id": "fin-fintech",
+          "label": "Финтех",
+          "universities": []
+        }
+      ]
+    },
+    {
+      "id": "international",
+      "label": "Совместные кампусы",
+      "icon": "🌐",
+      "color": "#7c3aed",
+      "bg": "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+      "programs": [
+        {
+          "id": "intl-business",
+          "label": "Бизнес и финансы",
+          "universities": [
+            {
+              "name": "Chinese University of Hong Kong Shenzhen",
+              "city": "Шэньчжэнь",
+              "url": "https://music.cuhk.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 130000
+            },
+            {
+              "name": "NYU Shanghai",
+              "city": "Шанхай",
+              "url": "https://shanghai.nyu.edu/content/majors",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 260000
+            },
+            {
+              "name": "Duke Kunshan University",
+              "city": "Куньшань",
+              "url": "https://ugstudies.dukekunshan.edu.cn/academics/majors/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 250000
+            },
+            {
+              "name": "Xi'an Jiaotong-Liverpool University",
+              "city": "Сучжоу",
+              "url": "https://www.xjtlu.edu.cn/en/study/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "University of Nottingham Ningbo China",
+              "city": "Нинбо",
+              "url": "https://www.nottingham.edu.cn/en/Study-with-us/Undergraduate/Courses/Index.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "Beijing Normal-Hong Kong Baptist University",
+              "city": "Чжухай",
+              "url": "https://admission.bnbu.edu.cn/ido/programmes_courses.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shenzhen MSU-BIT University",
+              "city": "Шэньчжэнь",
+              "url": "https://en.smbu.edu.cn/info/1016/1406.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou-Kean University",
+              "city": "Вэньчжоу",
+              "url": "https://www.wku.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 80000
+            }
+          ]
+        },
+        {
+          "id": "intl-engineering",
+          "label": "Инженерия и технологии",
+          "universities": [
+            {
+              "name": "Chinese University of Hong Kong Shenzhen",
+              "city": "Шэньчжэнь",
+              "url": "https://music.cuhk.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 130000
+            },
+            {
+              "name": "NYU Shanghai",
+              "city": "Шанхай",
+              "url": "https://shanghai.nyu.edu/content/majors",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 260000
+            },
+            {
+              "name": "Duke Kunshan University",
+              "city": "Куньшань",
+              "url": "https://ugstudies.dukekunshan.edu.cn/academics/majors/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 250000
+            },
+            {
+              "name": "Xi'an Jiaotong-Liverpool University",
+              "city": "Сучжоу",
+              "url": "https://www.xjtlu.edu.cn/en/study/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "University of Nottingham Ningbo China",
+              "city": "Нинбо",
+              "url": "https://www.nottingham.edu.cn/en/Study-with-us/Undergraduate/Courses/Index.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "Beijing Normal-Hong Kong Baptist University",
+              "city": "Чжухай",
+              "url": "https://admission.bnbu.edu.cn/ido/programmes_courses.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Shenzhen MSU-BIT University",
+              "city": "Шэньчжэнь",
+              "url": "https://en.smbu.edu.cn/info/1016/1406.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Guangdong Technion Israel Institute of Technology",
+              "city": "Шаньтоу",
+              "url": "https://www.gtiit.edu.cn/en/programs-of-study.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou-Kean University",
+              "city": "Вэньчжоу",
+              "url": "https://www.wku.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 80000
+            }
+          ]
+        },
+        {
+          "id": "intl-science",
+          "label": "Науки о жизни",
+          "universities": [
+            {
+              "name": "Chinese University of Hong Kong Shenzhen",
+              "city": "Шэньчжэнь",
+              "url": "https://music.cuhk.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 130000
+            },
+            {
+              "name": "NYU Shanghai",
+              "city": "Шанхай",
+              "url": "https://shanghai.nyu.edu/content/majors",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 260000
+            },
+            {
+              "name": "Duke Kunshan University",
+              "city": "Куньшань",
+              "url": "https://ugstudies.dukekunshan.edu.cn/academics/majors/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 250000
+            },
+            {
+              "name": "Xi'an Jiaotong-Liverpool University",
+              "city": "Сучжоу",
+              "url": "https://www.xjtlu.edu.cn/en/study/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "University of Nottingham Ningbo China",
+              "city": "Нинбо",
+              "url": "https://www.nottingham.edu.cn/en/Study-with-us/Undergraduate/Courses/Index.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "Guangdong Technion Israel Institute of Technology",
+              "city": "Шаньтоу",
+              "url": "https://www.gtiit.edu.cn/en/programs-of-study.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou-Kean University",
+              "city": "Вэньчжоу",
+              "url": "https://www.wku.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 80000
+            }
+          ]
+        },
+        {
+          "id": "intl-humanities",
+          "label": "Гуманитарные науки",
+          "universities": [
+            {
+              "name": "Chinese University of Hong Kong Shenzhen",
+              "city": "Шэньчжэнь",
+              "url": "https://music.cuhk.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 130000
+            },
+            {
+              "name": "NYU Shanghai",
+              "city": "Шанхай",
+              "url": "https://shanghai.nyu.edu/content/majors",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 260000
+            },
+            {
+              "name": "Duke Kunshan University",
+              "city": "Куньшань",
+              "url": "https://ugstudies.dukekunshan.edu.cn/academics/majors/",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 250000
+            },
+            {
+              "name": "Xi'an Jiaotong-Liverpool University",
+              "city": "Сучжоу",
+              "url": "https://www.xjtlu.edu.cn/en/study/undergraduate",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "University of Nottingham Ningbo China",
+              "city": "Нинбо",
+              "url": "https://www.nottingham.edu.cn/en/Study-with-us/Undergraduate/Courses/Index.aspx",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 100000
+            },
+            {
+              "name": "Beijing Normal-Hong Kong Baptist University",
+              "city": "Чжухай",
+              "url": "https://admission.bnbu.edu.cn/ido/programmes_courses.htm",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": null
+            },
+            {
+              "name": "Wenzhou-Kean University",
+              "city": "Вэньчжоу",
+              "url": "https://www.wku.edu.cn/en",
+              "isDualDegree": false,
+              "dualDegreeNote": null,
+              "tuition": 80000
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

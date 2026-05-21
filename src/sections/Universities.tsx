@@ -4,6 +4,7 @@ import { ExternalLink, Clock, ChevronRight, X, Plus } from 'lucide-react'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import type { ApplicationStatus, University } from '@/types/studytrack'
 import uniDb from '@/data/universities.json'
+import UniversityExplorer from '@/components/UniversityExplorer'
 
 type UniDbEntry = typeof uniDb[0]
 
@@ -129,6 +130,8 @@ export default function Universities() {
   }
 
   return (
+    <>
+    <UniversityExplorer />
     <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
         <h2 className="text-base sm:text-lg font-bold text-study-dark">Вузы — воронка заявок</h2>
@@ -414,5 +417,6 @@ export default function Universities() {
         </div>
       )}
     </div>
+    </>
   )
 }

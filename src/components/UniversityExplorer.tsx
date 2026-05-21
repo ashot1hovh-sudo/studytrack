@@ -5,35 +5,51 @@ import { ChevronDown, ChevronUp, ExternalLink, X, Search, Plus, Check } from 'lu
 import explorerData from '@/data/universityExplorer.json'
 
 // ── University logo loader ────────────────────────────────────────────────────
-// Tries Clearbit (high-quality logos) → Google favicon → emoji fallback.
-// All requests happen in the browser; no server change needed.
-type LogoState = 'clearbit' | 'google' | 'failed'
+// Reads pre-fetched Wikipedia thumbnail URLs from universityExplorer.json.
+// Falls back to a styled initials badge — no runtime API calls.
 
-function extractDomain(url: string | null): string | null {
-  if (!url) return null
-  try { return new URL(url).hostname.replace(/^www\./, '') } catch { return null }
+const SKIP_WORDS = new Set(['university', 'of', 'the', 'and', 'for', 'in', 'at', 'china', 'a'])
+
+function getInitials(name: string): string {
+  return name
+    .split(/[\s\-&]+/)
+    .filter(w => w.length > 1 && !SKIP_WORDS.has(w.toLowerCase()))
+    .slice(0, 3)
+    .map(w => w[0].toUpperCase())
+    .join('')
 }
 
-function UniLogo({ url, name, className = 'w-7 h-7' }: { url: string | null; name: string; className?: string }) {
-  const [state, setState] = useState<LogoState>('clearbit')
-  const domain = useMemo(() => extractDomain(url), [url])
+function UniLogo({
+  name,
+  lc,
+  className = 'w-7 h-7',
+}: {
+  name: string
+  lc: { bg: string; border: string; text: string } | null
+  className?: string
+}) {
+  const [failed, setFailed] = useState(false)
+  const logoUrl = data.logos?.[name]
 
-  if (!domain || state === 'failed') {
-    return <span className="text-lg leading-none select-none">🎓</span>
+  if (logoUrl && !failed) {
+    return (
+      <img
+        src={logoUrl}
+        alt=""
+        aria-hidden
+        className={`${className} object-contain rounded-md shrink-0`}
+        onError={() => setFailed(true)}
+      />
+    )
   }
 
-  const src = state === 'clearbit'
-    ? `https://logo.clearbit.com/${domain}`
-    : `https://www.google.com/s2/favicons?sz=64&domain=${domain}`
-
   return (
-    <img
-      src={src}
-      alt=""
-      aria-hidden
-      className={`${className} object-contain rounded-md shrink-0`}
-      onError={() => setState(s => s === 'clearbit' ? 'google' : 'failed')}
-    />
+    <div
+      className={`${className} rounded-md shrink-0 flex items-center justify-center font-bold text-[10px] leading-none select-none`}
+      style={{ background: lc?.bg ?? '#F2F4F8', color: lc?.text ?? '#8D99AE' }}
+    >
+      {getInitials(name)}
+    </div>
   )
 }
 
@@ -63,6 +79,7 @@ type UEMajor = {
 
 type ExplorerData = {
   meta: { totalUniversities: number }
+  logos: Record<string, string>
   universitiesNoEnglish: { name: string; city: string }[]
   majors: UEMajor[]
 }
@@ -274,7 +291,7 @@ export default function UniversityExplorer() {
                           style={{ borderColor: '#E2E8F0', background: '#F8FAFC' }}
                         >
                           <div className="flex items-center gap-2">
-                            <UniLogo url={null} name={uni.name} className="w-6 h-6" />
+                            <UniLogo name={uni.name} lc={null} className="w-6 h-6" />
                             <p className="text-xs font-semibold leading-snug text-study-dark">{uni.name}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -295,7 +312,7 @@ export default function UniversityExplorer() {
                         style={{ borderColor: mlc.border, background: mlc.bg }}
                       >
                         <div className="flex items-center gap-2">
-                          <UniLogo url={uni.url} name={uni.name} className="w-6 h-6" />
+                          <UniLogo name={uni.name} lc={MAJOR_LIGHT[major!.id]} className="w-6 h-6" />
                           <p className="text-xs font-semibold leading-snug flex-1 min-w-0" style={{ color: mlc.text }}>
                             {uni.name}
                             {uni.isDualDegree && <span className="ml-1.5">🔗</span>}
@@ -407,7 +424,7 @@ export default function UniversityExplorer() {
                           style={{ borderColor: lc.border, background: lc.bg }}
                         >
                           <div className="flex items-center gap-2">
-                            <UniLogo url={uni.url} name={uni.name} className="w-7 h-7" />
+                            <UniLogo name={uni.name} lc={lc} className="w-7 h-7" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-1">
                                 <p className="text-xs font-semibold leading-snug" style={{ color: lc.text }}>
@@ -483,7 +500,7 @@ export default function UniversityExplorer() {
                 <div className="flex items-start gap-3 min-w-0">
                   {/* Logo — 44px in modal */}
                   <div className="w-11 h-11 rounded-xl bg-study-bg border border-study-lightgray flex items-center justify-center shrink-0 overflow-hidden">
-                    <UniLogo url={selectedUni.uni.url} name={selectedUni.uni.name} className="w-9 h-9" />
+                    <UniLogo name={selectedUni.uni.name} lc={selectedUni.noEnglish ? null : MAJOR_LIGHT[selectedUni.major!.id]} className="w-9 h-9" />
                   </div>
                   <div className="min-w-0">
                     {selectedUni.noEnglish ? (

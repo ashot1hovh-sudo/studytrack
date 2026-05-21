@@ -4,6 +4,39 @@ import { useState, useMemo } from 'react'
 import { ChevronDown, ChevronUp, ExternalLink, X, Search, Plus, Check } from 'lucide-react'
 import explorerData from '@/data/universityExplorer.json'
 
+// ── University logo loader ────────────────────────────────────────────────────
+// Tries Clearbit (high-quality logos) → Google favicon → emoji fallback.
+// All requests happen in the browser; no server change needed.
+type LogoState = 'clearbit' | 'google' | 'failed'
+
+function extractDomain(url: string | null): string | null {
+  if (!url) return null
+  try { return new URL(url).hostname.replace(/^www\./, '') } catch { return null }
+}
+
+function UniLogo({ url, name, className = 'w-7 h-7' }: { url: string | null; name: string; className?: string }) {
+  const [state, setState] = useState<LogoState>('clearbit')
+  const domain = useMemo(() => extractDomain(url), [url])
+
+  if (!domain || state === 'failed') {
+    return <span className="text-lg leading-none select-none">🎓</span>
+  }
+
+  const src = state === 'clearbit'
+    ? `https://logo.clearbit.com/${domain}`
+    : `https://www.google.com/s2/favicons?sz=64&domain=${domain}`
+
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden
+      className={`${className} object-contain rounded-md shrink-0`}
+      onError={() => setState(s => s === 'clearbit' ? 'google' : 'failed')}
+    />
+  )
+}
+
 type UEUniversity = {
   name: string
   city: string
@@ -240,7 +273,10 @@ export default function UniversityExplorer() {
                           className="text-left p-3 rounded-xl border transition-all hover:shadow-sm active:scale-[0.98]"
                           style={{ borderColor: '#E2E8F0', background: '#F8FAFC' }}
                         >
-                          <p className="text-xs font-semibold leading-snug text-study-dark">{uni.name}</p>
+                          <div className="flex items-center gap-2">
+                            <UniLogo url={null} name={uni.name} className="w-6 h-6" />
+                            <p className="text-xs font-semibold leading-snug text-study-dark">{uni.name}</p>
+                          </div>
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                             <span className="text-[11px] text-study-gray">📍 {uni.city}</span>
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-study-lightgray text-study-gray font-medium">
@@ -258,10 +294,13 @@ export default function UniversityExplorer() {
                         className="text-left p-3 rounded-xl border transition-all hover:shadow-sm active:scale-[0.98]"
                         style={{ borderColor: mlc.border, background: mlc.bg }}
                       >
-                        <p className="text-xs font-semibold leading-snug" style={{ color: mlc.text }}>
-                          {uni.name}
-                          {uni.isDualDegree && <span className="ml-1.5">🔗</span>}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <UniLogo url={uni.url} name={uni.name} className="w-6 h-6" />
+                          <p className="text-xs font-semibold leading-snug flex-1 min-w-0" style={{ color: mlc.text }}>
+                            {uni.name}
+                            {uni.isDualDegree && <span className="ml-1.5">🔗</span>}
+                          </p>
+                        </div>
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                           <span className="text-[11px] text-study-gray">📍 {uni.city}</span>
                           <span
@@ -367,26 +406,31 @@ export default function UniversityExplorer() {
                           className="text-left p-3 rounded-xl border transition-all hover:shadow-sm active:scale-[0.98] group"
                           style={{ borderColor: lc.border, background: lc.bg }}
                         >
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs font-semibold leading-snug" style={{ color: lc.text }}>
-                              {uni.name}
-                            </p>
-                            {uni.isDualDegree && (
-                              <span className="text-sm shrink-0" title={uni.dualDegreeNote ?? ''}>🔗</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                            <span className="text-[11px] text-study-gray">📍 {uni.city}</span>
-                            {uni.tuition && (
-                              <span className="text-[11px] font-semibold" style={{ color: lc.text }}>
-                                ¥{uni.tuition.toLocaleString()}/г.
-                              </span>
-                            )}
-                            {uni.url && (
-                              <span className="text-[11px] text-study-gray group-hover:text-study-green transition-colors ml-auto flex items-center gap-0.5">
-                                <ExternalLink className="w-3 h-3" /> Сайт
-                              </span>
-                            )}
+                          <div className="flex items-center gap-2">
+                            <UniLogo url={uni.url} name={uni.name} className="w-7 h-7" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-1">
+                                <p className="text-xs font-semibold leading-snug" style={{ color: lc.text }}>
+                                  {uni.name}
+                                </p>
+                                {uni.isDualDegree && (
+                                  <span className="text-sm shrink-0" title={uni.dualDegreeNote ?? ''}>🔗</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                <span className="text-[11px] text-study-gray">📍 {uni.city}</span>
+                                {uni.tuition && (
+                                  <span className="text-[11px] font-semibold" style={{ color: lc.text }}>
+                                    ¥{uni.tuition.toLocaleString()}/г.
+                                  </span>
+                                )}
+                                {uni.url && (
+                                  <span className="text-[11px] text-study-gray group-hover:text-study-green transition-colors ml-auto flex items-center gap-0.5">
+                                    <ExternalLink className="w-3 h-3" /> Сайт
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </button>
                       ))}
@@ -436,23 +480,29 @@ export default function UniversityExplorer() {
             {/* Modal header */}
             <div className="sticky top-0 bg-white sm:rounded-t-2xl rounded-t-2xl p-4 sm:p-5 border-b border-study-lightgray">
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  {selectedUni.noEnglish ? (
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-study-gray">
-                      🌏 Китайский язык обучения
-                    </p>
-                  ) : (
-                    <p
-                      className="text-[11px] font-semibold uppercase tracking-wide"
-                      style={{ color: MAJOR_LIGHT[selectedUni.major!.id].text }}
-                    >
-                      {selectedUni.major!.icon} {selectedUni.major!.label} · {selectedUni.prog!.label}
-                    </p>
-                  )}
-                  <h3 className="text-base font-bold text-study-dark mt-1 leading-tight">
-                    {selectedUni.uni.name}
-                  </h3>
-                  <p className="text-xs text-study-gray mt-0.5">📍 {selectedUni.uni.city}</p>
+                <div className="flex items-start gap-3 min-w-0">
+                  {/* Logo — 44px in modal */}
+                  <div className="w-11 h-11 rounded-xl bg-study-bg border border-study-lightgray flex items-center justify-center shrink-0 overflow-hidden">
+                    <UniLogo url={selectedUni.uni.url} name={selectedUni.uni.name} className="w-9 h-9" />
+                  </div>
+                  <div className="min-w-0">
+                    {selectedUni.noEnglish ? (
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-study-gray">
+                        🌏 Китайский язык обучения
+                      </p>
+                    ) : (
+                      <p
+                        className="text-[11px] font-semibold uppercase tracking-wide"
+                        style={{ color: MAJOR_LIGHT[selectedUni.major!.id].text }}
+                      >
+                        {selectedUni.major!.icon} {selectedUni.major!.label} · {selectedUni.prog!.label}
+                      </p>
+                    )}
+                    <h3 className="text-base font-bold text-study-dark mt-0.5 leading-tight">
+                      {selectedUni.uni.name}
+                    </h3>
+                    <p className="text-xs text-study-gray mt-0.5">📍 {selectedUni.uni.city}</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setSelectedUni(null)}

@@ -34,11 +34,14 @@ type ExplorerData = {
   majors: UEMajor[]
 }
 
-type SelectedUni = {
+type SearchResult = {
   uni: UEUniversity
-  prog: UEProgram
-  major: UEMajor
+  prog: UEProgram | null
+  major: UEMajor | null
+  noEnglish: boolean
 }
+
+type SelectedUni = SearchResult
 
 const MAJOR_LIGHT: Record<string, { bg: string; border: string; text: string }> = {
   business:      { bg: '#fff7ed', border: '#fdba74', text: '#9a3412' },
@@ -53,22 +56,36 @@ const MAJOR_LIGHT: Record<string, { bg: string; border: string; text: string }> 
 const MAIN_CITIES = ['Пекин', 'Шанхай', 'Ухань', 'Нанкин']
 const data = explorerData as unknown as ExplorerData
 
-// Flat search index — one entry per unique university name (first occurrence wins)
-type SearchResult = { uni: UEUniversity; prog: UEProgram; major: UEMajor }
-
+// Flat search index — deduplicated by university name
 const SEARCH_INDEX: SearchResult[] = (() => {
   const seen = new Set<string>()
   const results: SearchResult[] = []
+
+  // English-program universities (each name appears once, first occurrence wins)
   for (const major of data.majors) {
     for (const prog of major.programs) {
       for (const uni of prog.universities) {
         if (!seen.has(uni.name)) {
           seen.add(uni.name)
-          results.push({ uni, prog, major })
+          results.push({ uni, prog, major, noEnglish: false })
         }
       }
     }
   }
+
+  // No-English universities
+  for (const u of data.universitiesNoEnglish) {
+    if (!seen.has(u.name)) {
+      seen.add(u.name)
+      results.push({
+        uni: { name: u.name, city: u.city, url: null, isDualDegree: false, dualDegreeNote: null, tuition: null },
+        prog: null,
+        major: null,
+        noEnglish: true,
+      })
+    }
+  }
+
   return results
 })()
 
@@ -89,8 +106,8 @@ export default function UniversityExplorer() {
     return SEARCH_INDEX.filter(({ uni, prog, major }) =>
       uni.name.toLowerCase().includes(q) ||
       uni.city.toLowerCase().includes(q) ||
-      prog.label.toLowerCase().includes(q) ||
-      major.label.toLowerCase().includes(q)
+      (prog?.label.toLowerCase().includes(q) ?? false) ||
+      (major?.label.toLowerCase().includes(q) ?? false)
     )
   }, [search])
 
@@ -128,7 +145,7 @@ export default function UniversityExplorer() {
     setAddState('loading')
     setAddError(null)
     try {
-      const { uni, prog, major } = selectedUni
+      const { uni, prog, major, noEnglish } = selectedUni
       const res = await fetch('/api/universities', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -137,7 +154,9 @@ export default function UniversityExplorer() {
           city: uni.city,
           portalUrl: uni.url ?? '',
           price: uni.tuition ? `¥${uni.tuition.toLocaleString()}/год` : '',
-          major: `${major.label} — ${prog.label}`,
+          major: noEnglish
+            ? 'Нет программ на английском языке'
+            : major && prog ? `${major.label} — ${prog.label}` : '',
           deadline: '',
           examRequirements: '',
         }),
@@ -212,12 +231,30 @@ export default function UniversityExplorer() {
                   Найдено: {searchResults!.length}
                 </p>
                 <div className="grid sm:grid-cols-2 gap-2">
-                  {searchResults!.map(({ uni, prog, major }, i) => {
-                    const mlc = MAJOR_LIGHT[major.id]
+                  {searchResults!.map(({ uni, prog, major, noEnglish }, i) => {
+                    if (noEnglish) {
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => openModal({ uni, prog: null, major: null, noEnglish: true })}
+                          className="text-left p-3 rounded-xl border transition-all hover:shadow-sm active:scale-[0.98]"
+                          style={{ borderColor: '#E2E8F0', background: '#F8FAFC' }}
+                        >
+                          <p className="text-xs font-semibold leading-snug text-study-dark">{uni.name}</p>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span className="text-[11px] text-study-gray">📍 {uni.city}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-study-lightgray text-study-gray font-medium">
+                              Нет программ на английском
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    }
+                    const mlc = MAJOR_LIGHT[major!.id]
                     return (
                       <button
                         key={i}
-                        onClick={() => openModal({ uni, prog, major })}
+                        onClick={() => openModal({ uni, prog: prog!, major: major!, noEnglish: false })}
                         className="text-left p-3 rounded-xl border transition-all hover:shadow-sm active:scale-[0.98]"
                         style={{ borderColor: mlc.border, background: mlc.bg }}
                       >
@@ -231,7 +268,7 @@ export default function UniversityExplorer() {
                             className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                             style={{ background: mlc.border + '66', color: mlc.text }}
                           >
-                            {major.icon} {prog.label}
+                            {major!.icon} {prog!.label}
                           </span>
                         </div>
                       </button>
@@ -326,7 +363,7 @@ export default function UniversityExplorer() {
                       {visibleUnis.map((uni, i) => (
                         <button
                           key={i}
-                          onClick={() => openModal({ uni, prog: activeProgram, major: activeMajor })}
+                          onClick={() => openModal({ uni, prog: activeProgram, major: activeMajor, noEnglish: false })}
                           className="text-left p-3 rounded-xl border transition-all hover:shadow-sm active:scale-[0.98] group"
                           style={{ borderColor: lc.border, background: lc.bg }}
                         >
@@ -360,7 +397,7 @@ export default function UniversityExplorer() {
             </>
           )}
 
-          {/* No-English — redesigned as a clean list */}
+          {/* No-English — clean scrollable list */}
           <div className="border-t border-study-lightgray pt-3">
             <button
               onClick={() => setShowNoEnglish(v => !v)}
@@ -375,10 +412,7 @@ export default function UniversityExplorer() {
             {showNoEnglish && (
               <div className="mt-2.5 rounded-xl border border-study-lightgray overflow-y-auto max-h-60 divide-y divide-study-lightgray">
                 {data.universitiesNoEnglish.map((u, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between px-3 py-2 hover:bg-study-bg transition-colors"
-                  >
+                  <div key={i} className="flex items-center justify-between px-3 py-2 hover:bg-study-bg transition-colors">
                     <span className="text-xs text-study-dark">{u.name}</span>
                     <span className="text-[11px] text-study-gray shrink-0 ml-3">📍 {u.city}</span>
                   </div>
@@ -403,12 +437,18 @@ export default function UniversityExplorer() {
             <div className="sticky top-0 bg-white sm:rounded-t-2xl rounded-t-2xl p-4 sm:p-5 border-b border-study-lightgray">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p
-                    className="text-[11px] font-semibold uppercase tracking-wide"
-                    style={{ color: MAJOR_LIGHT[selectedUni.major.id].text }}
-                  >
-                    {selectedUni.major.icon} {selectedUni.major.label} · {selectedUni.prog.label}
-                  </p>
+                  {selectedUni.noEnglish ? (
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-study-gray">
+                      🌏 Китайский язык обучения
+                    </p>
+                  ) : (
+                    <p
+                      className="text-[11px] font-semibold uppercase tracking-wide"
+                      style={{ color: MAJOR_LIGHT[selectedUni.major!.id].text }}
+                    >
+                      {selectedUni.major!.icon} {selectedUni.major!.label} · {selectedUni.prog!.label}
+                    </p>
+                  )}
                   <h3 className="text-base font-bold text-study-dark mt-1 leading-tight">
                     {selectedUni.uni.name}
                   </h3>
@@ -424,8 +464,18 @@ export default function UniversityExplorer() {
             </div>
 
             <div className="p-4 sm:p-5 space-y-3">
+              {/* No-English banner */}
+              {selectedUni.noEnglish && (
+                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-study-bg border border-study-lightgray">
+                  <span className="text-base mt-0.5">ℹ️</span>
+                  <p className="text-xs text-study-dark leading-relaxed">
+                    В этом университете нет программ бакалавриата на английском языке. Обучение ведётся на китайском языке. Вы всё равно можете добавить его в свой список.
+                  </p>
+                </div>
+              )}
+
               {/* Dual degree note */}
-              {selectedUni.uni.isDualDegree && selectedUni.uni.dualDegreeNote && (
+              {!selectedUni.noEnglish && selectedUni.uni.isDualDegree && selectedUni.uni.dualDegreeNote && (
                 <div className="flex items-start gap-2.5 p-3 rounded-xl bg-study-bg border border-study-lightgray">
                   <span className="text-base mt-0.5">🔗</span>
                   <p className="text-xs text-study-dark leading-relaxed">{selectedUni.uni.dualDegreeNote}</p>
@@ -433,31 +483,33 @@ export default function UniversityExplorer() {
               )}
 
               {/* Tuition */}
-              <div className="flex items-center gap-3 py-1">
-                <span className="text-study-gray text-xs w-24 shrink-0">Стоимость</span>
-                <span className="text-study-dark font-medium text-sm">
-                  {selectedUni.uni.tuition
-                    ? `¥${selectedUni.uni.tuition.toLocaleString()}/год`
-                    : 'Уточняйте на сайте'}
-                </span>
-              </div>
+              {!selectedUni.noEnglish && (
+                <div className="flex items-center gap-3 py-1">
+                  <span className="text-study-gray text-xs w-24 shrink-0">Стоимость</span>
+                  <span className="text-study-dark font-medium text-sm">
+                    {selectedUni.uni.tuition
+                      ? `¥${selectedUni.uni.tuition.toLocaleString()}/год`
+                      : 'Уточняйте на сайте'}
+                  </span>
+                </div>
+              )}
 
               {/* Website button */}
-              {selectedUni.uni.url ? (
+              {!selectedUni.noEnglish && selectedUni.uni.url ? (
                 <a
                   href={selectedUni.uni.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                  style={{ background: MAJOR_LIGHT[selectedUni.major.id]?.text ?? '#2B2D42' }}
+                  style={{ background: MAJOR_LIGHT[selectedUni.major!.id]?.text ?? '#2B2D42' }}
                   onClick={e => e.stopPropagation()}
                 >
                   <ExternalLink className="w-4 h-4" />
                   Открыть сайт университета
                 </a>
-              ) : (
+              ) : !selectedUni.noEnglish ? (
                 <p className="text-xs text-center text-study-gray py-1">Сайт не указан</p>
-              )}
+              ) : null}
 
               {/* Add to dashboard */}
               <button

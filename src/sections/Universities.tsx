@@ -4,19 +4,19 @@ import { ExternalLink, Clock, ChevronRight, X, Plus } from 'lucide-react'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import type { ApplicationStatus, University } from '@/types/studytrack'
 import uniDb from '@/data/universities.json'
+import explorerData from '@/data/universityExplorer.json'
 import UniversityExplorer from '@/components/UniversityExplorer'
 
 type UniDbEntry = typeof uniDb[0]
 
-function getDbSuggestions(query: string): UniDbEntry[] {
-  const q = query.toLowerCase().trim()
-  if (!q || q.length < 2) return []
-  return uniDb.filter(
-    (u) =>
-      u.nameRu.toLowerCase().includes(q) ||
-      u.nameEn.toLowerCase().includes(q) ||
-      u.city.toLowerCase().includes(q),
-  ).slice(0, 6)
+// Unified suggestion type used in the add-university autocomplete
+type UniSuggestion = {
+  name: string
+  nameEn?: string
+  city: string
+  url: string
+  price: string
+  noEnglish: boolean
 }
 
 function buildPrice(u: UniDbEntry): string {
@@ -24,6 +24,67 @@ function buildPrice(u: UniDbEntry): string {
   if (u.tuitionBachelor) parts.push(`Бакалавр: ${u.tuitionBachelor}`)
   if (u.tuitionLanguageYear) parts.push(`Яз. год: ${u.tuitionLanguageYear}`)
   return parts.join(' / ')
+}
+
+// Flat index of explorer universities (unique names, English programs + no-English)
+const EXPLORER_INDEX: UniSuggestion[] = (() => {
+  const map = new Map<string, UniSuggestion>()
+  const d = explorerData as {
+    majors: { programs: { universities: { name: string; city: string; url: string | null; tuition: number | null }[] }[] }[]
+    universitiesNoEnglish: { name: string; city: string }[]
+  }
+  for (const major of d.majors) {
+    for (const prog of major.programs) {
+      for (const uni of prog.universities) {
+        if (!map.has(uni.name)) {
+          map.set(uni.name, {
+            name: uni.name,
+            city: uni.city,
+            url: uni.url ?? '',
+            price: uni.tuition ? `¥${uni.tuition.toLocaleString()}/год` : '',
+            noEnglish: false,
+          })
+        }
+      }
+    }
+  }
+  for (const uni of d.universitiesNoEnglish) {
+    if (!map.has(uni.name)) {
+      map.set(uni.name, { name: uni.name, city: uni.city, url: '', price: '', noEnglish: true })
+    }
+  }
+  return Array.from(map.values())
+})()
+
+function getUnifiedSuggestions(query: string): UniSuggestion[] {
+  const q = query.toLowerCase().trim()
+  if (!q || q.length < 2) return []
+
+  const results: UniSuggestion[] = []
+  const seen = new Set<string>()
+
+  // 1. Curated DB first (has Russian names and detailed tuition)
+  for (const u of uniDb) {
+    if (
+      u.nameRu.toLowerCase().includes(q) ||
+      u.nameEn.toLowerCase().includes(q) ||
+      u.city.toLowerCase().includes(q)
+    ) {
+      results.push({ name: u.nameRu, nameEn: u.nameEn, city: u.city, url: u.url, price: buildPrice(u), noEnglish: false })
+      seen.add(u.nameEn.toLowerCase())
+    }
+  }
+
+  // 2. Explorer DB (English names not already covered above)
+  for (const u of EXPLORER_INDEX) {
+    if (seen.has(u.name.toLowerCase())) continue
+    if (u.name.toLowerCase().includes(q) || u.city.toLowerCase().includes(q)) {
+      results.push(u)
+      seen.add(u.name.toLowerCase())
+    }
+  }
+
+  return results.slice(0, 8)
 }
 
 const statusConfig = {
@@ -48,7 +109,7 @@ export default function Universities() {
     major: '',
     portalUrl: '',
   })
-  const [suggestions, setSuggestions] = useState<UniDbEntry[]>([])
+  const [suggestions, setSuggestions] = useState<UniSuggestion[]>([])
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -330,7 +391,7 @@ export default function Universities() {
                   onChange={(e) => {
                     const val = e.target.value
                     setNewUniversity((current) => ({ ...current, name: val }))
-                    setSuggestions(getDbSuggestions(val))
+                    setSuggestions(getUnifiedSuggestions(val))
                   }}
                   onBlur={() => setTimeout(() => setSuggestions([]), 150)}
                   placeholder="Начните вводить название университета..."
@@ -339,24 +400,33 @@ export default function Universities() {
                 />
                 {suggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl card-shadow-hover border border-study-lightgray z-10 overflow-hidden">
-                    {suggestions.map((u) => (
+                    {suggestions.map((u, i) => (
                       <button
-                        key={u.id}
+                        key={i}
                         type="button"
                         onMouseDown={() => {
                           setNewUniversity((current) => ({
                             ...current,
-                            name: u.nameRu,
+                            name: u.name,
                             city: u.city,
                             portalUrl: u.url,
-                            price: buildPrice(u),
+                            price: u.price,
                           }))
                           setSuggestions([])
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-study-bg transition-colors border-b border-study-lightgray last:border-0"
                       >
-                        <p className="text-sm font-medium text-study-dark">{u.nameRu}</p>
-                        <p className="text-xs text-study-gray mt-0.5">{u.city} · {u.nameEn}</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-study-dark">{u.name}</p>
+                          {u.noEnglish && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-study-lightgray text-study-gray shrink-0">
+                              Нет англ. программ
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-study-gray mt-0.5">
+                          {u.city}{u.nameEn ? ` · ${u.nameEn}` : ''}
+                        </p>
                       </button>
                     ))}
                   </div>

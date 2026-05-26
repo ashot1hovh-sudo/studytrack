@@ -7,6 +7,7 @@ import Checklist from '@/sections/Checklist'
 import Deadlines from '@/sections/Deadlines'
 import LearningStart from '@/sections/LearningStart'
 import PaidModules from '@/sections/PaidModules'
+import ChancesEvaluator from '@/sections/ChancesEvaluator'
 
 export default function Dashboard() {
   const { activeTab, isParentMode, user } = useApp()
@@ -40,6 +41,10 @@ export default function Dashboard() {
     deadlines: {
       title: 'Дедлайны',
       subtitle: 'Ближайшие даты и контекст по поступлению',
+    },
+    chances: {
+      title: '🎯 Мои шансы',
+      subtitle: 'Введи свои статы — найдём похожие реальные кейсы поступления',
     },
   }[activeTab] ?? {
     title: 'StudyTrack',
@@ -154,6 +159,12 @@ export default function Dashboard() {
       {activeTab === 'paid-modules' && (
         <div className="max-w-5xl">
           <PaidModules />
+        </div>
+      )}
+
+      {activeTab === 'chances' && (
+        <div className="max-w-4xl">
+          <ChancesEvaluator />
         </div>
       )}
     </div>

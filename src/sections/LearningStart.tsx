@@ -465,6 +465,7 @@ type MarkdownBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'list'; items: string[] }
   | { type: 'table'; rows: string[][] }
+  | { type: 'image'; src: string; alt: string }
   | { type: 'slideshow'; images: { src: string; alt: string }[] }
   | { type: 'rule' }
 
@@ -486,7 +487,7 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
 
   const flushParagraph = () => {
     if (paragraph.length > 0) {
-      blocks.push({ type: 'paragraph', text: cleanMarkdownText(paragraph.join(' ')) })
+      blocks.push({ type: 'paragraph', text: paragraph.join(' ').replace(/\\\./g, '.').trim() })
       paragraph = []
     }
   }
@@ -503,7 +504,10 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
     }
   }
   const flushImages = () => {
-    if (images.length > 0) {
+    if (images.length === 1) {
+      blocks.push({ type: 'image', src: images[0].src, alt: images[0].alt })
+      images = []
+    } else if (images.length > 1) {
       blocks.push({ type: 'slideshow', images })
       images = []
     }
@@ -587,6 +591,72 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
   flushTable()
   flushImages()
   return blocks
+}
+
+function renderInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  const regex = /(\*\*.*?\*\*|\[.*?\]\(.*?\))/g
+  let last = 0
+  let match
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    const bold = match[0].match(/^\*\*(.*)\*\*$/)
+    if (bold) { parts.push(<strong key={match.index}>{bold[1]}</strong>); last = match.index + match[0].length; continue }
+    const link = match[0].match(/^\[(.*?)\]\((.*?)\)$/)
+    if (link) {
+      const isExternal = link[2].startsWith('http')
+      parts.push(
+        <a key={match.index} href={link[2]}
+          className="text-study-brown underline font-semibold"
+          target={isExternal ? '_blank' : undefined}
+          rel={isExternal ? 'noopener noreferrer' : undefined}>
+          {link[1]}
+        </a>
+      )
+    }
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
+
+function LightboxImage({ src, alt }: { src: string; alt: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full block rounded-xl border border-study-lightgray overflow-hidden cursor-zoom-in"
+        aria-label="Нажмите для увеличения"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className="w-full h-auto" />
+        <p className="text-center text-xs text-study-gray py-1.5 bg-study-bg">Нажмите, чтобы увеличить</p>
+      </button>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          onClick={() => setOpen(false)}
+        >
+          <button
+            className="absolute top-4 right-4 z-10 text-white bg-black/60 rounded-full p-2"
+            onClick={() => setOpen(false)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div
+            className="flex-1 overflow-auto"
+            style={{ touchAction: 'pan-x pan-y pinch-zoom' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={alt} className="max-w-none h-auto" style={{ minWidth: '100%' }} />
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 function CitySlideshow({ images }: { images: { src: string; alt: string }[] }) {
@@ -1307,6 +1377,10 @@ function ProtectedLesson({
                 )
               }
 
+              if (block.type === 'image') {
+                return <LightboxImage key={index} src={block.src} alt={block.alt} />
+              }
+
               if (block.type === 'slideshow') {
                 return <CitySlideshow key={index} images={block.images} />
               }
@@ -1373,7 +1447,7 @@ function ProtectedLesson({
               }
 
               if (block.type === 'paragraph') {
-                return renderWithInfographic(<p className="text-sm sm:text-base leading-7 text-study-dark">{block.text}</p>)
+                return renderWithInfographic(<p className="text-sm sm:text-base leading-7 text-study-dark">{renderInline(block.text)}</p>)
               }
 
               if (block.type === 'list') {

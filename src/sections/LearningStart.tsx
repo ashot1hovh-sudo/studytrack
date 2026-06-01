@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useApp } from '@/context/AppContext'
 import { MediaModuleCard } from '@/components/ui/media-button'
 import {
@@ -622,38 +623,43 @@ function renderInline(text: string): React.ReactNode[] {
 
 function LightboxImage({ src, alt }: { src: string; alt: string }) {
   const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
+
   return (
     <>
       <button
         onClick={() => setOpen(true)}
         className="w-full block rounded-xl border border-study-lightgray overflow-hidden cursor-zoom-in"
-        aria-label="Нажмите для увеличения"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} className="w-full h-auto" />
         <p className="text-center text-xs text-study-gray py-1.5 bg-study-bg">Нажмите, чтобы увеличить</p>
       </button>
 
-      {open && (
+      {open && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
           onClick={() => setOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.95)', overflow: 'auto', touchAction: 'pan-x pan-y pinch-zoom' }}
         >
           <button
-            className="absolute top-4 right-4 z-10 text-white bg-black/60 rounded-full p-2"
-            onClick={() => setOpen(false)}
+            onClick={(e) => { e.stopPropagation(); setOpen(false) }}
+            style={{ position: 'fixed', top: 16, right: 16, zIndex: 100000, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', padding: 8, cursor: 'pointer', color: 'white', display: 'flex' }}
           >
-            <X className="w-6 h-6" />
+            <X size={24} />
           </button>
-          <div
-            className="flex-1 overflow-auto"
-            style={{ touchAction: 'pan-x pan-y pinch-zoom' }}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
             onClick={e => e.stopPropagation()}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={alt} className="max-w-none h-auto" style={{ minWidth: '100%' }} />
-          </div>
-        </div>
+            style={{ display: 'block', width: '100%', height: 'auto', maxWidth: 'none' }}
+          />
+        </div>,
+        document.body
       )}
     </>
   )

@@ -3,7 +3,7 @@ import type { StudentProfile } from '@/types/studytrack'
 
 interface AppState {
   activeTab: string
-  setActiveTab: (tab: string) => void
+  setActiveTab: (tab: string, replace?: boolean) => void
   isParentMode: boolean
   setIsParentMode: (mode: boolean) => void
   isAuthenticated: boolean
@@ -19,12 +19,40 @@ interface AppState {
 const AppContext = createContext<AppState | undefined>(undefined)
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeTab, setActiveTabState] = useState('dashboard')
   const [isParentMode, setIsParentMode] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [user, setUser] = useState<StudentProfile | null>(null)
   const [loginError, setLoginError] = useState<string | null>(null)
+
+  // Seed initial history entry so the very first back press goes to dashboard
+  useEffect(() => {
+    const hash = window.location.hash.slice(1)
+    const tab = hash || 'dashboard'
+    if (hash) setActiveTabState(tab)
+    window.history.replaceState({ tab }, '', window.location.href)
+  }, [])
+
+  // Sync activeTab when the user presses the browser/phone back button
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      setActiveTabState(e.state?.tab ?? 'dashboard')
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  const setActiveTab = useCallback((tab: string, replace = false) => {
+    const hash = tab === 'dashboard' ? '' : '#' + tab
+    const url = window.location.pathname + hash
+    if (replace) {
+      window.history.replaceState({ tab }, '', url)
+    } else {
+      window.history.pushState({ tab }, '', url)
+    }
+    setActiveTabState(tab)
+  }, [])
 
   const isAdmin = user?.role === 'consultant'
 
@@ -77,7 +105,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
     setUser(null)
     setIsParentMode(false)
-    setActiveTab('dashboard')
+    setActiveTab('dashboard', true)
     setLoginError(null)
   }
 

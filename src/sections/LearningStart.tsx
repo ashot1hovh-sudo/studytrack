@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '@/context/AppContext'
 import { MediaModuleCard } from '@/components/ui/media-button'
 import {
@@ -111,7 +111,25 @@ export default function LearningStart() {
   const [isLessonLoading, setIsLessonLoading] = useState(false)
   const [lessonError, setLessonError] = useState<string | null>(null)
 
+  // Back button: close lesson or module when user navigates back
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state?.tab === 'learning-start') {
+        setActiveLessonKey(e.state.lesson ?? null)
+        setLesson(e.state.lesson ? lesson : null)
+        setLessonError(null)
+        setActiveModule(e.state.module ?? null)
+        setLockedBox(null)
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  // lesson is intentionally excluded — we only need the setter reference
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const openLesson = (key: string, apiPath: string) => {
+    window.history.pushState({ tab: 'learning-start', lesson: key }, '', '#learning-start')
     setActiveLessonKey(key)
     setIsLessonLoading(true)
     setLessonError(null)
@@ -357,7 +375,7 @@ export default function LearningStart() {
         {lockedModules.map((module) => (
           <button
             key={module.id}
-            onClick={() => setActiveModule(module)}
+            onClick={() => { window.history.pushState({ tab: 'learning-start', module: module.id }, '', '#learning-start'); setActiveModule(module) }}
             className="relative text-left bg-amber-50 border border-amber-200 rounded-xl card-shadow p-5 min-h-[120px] hover:card-shadow-hover transition-all overflow-hidden"
           >
             <div className="flex items-start justify-between gap-4">

@@ -30,7 +30,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="p-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-15 w-auto" />
+          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-[50px] w-auto" />
         </div>
 
         {/* Navigation */}

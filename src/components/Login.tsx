@@ -103,10 +103,8 @@ export default function Login() {
       >
         {/* Logo & Header */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-study-brown flex items-center justify-center mb-4 shadow-lg shadow-study-brown/20">
-            <Compass className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-study-dark">StudyTrack</h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-16 w-auto mb-2" />
           <p className="text-sm text-study-gray mt-1">Трекер поступления</p>
         </div>
 

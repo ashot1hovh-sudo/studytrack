@@ -28,14 +28,9 @@ export default function Sidebar() {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-[240px] min-h-screen bg-white flex-col card-shadow sticky top-0 z-50">
         {/* Logo */}
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-study-brown flex items-center justify-center">
-            <Compass className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="font-bold text-study-dark text-lg leading-tight">StudyTrack</h1>
-            <p className="text-[10px] text-study-gray leading-tight">Трекер поступления</p>
-          </div>
+        <div className="p-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-10 w-auto" />
         </div>
 
         {/* Navigation */}
@@ -108,14 +103,9 @@ export default function Sidebar() {
 
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-white card-shadow z-40 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-study-brown flex items-center justify-center">
-            <Compass className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h1 className="font-bold text-study-dark text-sm leading-tight">StudyTrack</h1>
-            <p className="text-[9px] text-study-gray leading-tight">Трекер поступления</p>
-          </div>
+        <div className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-8 w-auto" />
         </div>
         <div className="flex items-center gap-2">
           {isParentMode && (

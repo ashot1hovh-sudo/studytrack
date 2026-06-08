@@ -468,6 +468,7 @@ type MarkdownBlock =
   | { type: 'table'; rows: string[][] }
   | { type: 'image'; src: string; alt: string }
   | { type: 'slideshow'; images: { src: string; alt: string }[] }
+  | { type: 'pdf'; src: string }
   | { type: 'rule' }
 
 function cleanMarkdownText(value: string) {
@@ -565,7 +566,12 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
       flushParagraph()
       flushList()
       flushTable()
-      images.push({ alt: image[1], src: image[2] })
+      if (image[2].endsWith('.pdf')) {
+        flushImages()
+        blocks.push({ type: 'pdf', src: image[2] })
+      } else {
+        images.push({ alt: image[1], src: image[2] })
+      }
       continue
     }
 
@@ -1380,6 +1386,29 @@ function ProtectedLesson({
                   <h2 key={index} id={`lesson-heading-${index}`} className={`${size} scroll-mt-6 font-bold text-study-dark`}>
                     {block.text}
                   </h2>
+                )
+              }
+
+              if (block.type === 'pdf') {
+                return (
+                  <div key={index} className="my-4 rounded-xl overflow-hidden border border-gray-200">
+                    <iframe
+                      src={block.src}
+                      className="w-full"
+                      style={{ height: '520px' }}
+                      title="PDF документ"
+                    />
+                    <div className="bg-gray-50 border-t border-gray-200 px-4 py-2 text-center">
+                      <a
+                        href={block.src}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-study-brown font-medium hover:underline"
+                      >
+                        Открыть PDF в новой вкладке
+                      </a>
+                    </div>
+                  </div>
                 )
               }
 

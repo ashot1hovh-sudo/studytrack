@@ -62,7 +62,7 @@
 
 Китайский университет будет ожидать, что студент дошлёт аттестат примерно в те сроки, которые указаны в справке.
 
-![](/studytrack-next/public/school_document_proof.pdf)
+![](/school_document_proof.pdf)
 
 ---
 

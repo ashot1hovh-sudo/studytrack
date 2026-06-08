@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: 'signup',
+    type: 'magiclink',
     email: String(email).trim(),
     options: { redirectTo: `${appUrl}/login` },
   })

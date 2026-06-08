@@ -5,7 +5,7 @@ import { getAuthenticatedUser, missingSupabaseEnv, setupErrorResponse } from '@/
 
 const LESSON_FILES: Record<string, { file: string; title: string }> = {
   'b1':  { file: 'module-b1.md',  title: 'Оценка шансов' },
-  'b2':  { file: 'module-b3.md',  title: 'Основной перечень документов для поступления' },
+  'b2':  { file: 'module-b3_new.md',  title: 'Основной перечень документов для поступления' },
   'b3':  { file: 'module-b4.md',  title: 'Школьные документы' },
   'b4':  { file: 'module-b5.md',  title: 'Как подготовить справку о несудимости' },
   'b5':  { file: 'module-b6.md',  title: 'Как проходить медицинское обследование' },

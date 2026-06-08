@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendConfirmationEmail } from '@/lib/email'
 import { missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 
 export async function POST(request: Request) {
@@ -46,11 +47,11 @@ export async function POST(request: Request) {
     )
   }
 
-  // Create user in Supabase Auth with email auto-confirmed (no SMTP needed)
+  // Create user in Supabase Auth — email_confirm: false so Supabase sends a confirmation email
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,
     password,
-    email_confirm: true,
+    email_confirm: false,
     user_metadata: { full_name: fullName },
   })
 
@@ -83,8 +84,27 @@ export async function POST(request: Request) {
     )
   }
 
+  // Generate a Supabase confirmation link and send it via Resend
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: 'signup',
+    email,
+    options: { redirectTo: `${appUrl}/login` },
+  })
+
+  if (linkError || !linkData?.properties?.action_link) {
+    console.error('[register] generateLink failed:', linkError)
+  } else {
+    const { error: emailError } = await sendConfirmationEmail(email, linkData.properties.action_link)
+    if (emailError) {
+      console.error('[register] Resend failed:', emailError)
+    } else {
+      console.log('[register] Confirmation email sent to:', email)
+    }
+  }
+
   return NextResponse.json({
     ok: true,
-    message: 'Регистрация успешна. Проверьте email для подтверждения аккаунта.',
+    message: 'Аккаунт создан. Проверьте email и перейдите по ссылке для подтверждения.',
   })
 }

@@ -6,15 +6,15 @@ import { getAuthenticatedUser, missingSupabaseEnv, setupErrorResponse } from '@/
 const LESSON_FILES: Record<string, { file: string; title: string }> = {
   'b1':  { file: 'module-b1.md',  title: 'Оценка шансов' },
   'b2':  { file: 'module-b3_new.md',  title: 'Основной перечень документов для поступления' },
-  'b3':  { file: 'module-b4.md',  title: 'Школьные документы' },
-  'b4':  { file: 'module-b5.md',  title: 'Как подготовить справку о несудимости' },
-  'b5':  { file: 'module-b6.md',  title: 'Как проходить медицинское обследование' },
-  'b6':  { file: 'module-b7.md',  title: 'Мотивационное письмо' },
-  'b7':  { file: 'module-b8.md',  title: 'Рекомендательные письма' },
-  'b8':  { file: 'module-b9.md',  title: 'Как записать видео-визитку' },
-  'b9':  { file: 'module-b10.md', title: 'Как написать резюме' },
-  'b10': { file: 'module-b11.md', title: 'Как сделать финансовые документы' },
-  'b11': { file: 'module-b12.md', title: 'Как подготовиться к интервью' },
+  'b3':  { file: 'module-b4_new.md',  title: 'Школьные документы' },
+  'b4':  { file: 'module-b5_new.md',  title: 'Как подготовить справку о несудимости' },
+  'b5':  { file: 'module-b6_new.md',  title: 'Как проходить медицинское обследование' },
+  'b6':  { file: 'module-b7_new.md',  title: 'Мотивационное письмо' },
+  'b7':  { file: 'module-b8_new.md',  title: 'Рекомендательные письма' },
+  'b8':  { file: 'module-b9_new.md',  title: 'Как записать видео-визитку' },
+  'b9':  { file: 'module-b10_new.md', title: 'Как написать резюме' },
+  'b10': { file: 'module-b11_new.md', title: 'Как сделать финансовые документы' },
+  'b11': { file: 'module-b12_new.md', title: 'Как подготовиться к интервью' },
 }
 
 export async function GET(

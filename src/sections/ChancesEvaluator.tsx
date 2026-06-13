@@ -22,93 +22,21 @@ const OUTCOME_CFG: Record<OutcomeKey, {
   border: string
   Icon: React.ComponentType<{ className?: string }>
 }> = {
-  admitted: { label: 'Поступление', bg: '#f0fdf4', text: '#166534', border: '#86efac', Icon: Trophy },
-  rejected: { label: 'Отказ',       bg: '#fef2f2', text: '#991b1b', border: '#fca5a5', Icon: XCircle },
-  pre:      { label: 'Предварит.',  bg: '#fffbeb', text: '#92400e', border: '#fcd34d', Icon: Clock },
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-function Chip({ label, value }: { label: string; value: string | number }) {
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-study-bg text-[11px] text-study-dark">
-      <span className="text-study-gray">{label}</span>
-      <span className="font-semibold">{value}</span>
-    </span>
-  )
-}
-
-function CaseCard({ c }: { c: StudentCase }) {
-  const ok = outcomeKey(c.result)
-  const cfg = OUTCOME_CFG[ok]
-  const { Icon } = cfg
-
-  const engExam: [string, number] | null =
-    c.ielts    != null ? ['IELTS',    c.ielts]    :
-    c.toefl    != null ? ['TOEFL',    c.toefl]    :
-    c.duolingo != null ? ['Duolingo', c.duolingo] :
-    null
-
-  const gpaDisplay = c.gpa != null ? Math.round(c.gpa * 100) / 100 : null
-
-  return (
-    <div
-      className="bg-white rounded-xl card-shadow p-4 border-l-4"
-      style={{ borderLeftColor: cfg.border }}
-    >
-      {/* University + outcome */}
-      <div className="flex items-start justify-between gap-2 mb-2.5">
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-study-dark leading-snug">{c.university}</p>
-          {c.direction && <p className="text-[11px] text-study-gray mt-0.5">{c.direction}</p>}
-        </div>
-        <span
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 border"
-          style={{ background: cfg.bg, color: cfg.text, borderColor: cfg.border }}
-        >
-          <Icon className="w-3 h-3" />
-          {cfg.label}
-        </span>
-      </div>
-
-      {/* Stats chips */}
-      <div className="flex flex-wrap gap-1.5 mb-2">
-        {gpaDisplay != null        && <Chip label="GPA"        value={gpaDisplay} />}
-        {engExam                   && <Chip label={engExam[0]} value={engExam[1]} />}
-        {c.csca_math    != null    && <Chip label="CSCA Math"  value={c.csca_math} />}
-        {c.csca_physics != null    && <Chip label="CSCA Phys"  value={c.csca_physics} />}
-        {c.hskLevel     != null    && <Chip label="HSK"        value={c.hskLevel} />}
-        {c.sat          != null    && <Chip label="SAT"        value={c.sat} />}
-        {c.csca_chinese != null    && <Chip label="CSCA CN"    value={c.csca_chinese} />}
-        {c.csca_chemistry != null  && <Chip label="CSCA Chem"  value={c.csca_chemistry} />}
-      </div>
-
-      {/* Grant */}
-      {c.grant && c.grant !== '—' && c.grant !== '' && (
-        <p className="text-[11px] text-study-dark mb-1.5">🎓 {c.grant}</p>
-      )}
-
-      {/* Activities + note */}
-      {(c.activities || c.note) && (
-        <p className="text-[11px] text-study-gray leading-relaxed line-clamp-2">
-          {[c.activities, c.note].filter(Boolean).join(' · ')}
-        </p>
-      )}
-    </div>
-  )
+  admitted: { label: 'Поступление', bg: '#f0fdf4', text: '#166534', border: '#86efac', Icon: Trophy   },
+  rejected: { label: 'Отказ',       bg: '#fef2f2', text: '#991b1b', border: '#fca5a5', Icon: XCircle  },
+  pre:      { label: 'Предварит.',  bg: '#fffbeb', text: '#92400e', border: '#fcd34d', Icon: Clock    },
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ChancesEvaluator() {
-  const [cases, setCases] = useState<StudentCase[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Filters
-  const [search, setSearch]   = useState('')
-  const [outcome, setOutcome] = useState<FilterOutcome>('all')
-  const [gpaMin, setGpaMin]   = useState('')
+  const [cases, setCases]       = useState<StudentCase[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState<string | null>(null)
+  const [search, setSearch]     = useState('')
+  const [outcome, setOutcome]   = useState<FilterOutcome>('all')
+  const [gpaMin, setGpaMin]     = useState('')
   const [ieltsMin, setIeltsMin] = useState('')
-  const [cscaMin, setCscaMin] = useState('')
+  const [cscaMin, setCscaMin]   = useState('')
   const [showNumFilters, setShowNumFilters] = useState(false)
 
   useEffect(() => {
@@ -119,14 +47,8 @@ export default function ChancesEvaluator() {
       .finally(() => setLoading(false))
   }, [])
 
-  const counts = useMemo(() => {
-    const c = { admitted: 0, rejected: 0, pre: 0 }
-    cases.forEach(x => { c[outcomeKey(x.result)]++ })
-    return c
-  }, [cases])
-
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim()
+    const q    = search.toLowerCase().trim()
     const gMin = gpaMin   ? parseFloat(gpaMin)   : null
     const iMin = ieltsMin ? parseFloat(ieltsMin) : null
     const cMin = cscaMin  ? parseFloat(cscaMin)  : null
@@ -148,7 +70,7 @@ export default function ChancesEvaluator() {
     setSearch(''); setOutcome('all'); setGpaMin(''); setIeltsMin(''); setCscaMin('')
   }
 
-  // ── Loading / Error states ──────────────────────────────────────────────────
+  // ── Loading / Error ─────────────────────────────────────────────────────────
   if (loading) return (
     <div className="flex items-center justify-center py-20">
       <Loader2 className="w-6 h-6 animate-spin text-study-brown" />
@@ -162,27 +84,14 @@ export default function ChancesEvaluator() {
     </div>
   )
 
+  const counts = {
+    admitted: cases.filter(c => outcomeKey(c.result) === 'admitted').length,
+    pre:      cases.filter(c => outcomeKey(c.result) === 'pre').length,
+    rejected: cases.filter(c => outcomeKey(c.result) === 'rejected').length,
+  }
+
   return (
     <div className="space-y-4">
-
-      {/* Summary stat cards — clickable to toggle outcome filter */}
-      <div className="grid grid-cols-3 gap-2">
-        {(['admitted', 'pre', 'rejected'] as const).map(k => {
-          const cfg = OUTCOME_CFG[k]
-          const active = outcome === k
-          return (
-            <button
-              key={k}
-              onClick={() => setOutcome(active ? 'all' : k)}
-              className="bg-white rounded-xl card-shadow p-3 text-center transition-all hover:opacity-80 active:scale-[0.97]"
-              style={active ? { boxShadow: `0 0 0 2px ${cfg.border}` } : {}}
-            >
-              <p className="text-xl font-bold text-study-dark">{counts[k]}</p>
-              <p className="text-[11px] text-study-gray mt-0.5">{cfg.label}</p>
-            </button>
-          )
-        })}
-      </div>
 
       {/* Search */}
       <div className="relative">
@@ -212,9 +121,9 @@ export default function ChancesEvaluator() {
                 : 'bg-white border border-study-lightgray text-study-gray hover:border-study-brown/50'
             }`}
           >
-            {k === 'all'      ? `Все · ${cases.length}`              :
-             k === 'admitted' ? `Поступление · ${counts.admitted}`   :
-             k === 'pre'      ? `Предварит. · ${counts.pre}`         :
+            {k === 'all'      ? `Все · ${cases.length}`             :
+             k === 'admitted' ? `Поступление · ${counts.admitted}`  :
+             k === 'pre'      ? `Предварит. · ${counts.pre}`        :
                                 `Отказ · ${counts.rejected}`}
           </button>
         ))}
@@ -241,8 +150,7 @@ export default function ChancesEvaluator() {
               <label className="text-[10px] font-semibold text-study-gray uppercase tracking-wide">GPA мин</label>
               <input
                 type="number" min="0" max="5" step="0.1"
-                value={gpaMin} onChange={e => setGpaMin(e.target.value)}
-                placeholder="0"
+                value={gpaMin} onChange={e => setGpaMin(e.target.value)} placeholder="0"
                 className="w-full mt-1 px-2.5 py-2 rounded-lg border border-study-lightgray text-sm focus:outline-none focus:border-study-brown"
               />
             </div>
@@ -250,8 +158,7 @@ export default function ChancesEvaluator() {
               <label className="text-[10px] font-semibold text-study-gray uppercase tracking-wide">IELTS мин</label>
               <input
                 type="number" min="0" max="9" step="0.5"
-                value={ieltsMin} onChange={e => setIeltsMin(e.target.value)}
-                placeholder="0"
+                value={ieltsMin} onChange={e => setIeltsMin(e.target.value)} placeholder="0"
                 className="w-full mt-1 px-2.5 py-2 rounded-lg border border-study-lightgray text-sm focus:outline-none focus:border-study-brown"
               />
             </div>
@@ -259,8 +166,7 @@ export default function ChancesEvaluator() {
               <label className="text-[10px] font-semibold text-study-gray uppercase tracking-wide">CSCA Math мин</label>
               <input
                 type="number" min="0" max="100" step="5"
-                value={cscaMin} onChange={e => setCscaMin(e.target.value)}
-                placeholder="0"
+                value={cscaMin} onChange={e => setCscaMin(e.target.value)} placeholder="0"
                 className="w-full mt-1 px-2.5 py-2 rounded-lg border border-study-lightgray text-sm focus:outline-none focus:border-study-brown"
               />
             </div>
@@ -280,14 +186,133 @@ export default function ChancesEvaluator() {
         )}
       </div>
 
-      {/* Cases list */}
+      {/* ── Table ─────────────────────────────────────────────────────────── */}
       {filtered.length === 0 ? (
         <div className="text-center py-12 text-study-gray text-sm">
           Ничего не найдено — попробуйте изменить фильтры
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((c, i) => <CaseCard key={i} c={c} />)}
+        <div className="overflow-x-auto rounded-xl border border-study-lightgray bg-white">
+          <table className="w-full border-collapse text-xs">
+            <thead>
+              <tr className="bg-study-bg border-b border-study-lightgray">
+                <th className="sticky left-0 z-10 bg-study-bg px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap min-w-[160px]">
+                  Университет
+                </th>
+                <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap min-w-[120px]">
+                  Направление
+                </th>
+                <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
+                  Итог
+                </th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
+                  GPA
+                </th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
+                  Английский
+                </th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
+                  CSCA Math
+                </th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
+                  CSCA Phys
+                </th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
+                  HSK
+                </th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
+                  SAT
+                </th>
+                <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap min-w-[120px]">
+                  Грант
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c, i) => {
+                const ok  = outcomeKey(c.result)
+                const cfg = OUTCOME_CFG[ok]
+                const { Icon } = cfg
+
+                const engExam =
+                  c.ielts    != null ? `IELTS ${c.ielts}`       :
+                  c.toefl    != null ? `TOEFL ${c.toefl}`       :
+                  c.duolingo != null ? `Duo ${c.duolingo}`      :
+                  null
+
+                const gpaDisplay = c.gpa != null
+                  ? (Math.round(c.gpa * 100) / 100).toFixed(2)
+                  : null
+
+                return (
+                  <tr
+                    key={i}
+                    className="group border-b border-study-lightgray last:border-0"
+                  >
+                    {/* University — sticky */}
+                    <td className="sticky left-0 z-10 bg-white group-hover:bg-study-bg/60 px-3 py-2.5 font-semibold text-study-dark transition-colors">
+                      <div className="max-w-[180px] leading-snug">{c.university}</div>
+                    </td>
+
+                    {/* Direction */}
+                    <td className="px-3 py-2.5 text-study-gray group-hover:bg-study-bg/60 transition-colors">
+                      <div className="max-w-[150px] leading-snug">{c.direction || '—'}</div>
+                    </td>
+
+                    {/* Outcome badge */}
+                    <td className="px-3 py-2.5 group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border"
+                        style={{ background: cfg.bg, color: cfg.text, borderColor: cfg.border }}
+                      >
+                        <Icon className="w-3 h-3" />
+                        {cfg.label}
+                      </span>
+                    </td>
+
+                    {/* GPA */}
+                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
+                      {gpaDisplay ?? <span className="text-study-gray/40">—</span>}
+                    </td>
+
+                    {/* English exam */}
+                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
+                      {engExam ?? <span className="text-study-gray/40">—</span>}
+                    </td>
+
+                    {/* CSCA Math */}
+                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
+                      {c.csca_math ?? <span className="text-study-gray/40">—</span>}
+                    </td>
+
+                    {/* CSCA Physics */}
+                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
+                      {c.csca_physics ?? <span className="text-study-gray/40">—</span>}
+                    </td>
+
+                    {/* HSK */}
+                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
+                      {c.hskLevel != null
+                        ? `L${c.hskLevel}${c.hskScore != null ? ` (${c.hskScore})` : ''}`
+                        : <span className="text-study-gray/40">—</span>}
+                    </td>
+
+                    {/* SAT */}
+                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
+                      {c.sat ?? <span className="text-study-gray/40">—</span>}
+                    </td>
+
+                    {/* Grant */}
+                    <td className="px-3 py-2.5 text-study-gray group-hover:bg-study-bg/60 transition-colors">
+                      <div className="max-w-[160px] leading-snug">
+                        {c.grant && c.grant !== '—' && c.grant !== '' ? c.grant : <span className="text-study-gray/40">—</span>}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -298,7 +323,6 @@ export default function ChancesEvaluator() {
           База содержит реальные кейсы поступления 2025–2026 года. Данные обновляются по мере поступления новых кейсов.
         </p>
       </div>
-
     </div>
   )
 }

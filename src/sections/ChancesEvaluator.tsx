@@ -6,7 +6,6 @@ import type { StudentCase } from '@/app/api/cases/route'
 
 // ── Outcome helpers ───────────────────────────────────────────────────────────
 type OutcomeKey = 'admitted' | 'rejected' | 'pre'
-type FilterOutcome = OutcomeKey | 'all'
 
 function outcomeKey(result: string): OutcomeKey {
   const r = result.toLowerCase()
@@ -33,7 +32,6 @@ export default function ChancesEvaluator() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState<string | null>(null)
   const [search, setSearch]     = useState('')
-  const [outcome, setOutcome]   = useState<FilterOutcome>('all')
   const [gpaMin, setGpaMin]     = useState('')
   const [ieltsMin, setIeltsMin] = useState('')
   const [cscaMin, setCscaMin]   = useState('')
@@ -54,20 +52,19 @@ export default function ChancesEvaluator() {
     const cMin = cscaMin  ? parseFloat(cscaMin)  : null
 
     return cases.filter(c => {
-      if (outcome !== 'all' && outcomeKey(c.result) !== outcome) return false
       if (q.length >= 2 && !c.university.toLowerCase().includes(q) && !(c.direction ?? '').toLowerCase().includes(q)) return false
       if (gMin != null && (c.gpa == null || c.gpa < gMin)) return false
       if (iMin != null && (c.ielts == null || c.ielts < iMin)) return false
       if (cMin != null && (c.csca_math == null || c.csca_math < cMin)) return false
       return true
     })
-  }, [cases, search, outcome, gpaMin, ieltsMin, cscaMin])
+  }, [cases, search, gpaMin, ieltsMin, cscaMin])
 
-  const hasFilters     = outcome !== 'all' || search.length >= 2 || !!gpaMin || !!ieltsMin || !!cscaMin
+  const hasFilters     = search.length >= 2 || !!gpaMin || !!ieltsMin || !!cscaMin
   const numFilterActive = !!(gpaMin || ieltsMin || cscaMin)
 
   function reset() {
-    setSearch(''); setOutcome('all'); setGpaMin(''); setIeltsMin(''); setCscaMin('')
+    setSearch(''); setGpaMin(''); setIeltsMin(''); setCscaMin('')
   }
 
   // ── Loading / Error ─────────────────────────────────────────────────────────
@@ -83,12 +80,6 @@ export default function ChancesEvaluator() {
       <p className="text-sm text-red-700">{error}</p>
     </div>
   )
-
-  const counts = {
-    admitted: cases.filter(c => outcomeKey(c.result) === 'admitted').length,
-    pre:      cases.filter(c => outcomeKey(c.result) === 'pre').length,
-    rejected: cases.filter(c => outcomeKey(c.result) === 'rejected').length,
-  }
 
   return (
     <div className="space-y-4">
@@ -107,26 +98,6 @@ export default function ChancesEvaluator() {
             <X className="w-4 h-4 text-study-gray" />
           </button>
         )}
-      </div>
-
-      {/* Outcome pills */}
-      <div className="flex gap-2 flex-wrap">
-        {(['all', 'admitted', 'pre', 'rejected'] as const).map(k => (
-          <button
-            key={k}
-            onClick={() => setOutcome(k)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              outcome === k
-                ? 'bg-study-brown text-white'
-                : 'bg-white border border-study-lightgray text-study-gray hover:border-study-brown/50'
-            }`}
-          >
-            {k === 'all'      ? `Все · ${cases.length}`             :
-             k === 'admitted' ? `Поступление · ${counts.admitted}`  :
-             k === 'pre'      ? `Предварит. · ${counts.pre}`        :
-                                `Отказ · ${counts.rejected}`}
-          </button>
-        ))}
       </div>
 
       {/* Numeric filters (collapsible) */}

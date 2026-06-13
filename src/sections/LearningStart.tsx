@@ -394,17 +394,6 @@ export default function LearningStart() {
 
       {/* Free info cards */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <button className="text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-study-green/10 flex items-center justify-center shrink-0">
-              <Building2 className="w-6 h-6 text-study-green" />
-            </div>
-            <span className="text-xs font-bold text-study-green bg-study-green/10 rounded-full px-2.5 py-1">Бесплатно</span>
-          </div>
-          <p className="font-bold text-study-dark">10 Бюджетных ВУЗов в Китае</p>
-          <p className="text-sm text-study-gray mt-1">языковой год + бакалавриат</p>
-        </button>
-
         <button
           onClick={() => openLesson('cities', '/api/learning/cities')}
           className="text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"

@@ -6,7 +6,6 @@ import Universities from '@/sections/Universities'
 import Checklist from '@/sections/Checklist'
 import Deadlines from '@/sections/Deadlines'
 import LearningStart from '@/sections/LearningStart'
-import PaidModules from '@/sections/PaidModules'
 import ChancesEvaluator from '@/sections/ChancesEvaluator'
 
 export default function Dashboard() {
@@ -14,11 +13,7 @@ export default function Dashboard() {
   const isDashboard = activeTab === 'dashboard'
 
   const pageMeta = {
-    'paid-modules': {
-      title: 'Платные модули',
-      subtitle: 'Материалы, доступные по подписке',
-    },
-    'learning-start': {
+'learning-start': {
       title: 'Начало обучения',
       subtitle: 'Стартовые материалы и доступ к tutorial-модулям',
     },
@@ -156,13 +151,7 @@ export default function Dashboard() {
 
       {activeTab === 'deadlines' && <Deadlines />}
 
-      {activeTab === 'paid-modules' && (
-        <div className="max-w-5xl">
-          <PaidModules />
-        </div>
-      )}
-
-      {activeTab === 'chances' && (
+{activeTab === 'chances' && (
         <div className="max-w-4xl">
           <ChancesEvaluator />
         </div>

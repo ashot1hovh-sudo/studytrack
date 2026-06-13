@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap, Lock, Target } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap, Target } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { Switch } from '@/components/ui/switch'
 import { useState } from 'react'
@@ -16,12 +16,7 @@ export default function Sidebar() {
   const { activeTab, setActiveTab, isParentMode, setIsParentMode, user, logout } = useApp()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const menuItems = [
-    ...baseMenuItems,
-    ...(user?.serviceType === 'diy' && user.subscriptionStatus === 'active'
-      ? [{ id: 'paid-modules', label: 'Платные модули', icon: Lock }]
-      : []),
-  ]
+  const menuItems = [...baseMenuItems]
 
   return (
     <>

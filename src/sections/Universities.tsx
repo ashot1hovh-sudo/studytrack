@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { ExternalLink, Search, ChevronDown, ChevronUp } from 'lucide-react'
 import rawData from '@/data/China_Universities_Programs.json'
+import explorerData from '@/data/universityExplorer.json'
 
 type RawEntry = { University?: string; Link?: string; Program?: string }
 
@@ -49,6 +50,17 @@ const ALL_UNIVERSITIES: UniEntry[] = (() => {
   return Array.from(map.values())
 })()
 
+const LOGO_MAP: Record<string, string> = (explorerData as { logos: Record<string, string> }).logos
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter((w) => w.length > 2)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('')
+}
+
 const FILTERS = ['Все', 'Бизнес', 'IT', 'Инженерия', 'Медицина', 'Науки', 'Гуманитарные']
 const SHOW_LIMIT = 5
 
@@ -84,10 +96,30 @@ function UniCard({ uni, query, activeFilter }: { uni: UniEntry; query: string; a
   const visibleOthers = expanded ? otherPrograms : otherPrograms.slice(0, SHOW_LIMIT)
   const hasMore = otherPrograms.length > SHOW_LIMIT
 
+  const logoUrl = LOGO_MAP[uni.name]
+  const initials = getInitials(uni.name)
+
   return (
     <div className="bg-white rounded-xl card-shadow p-4 sm:p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-bold text-study-dark text-sm leading-snug">{highlight(uni.name, query)}</h3>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="shrink-0 w-10 h-10 rounded-xl overflow-hidden bg-study-bg flex items-center justify-center">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={uni.name}
+                className="w-full h-full object-contain p-0.5"
+                onError={(e) => {
+                  const target = e.currentTarget
+                  target.style.display = 'none'
+                  target.nextElementSibling?.classList.remove('hidden')
+                }}
+              />
+            ) : null}
+            <span className={`text-xs font-bold text-study-brown ${logoUrl ? 'hidden' : ''}`}>{initials}</span>
+          </div>
+          <h3 className="font-bold text-study-dark text-sm leading-snug">{highlight(uni.name, query)}</h3>
+        </div>
         {uni.link && (
           <a
             href={uni.link}

@@ -15,6 +15,7 @@ const LESSON_FILES: Record<string, { file: string; title: string }> = {
   'b9':  { file: 'module-b10_new.md', title: 'Как написать резюме' },
   'b10': { file: 'module-b11_new.md', title: 'Как сделать финансовые документы' },
   'b11': { file: 'module-b12_new.md', title: 'Как подготовиться к интервью' },
+  'b12': { file: 'module-b13_new.md', title: 'Как заполнить анкету на сайте вуза' },
 }
 
 export async function GET(

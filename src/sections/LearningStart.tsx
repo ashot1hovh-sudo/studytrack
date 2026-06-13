@@ -87,6 +87,7 @@ const sharedLessons = [
   { id: 9, lessonId: 'b9', title: 'Резюме', description: 'Как написать резюме' },
   { id: 10, lessonId: 'b10', title: 'Финансовые документы', description: 'Как сделать финансовые документы' },
   { id: 11, lessonId: 'b11', title: 'Подготовка к интервью', description: 'Как подготовиться к интервью' },
+  { id: 12, lessonId: 'b12', title: 'Анкета на портале вуза', description: 'Как заполнить анкету на сайте университета' },
 ]
 
 const languageYearLessons = sharedLessons.filter((l) => l.lessonId !== 'b7' && l.lessonId !== 'b11')

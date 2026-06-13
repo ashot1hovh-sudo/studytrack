@@ -239,10 +239,10 @@ export default function LearningStart() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(moduleBoxesByModuleId[activeModule.id] ?? []).map((box) => (
+          {(moduleBoxesByModuleId[activeModule.id] ?? []).map((box, idx) => (
             <MediaModuleCard
               key={box.id}
-              number={box.id}
+              number={idx + 1}
               title={box.title}
               description={box.description}
               locked={!isSubscribed}

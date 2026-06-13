@@ -13,6 +13,20 @@ type UniEntry = {
   categories: string[]
 }
 
+const CATEGORY_RULES: { name: string; re: RegExp }[] = [
+  { name: 'Медицина',      re: /mbbs|medicine|medical|health/ },
+  { name: 'Бизнес',        re: /business|economics?|finance|accounting|management|marketing|commerce|trade/ },
+  { name: 'IT',            re: /computer|data|software|\bit\b|digital|fintech|cyber|artificial|information/ },
+  { name: 'Инженерия',     re: /engineering|civil|mechanical|electrical|chemical|structural|architecture/ },
+  { name: 'Науки',         re: /science|biology|chemistry|physics|math|environmental/ },
+  { name: 'Гуманитарные',  re: /communication|sociology|politics|law|governance|history|philosophy|education|language|translation|media/ },
+]
+
+function programCategories(program: string): string[] {
+  const t = program.toLowerCase()
+  return CATEGORY_RULES.filter((r) => r.re.test(t)).map((r) => r.name)
+}
+
 const ALL_UNIVERSITIES: UniEntry[] = (() => {
   const map = new Map<string, UniEntry>()
   let current = ''
@@ -28,15 +42,9 @@ const ALL_UNIVERSITIES: UniEntry[] = (() => {
     }
   }
   for (const uni of map.values()) {
-    const text = uni.programs.join(' ').toLowerCase()
-    const cats: string[] = []
-    if (/mbbs|medicine|medical|health/.test(text)) cats.push('Медицина')
-    if (/business|economics?|finance|accounting|management|marketing|commerce|trade/.test(text)) cats.push('Бизнес')
-    if (/computer|data|software|\bit\b|digital|fintech|cyber|artificial|information/.test(text)) cats.push('IT')
-    if (/engineering|civil|mechanical|electrical|chemical|structural|architecture/.test(text)) cats.push('Инженерия')
-    if (/science|biology|chemistry|physics|math|environmental/.test(text)) cats.push('Науки')
-    if (/communication|sociology|politics|law|governance|history|philosophy|education|language|translation|media/.test(text)) cats.push('Гуманитарные')
-    uni.categories = cats
+    const allCats = new Set<string>()
+    for (const p of uni.programs) programCategories(p).forEach((c) => allCats.add(c))
+    uni.categories = Array.from(allCats)
   }
   return Array.from(map.values())
 })()
@@ -59,10 +67,22 @@ function highlight(text: string, query: string): React.ReactNode {
   )
 }
 
-function UniCard({ uni, query }: { uni: UniEntry; query: string }) {
+function UniCard({ uni, query, activeFilter }: { uni: UniEntry; query: string; activeFilter: string }) {
   const [expanded, setExpanded] = useState(false)
-  const visible = expanded ? uni.programs : uni.programs.slice(0, SHOW_LIMIT)
-  const hasMore = uni.programs.length > SHOW_LIMIT
+
+  const isFiltered = activeFilter !== 'Все'
+
+  // When a filter is active, split programs into matching and rest
+  const matchingPrograms = isFiltered
+    ? uni.programs.filter((p) => programCategories(p).includes(activeFilter))
+    : []
+  const otherPrograms = isFiltered
+    ? uni.programs.filter((p) => !programCategories(p).includes(activeFilter))
+    : uni.programs
+
+  // In unfiltered mode apply show/expand logic to all programs
+  const visibleOthers = expanded ? otherPrograms : otherPrograms.slice(0, SHOW_LIMIT)
+  const hasMore = otherPrograms.length > SHOW_LIMIT
 
   return (
     <div className="bg-white rounded-xl card-shadow p-4 sm:p-5 flex flex-col gap-3">
@@ -87,20 +107,37 @@ function UniCard({ uni, query }: { uni: UniEntry; query: string }) {
         </span>
       ) : (
         <div className="flex flex-col gap-1.5">
-          {visible.map((p, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="mt-[5px] w-1.5 h-1.5 rounded-full bg-study-brown/40 shrink-0" />
-              <span className="text-xs text-study-dark leading-snug">{highlight(p, query)}</span>
+          {/* Highlighted matching programs shown first when filter is active */}
+          {isFiltered && matchingPrograms.map((p, i) => (
+            <div key={`match-${i}`} className="flex items-start gap-2 bg-study-brown/8 rounded-lg px-2 py-1.5 -mx-1">
+              <span className="mt-[5px] w-1.5 h-1.5 rounded-full bg-study-brown shrink-0" />
+              <span className="text-xs text-study-dark font-semibold leading-snug">{highlight(p, query)}</span>
             </div>
           ))}
-          {hasMore && (
+
+          {/* Divider between matched and rest when both present */}
+          {isFiltered && matchingPrograms.length > 0 && otherPrograms.length > 0 && (
+            <div className="border-t border-study-lightgray my-1" />
+          )}
+
+          {/* Other programs (dimmed when filter is active) */}
+          {visibleOthers.map((p, i) => (
+            <div key={`other-${i}`} className="flex items-start gap-2">
+              <span className={`mt-[5px] w-1.5 h-1.5 rounded-full shrink-0 ${isFiltered ? 'bg-study-gray/30' : 'bg-study-brown/40'}`} />
+              <span className={`text-xs leading-snug ${isFiltered ? 'text-study-gray' : 'text-study-dark'}`}>
+                {highlight(p, query)}
+              </span>
+            </div>
+          ))}
+
+          {!isFiltered && hasMore && (
             <button
               onClick={() => setExpanded(!expanded)}
               className="flex items-center gap-1 text-xs text-study-brown font-medium mt-1 hover:underline self-start"
             >
               {expanded
                 ? <><ChevronUp className="w-3.5 h-3.5" />Свернуть</>
-                : <><ChevronDown className="w-3.5 h-3.5" />Ещё {uni.programs.length - SHOW_LIMIT}</>
+                : <><ChevronDown className="w-3.5 h-3.5" />Ещё {otherPrograms.length - SHOW_LIMIT}</>
               }
             </button>
           )}
@@ -165,7 +202,7 @@ export default function Universities() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((uni) => (
-            <UniCard key={uni.name} uni={uni} query={query} />
+            <UniCard key={uni.name} uni={uni} query={query} activeFilter={activeFilter} />
           ))}
         </div>
       )}

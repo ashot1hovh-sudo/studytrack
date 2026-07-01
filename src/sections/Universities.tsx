@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { ExternalLink, Search, ChevronDown, ChevronUp } from 'lucide-react'
 import rawData from '@/data/China_Universities_Programs.json'
 import explorerData from '@/data/universityExplorer.json'
+import UniTracker from '@/sections/UniTracker'
 
 type RawEntry = { University?: string; Link?: string; Program?: string }
 
@@ -196,16 +197,26 @@ export default function Universities() {
   }, [query, activeFilter])
 
   return (
-    <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-study-gray pointer-events-none" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Поиск по университету или специальности..."
-          className="w-full rounded-xl border border-study-lightgray bg-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
-        />
-      </div>
+    <div className="space-y-6">
+      {/* Personal application tracker */}
+      <UniTracker />
+
+      {/* Browse full university / program database */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-study-dark">База вузов и программ</h2>
+          <p className="text-xs text-study-gray mt-0.5">Найдите вуз по специальности и добавьте его в свою воронку выше</p>
+        </div>
+
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-study-gray pointer-events-none" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Поиск по университету или специальности..."
+            className="w-full rounded-xl border border-study-lightgray bg-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
+          />
+        </div>
 
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map((f) => (
@@ -238,6 +249,7 @@ export default function Universities() {
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

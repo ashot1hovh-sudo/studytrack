@@ -90,8 +90,8 @@ const sharedLessons = [
   { id: 12, lessonId: 'b12', title: 'Анкета на портале вуза', description: 'Как заполнить анкету на сайте университета' },
 ]
 
-// Paste the unlisted YouTube EMBED url here (format: https://www.youtube.com/embed/VIDEO_ID)
-const APPLICATION_VIDEO_URL = ''
+// RuTube private video embed (format: https://rutube.ru/play/embed/VIDEO_ID?p=ACCESS_TOKEN)
+const APPLICATION_VIDEO_URL = 'https://rutube.ru/play/embed/3b2a5c3e4e4cb1b45f90bae519cf9165?p=NIHx7IIPd-eSr53AWvMfAQ'
 
 const languageYearLessons = sharedLessons.filter((l) => l.lessonId !== 'b7' && l.lessonId !== 'b11')
 

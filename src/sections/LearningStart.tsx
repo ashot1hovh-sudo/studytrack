@@ -228,6 +228,12 @@ export default function LearningStart() {
               blocks={lessonBlocks}
               userEmail={lesson.userEmail ?? 'student'}
               lessonKey={activeLessonKey ?? ''}
+              topExtra={activeLessonKey === 'scholarships' ? (
+                <>
+                  <ScholarshipComparison />
+                  <CoverageTiers />
+                </>
+              ) : undefined}
             />
           </>
         )}
@@ -809,11 +815,13 @@ function ProtectedLesson({
   blocks,
   userEmail,
   lessonKey = '',
+  topExtra,
 }: {
   title: string
   blocks: MarkdownBlock[]
   userEmail: string
   lessonKey?: string
+  topExtra?: React.ReactNode
 }) {
   const prevent = (event: React.SyntheticEvent) => event.preventDefault()
   const [isTocOpen, setIsTocOpen] = useState(true)
@@ -1330,6 +1338,8 @@ function ProtectedLesson({
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-study-dark mb-4">{title}</h1>
 
+          {topExtra && <div className="mb-6 space-y-4">{topExtra}</div>}
+
           {summaryPhase === 'loading' && (
             <div className="mb-6 rounded-xl bg-study-brown/5 border border-study-brown/15 px-5 py-4 flex items-center gap-3">
               <div className="w-4 h-4 rounded-full border-2 border-study-brown border-t-transparent animate-spin shrink-0" />
@@ -1644,6 +1654,71 @@ function InfographicShell({
       </div>
       {children}
     </section>
+  )
+}
+
+function ScholarshipComparison() {
+  const rows: [string, string, string, string][] = [
+    ['CSC Type A (Bilateral)', 'Полное: обучение, проживание, страховка, ~2500¥/мес', 'Через орган в стране абитуриента', 'Degree-программы, возраст до 25'],
+    ['CSC Type B (University)', 'Полное, как Type A', 'Через китайский вуз', 'Чаще магистратура и докторантура'],
+    ['Shanghai Government', 'A: полное · B: обучение + страховка', 'Через вуз Шанхая (фев–апр)', 'Кит. и англ. программы'],
+    ['Beijing Government', 'A: полное · B: без выплат на жизнь · C: обучение + страховка', 'Через вуз Пекина', 'Кит. и англ. программы'],
+    ['Zhejiang Provincial', 'Фикс. ~20 000¥ в год', 'Вузы провинции Чжэцзян', 'Бакалавриат'],
+    ['Guangdong', '~10 000¥ (разово или в год)', 'Вузы провинции Гуандун', 'Бакалавриат'],
+    ['Chinese Teachers', 'Полное: обучение, проживание, выплата, страховка', 'CLEC или вуз + рекомендация', 'Только языковые спец., HSK4 ≥ 210'],
+    ['Университетские', '100% / 50% обучения, часто только 1-й год', 'Через сам вуз', 'Реалистичный вариант для бакалавриата'],
+    ['Языковой год', 'Обучение (если грант получен)', 'Через вуз', 'Кит. программы при HSK ниже 4'],
+  ]
+
+  return (
+    <InfographicShell title="Виды стипендий: сравнение" subtitle="Что покрывает, как подаётся и кому подходит каждая стипендия.">
+      <div className="overflow-x-auto rounded-xl border border-study-lightgray">
+        <table className="w-full min-w-[720px] text-sm bg-white">
+          <thead>
+            <tr className="bg-study-bg text-left">
+              <th className="p-3 font-semibold text-study-dark">Стипендия</th>
+              <th className="p-3 font-semibold text-study-dark">Что покрывает</th>
+              <th className="p-3 font-semibold text-study-dark">Как подаётся</th>
+              <th className="p-3 font-semibold text-study-dark">Кому подходит</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row[0]} className="border-t border-study-lightgray align-top">
+                <td className="p-3 font-semibold text-study-dark whitespace-nowrap">{row[0]}</td>
+                <td className="p-3 text-study-gray">{row[1]}</td>
+                <td className="p-3 text-study-gray">{row[2]}</td>
+                <td className="p-3 text-study-gray">{row[3]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </InfographicShell>
+  )
+}
+
+function CoverageTiers() {
+  const tiers: [string, string, string][] = [
+    ['Полная стипендия', 'bg-study-green', 'Обучение + проживание + страховка + ежемесячная выплата на жизнь.'],
+    ['Частичная стипендия', 'bg-study-brown', 'Обычно обучение и страховка. Проживание и выплаты — не всегда.'],
+    ['Скидка', 'bg-study-orange', 'Часть обучения (100% / 50%) или только первый год. Остальное — сам студент.'],
+  ]
+
+  return (
+    <InfographicShell title="Уровни покрытия: три разные вещи" subtitle="«Полная», «частичная» стипендия и «скидка» — это не одно и то же.">
+      <div className="space-y-2">
+        {tiers.map(([title, color, detail]) => (
+          <div key={title} className={`rounded-xl ${color} p-4 text-white`}>
+            <p className="font-bold">{title}</p>
+            <p className="text-xs opacity-90 mt-0.5">{detail}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
+        Перед подачей проверьте: что покрывается, срок действия, нужно ли ежегодно подтверждать успеваемость и включено ли проживание.
+      </p>
+    </InfographicShell>
   )
 }
 

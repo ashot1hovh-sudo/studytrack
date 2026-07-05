@@ -1257,7 +1257,6 @@ function ProtectedLesson({
     if (insertedInfographics.has(blockNumber)) return false
 
     const shouldInsert =
-      (blockNumber === 1 && block.type === 'table' && stats.tables === 1) ||
       (blockNumber === 2 && block.type === 'table' && stats.tables === 1) ||
       (blockNumber === 3 && block.type === 'table' && stats.tables === 1) ||
       (blockNumber === 4 && block.type === 'list' && stats.lists === 1) ||
@@ -1268,9 +1267,7 @@ function ProtectedLesson({
       (blockNumber === 9 && block.type === 'list' && stats.lists === 4) ||
       (blockNumber === 10 && block.type === 'table' && stats.tables === 1) ||
       (blockNumber === 11 && block.type === 'table' && stats.tables === 1) ||
-      (blockNumber === 14 && block.type === 'table' && stats.tables === 1) ||
-      (blockNumber === 15 && block.type === 'table' && stats.tables === 2) ||
-      (blockNumber === 16 && block.type === 'list' && stats.lists === 1)
+      (blockNumber === 14 && block.type === 'table' && stats.tables === 1)
 
     if (shouldInsert) insertedInfographics.add(blockNumber)
     return shouldInsert
@@ -1614,7 +1611,6 @@ function ProtectedLesson({
 }
 
 function LessonInfographic({ blockNumber }: { blockNumber: number }) {
-  if (blockNumber === 1) return <DurationMap />
   if (blockNumber === 2) return <SystemsContrast />
   if (blockNumber === 3) return <StudyYearHeatmap />
   if (blockNumber === 4) return <AdmissionsFlow />
@@ -1633,8 +1629,6 @@ function LessonInfographic({ blockNumber }: { blockNumber: number }) {
     )
   }
   if (blockNumber === 14) return <ScholarshipPyramid />
-  if (blockNumber === 15) return <PrepTimeline />
-  if (blockNumber === 16) return <NextStepsProgress />
   return null
 }
 
@@ -1650,7 +1644,7 @@ function InfographicShell({
   return (
     <section className="mt-4 rounded-2xl border border-study-lightgray bg-study-bg/60 p-4 sm:p-5">
       <div className="mb-4">
-        <p className="text-xs font-bold uppercase tracking-[0.08em] text-study-brown">Интерактивная схема</p>
+        <p className="text-xs font-bold uppercase tracking-[0.08em] text-study-brown">Инфографика</p>
         <h3 className="text-lg font-bold text-study-dark mt-1">{title}</h3>
         <p className="text-sm text-study-gray mt-1">{subtitle}</p>
       </div>
@@ -1659,62 +1653,14 @@ function InfographicShell({
   )
 }
 
-const cardButton =
-  'rounded-xl border border-study-lightgray bg-white p-3 text-left transition-all hover:border-study-brown hover:shadow-sm'
-
-function DurationMap() {
-  const [selected, setSelected] = useState('4 года')
-  const routes = [
-    { label: '4 года', title: 'Обычный бакалавриат', detail: 'Базовый маршрут для большинства программ.' },
-    { label: '5 лет', title: 'Архитектура и инженерия', detail: 'Дополнительный год из-за проектной и технической нагрузки.' },
-    { label: '6 лет', title: 'Медицина', detail: 'Самый длинный маршрут: клиническая подготовка занимает больше времени.' },
-  ]
-
-  return (
-    <InfographicShell title="Сколько длится учеба" subtitle="Нажмите на ветку, чтобы увидеть, где программа отличается от базовых 4 лет.">
-      <div className="overflow-x-auto pb-2">
-        <div className="min-w-[620px] px-3 py-8">
-          <div className="relative h-20">
-            <div className="absolute left-0 right-0 top-8 h-1 rounded-full bg-study-green" />
-            {[1, 2, 3, 4, 5, 6].map((year) => (
-              <div key={year} className="absolute top-0" style={{ left: `${(year - 1) * 20}%` }}>
-                <div className="w-10 h-10 rounded-full bg-white border-4 border-study-green flex items-center justify-center text-sm font-bold text-study-green">
-                  {year}
-                </div>
-                <p className="mt-2 text-xs font-semibold text-study-gray">{year} курс</p>
-              </div>
-            ))}
-            <div className="absolute left-[80%] top-10 h-10 w-[20%] border-l-4 border-b-4 border-study-orange rounded-bl-2xl" />
-            <div className="absolute left-[80%] top-[72px] text-xs font-bold text-study-orange">5 лет</div>
-            <div className="absolute left-[100%] top-10 h-20 w-16 border-l-4 border-b-4 border-red-400 rounded-bl-2xl -translate-x-1/2" />
-            <div className="absolute left-[96%] top-[112px] text-xs font-bold text-red-500">6 лет</div>
-          </div>
-        </div>
-      </div>
-      <div className="grid sm:grid-cols-3 gap-3">
-        {routes.map((route) => (
-          <button
-            key={route.label}
-            onClick={() => setSelected(route.label)}
-            className={`${cardButton} ${selected === route.label ? 'border-study-brown ring-2 ring-study-brown/15' : ''}`}
-          >
-            <p className="text-sm font-bold text-study-dark">{route.title}</p>
-            <p className="text-xs text-study-brown font-bold mt-1">{route.label}</p>
-            {selected === route.label && <p className="text-xs text-study-gray mt-2">{route.detail}</p>}
-          </button>
-        ))}
-      </div>
-    </InfographicShell>
-  )
-}
+const cardButton = 'rounded-xl border border-study-lightgray bg-white p-3'
 
 function SystemsContrast() {
-  const [selected, setSelected] = useState('HSK')
   const left = ['ЕГЭ', 'заочное', 'специалитет', 'общие предметы']
   const right = ['HSK', 'очное обучение', 'бакалавриат', 'фокус на специальности']
 
   return (
-    <InfographicShell title="Россия и Китай: разные системы" subtitle="Нажмите на пункт справа, чтобы закрепить главное отличие.">
+    <InfographicShell title="Россия и Китай: разные системы" subtitle="Главные отличия двух систем поступления и учебы.">
       <div className="grid md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
         <div className="rounded-xl bg-white border border-study-lightgray p-4">
           <h4 className="font-bold text-study-dark mb-3">Россия</h4>
@@ -1727,13 +1673,7 @@ function SystemsContrast() {
           <h4 className="font-bold text-study-dark mb-3">Китай</h4>
           <div className="grid gap-2">
             {right.map((item) => (
-              <button
-                key={item}
-                onClick={() => setSelected(item)}
-                className={`rounded-lg px-3 py-2 text-left text-sm font-semibold ${selected === item ? 'bg-study-green text-white' : 'bg-study-bg text-study-gray'}`}
-              >
-                {item}
-              </button>
+              <span key={item} className="rounded-lg bg-study-green/10 px-3 py-2 text-sm font-semibold text-study-green">{item}</span>
             ))}
           </div>
         </div>
@@ -1746,20 +1686,10 @@ function SystemsContrast() {
 }
 
 function StudyYearHeatmap() {
-  const [active, setActive] = useState('Янв')
-  const months = [
-    ['Авг', 'green', 'Начало семестра, адаптация'],
-    ['Сен', 'green', 'Обычная учебная нагрузка'],
-    ['Окт', 'green', 'Лекции, семинары, задания'],
-    ['Ноя', 'yellow', 'Подготовка к контрольным и проектам'],
-    ['Дек', 'red', 'Пик сессии и экзаменов'],
-    ['Янв', 'red', 'Экзамены, иногда несколько в одну неделю'],
-    ['Фев', 'green', 'Каникулы или старт весеннего семестра'],
-    ['Мар', 'green', 'Обычная учеба'],
-    ['Апр', 'green', 'Проекты и текущие оценки'],
-    ['Май', 'yellow', 'Подготовка к летней сессии'],
-    ['Июн', 'red', 'Экзамены и дедлайны'],
-    ['Июл', 'blue', 'Практика или стажировка после 3 курса'],
+  const months: [string, string][] = [
+    ['Авг', 'green'], ['Сен', 'green'], ['Окт', 'green'], ['Ноя', 'yellow'],
+    ['Дек', 'red'], ['Янв', 'red'], ['Фев', 'green'], ['Мар', 'green'],
+    ['Апр', 'green'], ['Май', 'yellow'], ['Июн', 'red'], ['Июл', 'blue'],
   ]
   const colors: Record<string, string> = {
     green: 'bg-study-green/15 text-study-green border-study-green/25',
@@ -1767,34 +1697,36 @@ function StudyYearHeatmap() {
     red: 'bg-red-100 text-red-500 border-red-200',
     blue: 'bg-blue-100 text-blue-600 border-blue-200',
   }
+  const legend: [string, string][] = [
+    ['green', 'Обычная учеба'], ['yellow', 'Подготовка к сессии'],
+    ['red', 'Экзамены'], ['blue', 'Практика / стажировка'],
+  ]
 
   return (
-    <InfographicShell title="Нагрузка в течение учебного года" subtitle="Карта показывает, где обычно становится интенсивно.">
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+    <InfographicShell title="Нагрузка в течение учебного года" subtitle="Где обычно становится интенсивно.">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
         {months.map(([month, color]) => (
-          <button
-            key={month}
-            onClick={() => setActive(month)}
-            className={`rounded-xl border p-3 text-left ${colors[color]} ${active === month ? 'ring-2 ring-study-brown/20' : ''}`}
-          >
+          <div key={month} className={`rounded-xl border p-3 ${colors[color]}`}>
             <span className="text-sm font-bold">{month}</span>
-            {month === 'Янв' && <AlertTriangle className="w-4 h-4 mt-2" />}
-          </button>
+          </div>
         ))}
       </div>
-      <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
-        {months.find(([month]) => month === active)?.[2]}
-      </p>
+      <div className="mt-3 flex flex-wrap gap-3">
+        {legend.map(([color, label]) => (
+          <span key={label} className="flex items-center gap-1.5 text-xs text-study-gray">
+            <span className={`w-3 h-3 rounded-full border ${colors[color]}`} />{label}
+          </span>
+        ))}
+      </div>
     </InfographicShell>
   )
 }
 
 function AdmissionsFlow() {
-  const [active, setActive] = useState(5)
   const steps = ['Цель', 'Страны/города', 'Бюджет', 'Вузы', 'Экзамены', 'Документы', 'Подача', 'Интервью', 'Ответ', 'Виза']
 
   return (
-    <InfographicShell title="Поступление как 10 шагов" subtitle="Нажмите на шаг, чтобы увидеть, где вы сейчас в процессе.">
+    <InfographicShell title="Поступление как 10 шагов" subtitle="Весь маршрут обычно занимает 3–12 месяцев.">
       <div className="grid md:grid-cols-2 gap-3">
         {steps.map((step, index) => {
           const number = index + 1
@@ -1802,53 +1734,41 @@ function AdmissionsFlow() {
           const isOutcome = number >= 9
           const color = isExam ? 'bg-study-orange' : isOutcome ? 'bg-study-dark' : 'bg-teal-600'
           return (
-            <button
-              key={step}
-              onClick={() => setActive(number)}
-              className={`flex items-center gap-3 rounded-xl border bg-white p-3 text-left ${active === number ? 'border-study-brown ring-2 ring-study-brown/15' : 'border-study-lightgray'}`}
-            >
+            <div key={step} className="flex items-center gap-3 rounded-xl border border-study-lightgray bg-white p-3">
               <span className={`w-9 h-9 rounded-full ${color} text-white flex items-center justify-center text-sm font-bold`}>{number}</span>
               <span className="font-semibold text-study-dark">{step}</span>
-            </button>
+            </div>
           )
         })}
-      </div>
-      <div className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
-        Выбран шаг {active}: весь маршрут обычно занимает <span className="font-bold text-study-dark">3-12 месяцев</span>.
       </div>
     </InfographicShell>
   )
 }
 
 function WorkDecisionTree() {
-  const [path, setPath] = useState<'campus' | 'outside' | 'none'>('outside')
-
   return (
-    <InfographicShell title="Можно ли работать студенту" subtitle="Проверьте маршрут: кампус проще, работа вне кампуса требует разрешений.">
+    <InfographicShell title="Можно ли работать студенту" subtitle="Кампус проще, работа вне кампуса требует разрешений.">
       <div className="grid sm:grid-cols-3 gap-3">
-        <button onClick={() => setPath('none')} className={`${cardButton} ${path === 'none' ? 'border-study-brown' : ''}`}>
+        <div className={cardButton}>
           <Briefcase className="w-5 h-5 text-study-gray mb-2" />
           <p className="font-bold text-study-dark">Не работаю</p>
           <p className="text-xs text-study-gray mt-1">Самый простой вариант по визовым рискам.</p>
-        </button>
-        <button onClick={() => setPath('campus')} className={`${cardButton} ${path === 'campus' ? 'border-study-green' : ''}`}>
+        </div>
+        <div className={cardButton}>
           <CheckCircle className="w-5 h-5 text-study-green mb-2" />
           <p className="font-bold text-study-dark">Внутри кампуса</p>
           <p className="text-xs text-study-gray mt-1">Обычно легче согласовать через университет.</p>
-        </button>
-        <button onClick={() => setPath('outside')} className={`${cardButton} ${path === 'outside' ? 'border-red-300' : ''}`}>
+        </div>
+        <div className={cardButton}>
           <AlertTriangle className="w-5 h-5 text-red-500 mb-2" />
           <p className="font-bold text-study-dark">Вне кампуса</p>
           <p className="text-xs text-study-gray mt-1">Нужны разрешения университета и миграционной службы.</p>
-        </button>
+        </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
         <span className="rounded-full bg-white px-3 py-2">Студенческая виза</span>
         <span className="rounded-full bg-white px-3 py-2">Разрешение университета</span>
         <span className="rounded-full bg-white px-3 py-2">Миграционная служба</span>
-        <span className={`rounded-full px-3 py-2 ${path === 'outside' ? 'bg-red-100 text-red-500' : 'bg-study-green/15 text-study-green'}`}>
-          {path === 'outside' ? 'Проверить заранее' : 'Риск ниже'}
-        </span>
       </div>
     </InfographicShell>
   )
@@ -1879,7 +1799,6 @@ function ArmyCard() {
 }
 
 function RouteLanes() {
-  const [routeId, setRouteId] = useState('direct')
   const routes = [
     { id: 'direct', title: 'Бакалавриат напрямую', icon: Route, detail: 'Быстрее, но нужен готовый язык: HSK или IELTS.' },
     { id: 'language', title: 'Языковой год', icon: Languages, detail: 'Один год на язык, затем выход к HSK 4 и поступлению.' },
@@ -1887,23 +1806,16 @@ function RouteLanes() {
   ]
 
   return (
-    <InfographicShell title="Три маршрута поступления" subtitle="Выберите дорожку, чтобы сравнить логику маршрута.">
+    <InfographicShell title="Три маршрута поступления" subtitle="Логика каждого маршрута.">
       <div className="grid md:grid-cols-3 gap-3">
         {routes.map((route) => {
           const Icon = route.icon
           return (
-            <button
-              key={route.id}
-              onClick={() => setRouteId(route.id)}
-              className={`${cardButton} min-h-[170px] ${routeId === route.id ? 'border-study-brown ring-2 ring-study-brown/15' : ''}`}
-            >
+            <div key={route.id} className={`${cardButton} min-h-[150px]`}>
               <Icon className="w-6 h-6 text-study-brown mb-3" />
               <p className="font-bold text-study-dark">{route.title}</p>
-              <div className="my-3 h-2 rounded-full bg-study-lightgray overflow-hidden">
-                <div className={`h-full ${route.id === 'language' ? 'w-1/2 bg-study-orange' : 'w-full bg-study-green'}`} />
-              </div>
-              <p className="text-xs text-study-gray">{route.detail}</p>
-            </button>
+              <p className="text-xs text-study-gray mt-2">{route.detail}</p>
+            </div>
           )
         })}
       </div>
@@ -1912,8 +1824,7 @@ function RouteLanes() {
 }
 
 function LanguageQuadrants() {
-  const [active, setActive] = useState('Английский')
-  const items = [
+  const items: [string, string, string, string][] = [
     ['Китайский', 'HSK', 'Полное погружение', 'yellow'],
     ['Английский', 'IELTS/TOEFL', 'Удобнее на старте, HSK может понадобиться к выпуску', 'green'],
     ['Bilingual', 'HSK + English', 'Гибридная нагрузка', 'yellow'],
@@ -1921,21 +1832,17 @@ function LanguageQuadrants() {
   ]
 
   return (
-    <InfographicShell title="Язык обучения: 4 сценария" subtitle="Нажмите на формат, чтобы увидеть требование и риск.">
+    <InfographicShell title="Язык обучения: 4 сценария" subtitle="Требование и риск каждого формата.">
       <div className="grid sm:grid-cols-2 gap-3">
         {items.map(([title, key, detail, risk]) => (
-          <button
-            key={title}
-            onClick={() => setActive(title)}
-            className={`${cardButton} ${active === title ? 'border-study-brown' : ''}`}
-          >
+          <div key={title} className={cardButton}>
             <div className="flex items-center justify-between gap-3">
               <p className="font-bold text-study-dark">{title}</p>
               <span className={`w-3 h-3 rounded-full ${risk === 'green' ? 'bg-study-green' : risk === 'yellow' ? 'bg-study-orange' : 'bg-red-500'}`} />
             </div>
             <p className="text-xs text-study-brown font-bold mt-2">Ключ: {key}</p>
             <p className="text-sm text-study-gray mt-1">{detail}</p>
-          </button>
+          </div>
         ))}
       </div>
     </InfographicShell>
@@ -1943,7 +1850,6 @@ function LanguageQuadrants() {
 }
 
 function ExamDecisionFlow() {
-  const [track, setTrack] = useState('chinese')
   const tracks = [
     { id: 'chinese', title: 'Китайский трек', detail: 'Главный экзамен: HSK. Уровень зависит от программы.' },
     { id: 'english', title: 'Английский трек', detail: 'IELTS, TOEFL или Duolingo, если вуз принимает этот формат.' },
@@ -1952,22 +1858,16 @@ function ExamDecisionFlow() {
   ]
 
   return (
-    <InfographicShell title="Какие экзамены могут понадобиться" subtitle="Соберите свой маршрут: язык, программа, требования вуза.">
-      <div className="grid md:grid-cols-4 gap-3">
+    <InfographicShell title="Какие экзамены могут понадобиться" subtitle="Финальная проверка всегда идет по странице конкретной программы.">
+      <div className="grid sm:grid-cols-2 gap-3">
         {tracks.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setTrack(item.id)}
-            className={`${cardButton} ${track === item.id ? 'border-study-brown ring-2 ring-study-brown/15' : ''}`}
-          >
+          <div key={item.id} className={cardButton}>
             <FileText className="w-5 h-5 text-study-brown mb-2" />
             <p className="font-bold text-study-dark">{item.title}</p>
-          </button>
+            <p className="text-sm text-study-gray mt-1">{item.detail}</p>
+          </div>
         ))}
       </div>
-      <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
-        {tracks.find((item) => item.id === track)?.detail} Финальная проверка всегда идет по странице конкретной программы.
-      </p>
     </InfographicShell>
   )
 }
@@ -2020,18 +1920,18 @@ function ExamMatrix() {
 }
 
 function CostChart() {
-  const [active, setActive] = useState('Китайская программа')
   const bars = [
     { title: 'Китайская программа', total: '63 300¥', segments: [30, 18, 5, 4, 43] },
     { title: 'Английская программа', total: '70 300¥', segments: [38, 16, 5, 4, 37] },
   ]
   const colors = ['bg-study-brown', 'bg-study-green', 'bg-study-orange', 'bg-blue-500', 'bg-study-gray']
+  const legend = ['Обучение', 'Общежитие', 'Страховка', 'Сборы', 'Жизнь']
 
   return (
-    <InfographicShell title="Годовой бюджет: где прячутся расходы" subtitle="Нажмите на программу, чтобы сфокусироваться на сумме.">
+    <InfographicShell title="Годовой бюджет: где прячутся расходы" subtitle="Примерная структура расходов за год.">
       <div className="grid md:grid-cols-2 gap-3">
         {bars.map((bar) => (
-          <button key={bar.title} onClick={() => setActive(bar.title)} className={`${cardButton} ${active === bar.title ? 'border-study-brown' : ''}`}>
+          <div key={bar.title} className={cardButton}>
             <div className="flex items-center justify-between">
               <p className="font-bold text-study-dark">{bar.title}</p>
               <p className="font-bold text-study-brown">{bar.total}</p>
@@ -2039,7 +1939,14 @@ function CostChart() {
             <div className="mt-4 flex h-8 overflow-hidden rounded-full">
               {bar.segments.map((segment, index) => <span key={index} className={colors[index]} style={{ width: `${segment}%` }} />)}
             </div>
-          </button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-3">
+        {legend.map((label, index) => (
+          <span key={label} className="flex items-center gap-1.5 text-xs text-study-gray">
+            <span className={`w-3 h-3 rounded-full ${colors[index]}`} />{label}
+          </span>
         ))}
       </div>
       <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
@@ -2050,27 +1957,26 @@ function CostChart() {
 }
 
 function DormPlan() {
-  const [room, setRoom] = useState('2-местная')
-  const rooms = [
+  const rooms: [string, string, string][] = [
     ['1-местная', 'дороже', 'для тех, кому нужна приватность'],
     ['2-местная', 'баланс', 'самый универсальный вариант'],
     ['4-местная', 'дешевле', 'для экономии и социальной среды'],
   ]
 
   return (
-    <InfographicShell title="Общежитие: выбор комнаты" subtitle="Нажмите на комнату, чтобы увидеть компромисс.">
+    <InfographicShell title="Общежитие: выбор комнаты" subtitle="Компромисс между ценой и приватностью.">
       <div className="grid sm:grid-cols-3 gap-3">
         {rooms.map(([title, price, detail]) => (
-          <button key={title} onClick={() => setRoom(title)} className={`${cardButton} ${room === title ? 'border-study-brown' : ''}`}>
+          <div key={title} className={cardButton}>
             <Home className="w-5 h-5 text-study-brown mb-2" />
             <p className="font-bold text-study-dark">{title}</p>
             <p className="text-xs font-bold text-study-green mt-1">{price}</p>
             <p className="text-xs text-study-gray mt-2">{detail}</p>
-          </button>
+          </div>
         ))}
       </div>
       <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
-        Комендантский час часто бывает около 00:00-06:00, но правила зависят от кампуса.
+        Комендантский час часто бывает около 00:00–06:00, но правила зависят от кампуса.
       </p>
     </InfographicShell>
   )
@@ -2098,70 +2004,3 @@ function ScholarshipPyramid() {
   )
 }
 
-function PrepTimeline() {
-  const month = new Date().getMonth()
-  const marker = `${Math.round(((month + 1) / 12) * 100)}%`
-  const tracks = [
-    ['Грант', 'Сентябрь', 'экзамены', 'подача', 'ответ'],
-    ['Платное', 'Февраль', 'подбор вузов', 'подача', 'виза'],
-  ]
-
-  return (
-    <InfographicShell title="Когда начинать подготовку" subtitle="Две дорожки на одной шкале: грант обычно стартует раньше.">
-      <div className="relative rounded-xl bg-white border border-study-lightgray p-4 overflow-x-auto">
-        <div className="absolute top-4 bottom-4 w-0.5 bg-red-400" style={{ left: marker }} />
-        <span className="absolute top-1 -translate-x-1/2 rounded-full bg-red-100 px-2 py-1 text-[10px] font-bold text-red-500" style={{ left: marker }}>СЕЙЧАС</span>
-        <div className="min-w-[620px] space-y-5 pt-7">
-          {tracks.map(([title, start, mid, apply, finish], index) => (
-            <div key={title} className="grid grid-cols-[90px_1fr] gap-3 items-center">
-              <p className={`font-bold ${index === 0 ? 'text-study-orange' : 'text-teal-600'}`}>{title}</p>
-              <div className="relative h-12 rounded-full bg-study-bg">
-                <div className={`absolute left-[8%] right-[12%] top-4 h-4 rounded-full ${index === 0 ? 'bg-study-orange/35' : 'bg-teal-600/25'}`} />
-                {[start, mid, apply, finish].map((label, pointIndex) => (
-                  <span key={label} className="absolute top-1 -translate-x-1/2 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-study-dark border border-study-lightgray" style={{ left: `${15 + pointIndex * 25}%` }}>
-                    {pointIndex === 1 && <Star className="inline w-3 h-3 mr-1 text-study-orange" />}
-                    {label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </InfographicShell>
-  )
-}
-
-function NextStepsProgress() {
-  const [done, setDone] = useState(1)
-  const total = 13
-  const percent = Math.round((done / total) * 100)
-
-  return (
-    <InfographicShell title="Следующий шаг как прогресс" subtitle="Отмечайте шаги мысленно: процесс становится менее тяжелым, когда он разбит на этапы.">
-      <div className="rounded-xl bg-white border border-study-lightgray p-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="font-bold text-study-dark">{percent}%</p>
-          <p className="text-sm text-study-gray">Пройдено {done} из {total}</p>
-        </div>
-        <div className="mt-3 h-4 rounded-full bg-study-lightgray overflow-hidden">
-          <div className="h-full bg-study-green transition-all" style={{ width: `${percent}%` }} />
-        </div>
-        <div className="mt-4 grid grid-cols-4 sm:grid-cols-7 gap-2">
-          {Array.from({ length: total }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setDone(index + 1)}
-              className={`h-9 rounded-lg text-xs font-bold ${index < done ? 'bg-study-green text-white' : 'bg-study-bg text-study-gray'}`}
-            >
-              {index === 0 ? 'Старт' : index}
-            </button>
-          ))}
-        </div>
-        <p className="mt-4 rounded-xl bg-study-bg p-3 text-sm text-study-gray">
-          Поступление в Китай — это длинный маршрут, но каждый закрытый шаг реально двигает вас вперед.
-        </p>
-      </div>
-    </InfographicShell>
-  )
-}

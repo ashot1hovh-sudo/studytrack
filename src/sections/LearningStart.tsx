@@ -204,6 +204,12 @@ export default function LearningStart() {
         {!isLessonLoading && !lessonError && lesson && (
           <>
             {activeLessonKey === 'apply-guide' && APPLICATION_VIDEO_URL && (
+              <p className="mb-3 flex items-start gap-2 rounded-xl bg-study-orange/10 border border-study-orange/20 px-4 py-3 text-sm text-study-dark">
+                <AlertTriangle className="w-4 h-4 text-study-orange shrink-0 mt-0.5" />
+                <span>Если видео не загружается — отключите VPN. Видео размещено на RuTube и открывается без VPN.</span>
+              </p>
+            )}
+            {activeLessonKey === 'apply-guide' && APPLICATION_VIDEO_URL && (
               <div
                 className="relative w-full mb-6 rounded-xl overflow-hidden bg-study-dark"
                 style={{ paddingTop: '56.25%' }}

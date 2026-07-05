@@ -202,12 +202,28 @@ export default function LearningStart() {
         )}
 
         {!isLessonLoading && !lessonError && lesson && (
-          <ProtectedLesson
-            title={lesson.title}
-            blocks={lessonBlocks}
-            userEmail={lesson.userEmail ?? 'student'}
-            lessonKey={activeLessonKey ?? ''}
-          />
+          <>
+            {activeLessonKey === 'apply-guide' && APPLICATION_VIDEO_URL && (
+              <div
+                className="relative w-full mb-6 rounded-xl overflow-hidden bg-study-dark"
+                style={{ paddingTop: '56.25%' }}
+              >
+                <iframe
+                  src={APPLICATION_VIDEO_URL}
+                  title="Как подать в университет в Китае"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+            <ProtectedLesson
+              title={lesson.title}
+              blocks={lessonBlocks}
+              userEmail={lesson.userEmail ?? 'student'}
+              lessonKey={activeLessonKey ?? ''}
+            />
+          </>
         )}
       </div>
     )
@@ -413,7 +429,7 @@ export default function LearningStart() {
         </button>
 
         <button
-          onClick={() => setVideoOpen(true)}
+          onClick={() => isSubscribed ? openLesson('apply-guide', '/api/learning/module/apply-guide') : setVideoOpen(true)}
           className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
         >
           <div className="flex items-start justify-between gap-4 mb-4">

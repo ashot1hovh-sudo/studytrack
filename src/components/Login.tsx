@@ -43,7 +43,7 @@ export default function Login() {
           const data = await response.json().catch(() => null)
 
           if (response.ok) {
-            setRegisterSuccess(data?.message ?? 'Регистрация успешна! Проверьте email.')
+            setRegisterSuccess(data?.message ?? 'Аккаунт создан. Теперь войдите с вашим email и паролем.')
             setLoginMode('student')
             setPassword('')
             setFullName('')

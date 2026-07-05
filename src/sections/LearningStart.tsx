@@ -455,16 +455,22 @@ export default function LearningStart() {
 
       {/* Locked info cards */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <button className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all">
+        <button
+          onClick={() => isSubscribed ? openLesson('scholarships', '/api/learning/module/scholarships') : setVideoOpen(true)}
+          className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
+        >
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
               <Star className="w-6 h-6 text-study-brown" />
             </div>
-            <div className="w-8 h-8 rounded-full bg-study-dark/10 flex items-center justify-center shrink-0">
-              <Lock className="w-4 h-4 text-study-dark" />
-            </div>
+            {!isSubscribed && (
+              <div className="w-8 h-8 rounded-full bg-study-dark/10 flex items-center justify-center shrink-0">
+                <Lock className="w-4 h-4 text-study-dark" />
+              </div>
+            )}
           </div>
           <p className="font-bold text-study-dark">Введение в стипендии</p>
+          <p className="text-sm text-study-gray mt-1">Какие бывают стипендии на бакалавриат и что важно понимать</p>
         </button>
 
         <button className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all">
@@ -492,20 +498,20 @@ export default function LearningStart() {
         <p className="text-sm text-study-gray mt-1">консультации, подбор ВУЗов, сопровождение</p>
       </button>
 
-      {/* Application walkthrough video modal */}
+      {/* Paid module paywall modal */}
       {videoOpen && createPortal(
         <div
           className="fixed inset-0 z-[70] bg-study-dark/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setVideoOpen(false)}
         >
           <div
-            className="bg-white w-full sm:max-w-3xl rounded-t-2xl sm:rounded-2xl card-shadow-hover overflow-hidden"
+            className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl card-shadow-hover overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 p-4 sm:p-5 border-b border-study-lightgray">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-study-brown">Видео-инструкция</p>
-                <h3 className="text-base sm:text-lg font-bold text-study-dark mt-1">Как подать в университет в Китае</h3>
+                <p className="text-xs font-bold uppercase tracking-wide text-study-brown">Платный модуль</p>
+                <h3 className="text-base sm:text-lg font-bold text-study-dark mt-1">Доступ по подписке</h3>
               </div>
               <button
                 onClick={() => setVideoOpen(false)}
@@ -515,39 +521,21 @@ export default function LearningStart() {
               </button>
             </div>
 
-            {!isSubscribed ? (
-              <div className="p-5 sm:p-6">
-                <div className="rounded-xl bg-study-orange/10 border border-study-orange/20 p-4">
-                  <p className="text-sm font-semibold text-study-dark">Это платный модуль</p>
-                  <p className="text-sm text-study-gray mt-1 leading-relaxed">
-                    Чтобы открыть видео-инструкцию, свяжитесь с Яной и оформите подписку.
-                  </p>
-                </div>
-                <button
-                  onClick={openTelegram}
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-study-green px-4 py-3 text-sm font-bold text-white hover:bg-study-green/90 transition-colors"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  Написать Яне
-                </button>
+            <div className="p-5 sm:p-6">
+              <div className="rounded-xl bg-study-orange/10 border border-study-orange/20 p-4">
+                <p className="text-sm font-semibold text-study-dark">Это платный модуль</p>
+                <p className="text-sm text-study-gray mt-1 leading-relaxed">
+                  Чтобы открыть этот модуль, свяжитесь с Яной и оформите подписку.
+                </p>
               </div>
-            ) : APPLICATION_VIDEO_URL ? (
-              <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
-                <iframe
-                  src={APPLICATION_VIDEO_URL}
-                  title="Как подать в университет в Китае"
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="p-10 text-center">
-                <PlayCircle className="w-10 h-10 text-study-gray/50 mx-auto mb-3" />
-                <p className="text-sm font-semibold text-study-dark">Видео скоро появится</p>
-                <p className="text-xs text-study-gray mt-1">Мы записываем инструкцию — загляните позже.</p>
-              </div>
-            )}
+              <button
+                onClick={openTelegram}
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-study-green px-4 py-3 text-sm font-bold text-white hover:bg-study-green/90 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Написать Яне
+              </button>
+            </div>
           </div>
         </div>,
         document.body,

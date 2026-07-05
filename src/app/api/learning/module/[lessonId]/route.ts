@@ -17,6 +17,7 @@ const LESSON_FILES: Record<string, { file: string; title: string }> = {
   'b11': { file: 'module-b12_new.md', title: 'Как подготовиться к интервью' },
   'b12': { file: 'module-b13_new.md', title: 'Как заполнить анкету на сайте вуза' },
   'apply-guide': { file: 'module-apply-guide.md', title: 'Как заполнить заявку в китайский университет' },
+  'scholarships': { file: 'module-scholarships.md', title: 'Введение в стипендии' },
 }
 
 export async function GET(

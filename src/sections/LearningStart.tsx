@@ -407,6 +407,19 @@ export default function LearningStart() {
           </div>
           <p className="font-bold text-study-dark">Лучшие города для учёбы в Китае</p>
         </button>
+
+        <button className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
+              <PlayCircle className="w-6 h-6 text-study-brown" />
+            </div>
+            <div className="w-8 h-8 rounded-full bg-study-dark/10 flex items-center justify-center shrink-0">
+              <Lock className="w-4 h-4 text-study-dark" />
+            </div>
+          </div>
+          <p className="font-bold text-study-dark">Пошаговая инструкция: Как подать в университет в Китае</p>
+          <p className="text-sm text-study-gray mt-1">Заполняем анкету для поступления в китайский вуз вместе (видео)</p>
+        </button>
       </div>
 
       {/* Locked info cards */}

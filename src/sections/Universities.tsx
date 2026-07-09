@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { ExternalLink, Search, ChevronDown, ChevronUp } from 'lucide-react'
+import { ExternalLink, Search, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react'
 import rawData from '@/data/China_Universities_Programs.json'
 import explorerData from '@/data/universityExplorer.json'
 import UniTracker from '@/sections/UniTracker'
+import { useApp } from '@/context/AppContext'
 
 type RawEntry = { University?: string; Link?: string; Program?: string }
 
@@ -64,6 +65,7 @@ function getInitials(name: string): string {
 
 const FILTERS = ['Все', 'Бизнес', 'IT', 'Инженерия', 'Медицина', 'Науки', 'Гуманитарные']
 const SHOW_LIMIT = 5
+const PREVIEW_COUNT = 6
 
 function highlight(text: string, query: string): React.ReactNode {
   if (!query || query.length < 2) return text
@@ -180,7 +182,8 @@ function UniCard({ uni, query, activeFilter }: { uni: UniEntry; query: string; a
   )
 }
 
-export default function Universities() {
+export default function Universities({ compact = false }: { compact?: boolean }) {
+  const { setActiveTab } = useApp()
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('Все')
 
@@ -196,6 +199,9 @@ export default function Universities() {
     })
   }, [query, activeFilter])
 
+  // On the dashboard only preview a handful of universities; full DB lives on the Вузы page.
+  const visible = compact ? filtered.slice(0, PREVIEW_COUNT) : filtered
+
   return (
     <div className="space-y-6">
       {/* Personal application tracker */}
@@ -205,38 +211,46 @@ export default function Universities() {
       <div className="space-y-4">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-study-dark">База вузов и программ</h2>
-          <p className="text-xs text-study-gray mt-0.5">Найдите вуз по специальности и добавьте его в свою воронку выше</p>
+          <p className="text-xs text-study-gray mt-0.5">
+            {compact
+              ? 'Популярные вузы — вся база из 182 университетов на странице «Вузы»'
+              : 'Найдите вуз по специальности и добавьте его в свою воронку выше'}
+          </p>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-study-gray pointer-events-none" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Поиск по университету или специальности..."
-            className="w-full rounded-xl border border-study-lightgray bg-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
-          />
-        </div>
+        {!compact && (
+          <>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-study-gray pointer-events-none" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Поиск по университету или специальности..."
+                className="w-full rounded-xl border border-study-lightgray bg-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
+              />
+            </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            onClick={() => setActiveFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              activeFilter === f
-                ? 'bg-study-brown text-white'
-                : 'bg-white border border-study-lightgray text-study-gray hover:border-study-brown/50'
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
+            <div className="flex gap-2 flex-wrap">
+              {FILTERS.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setActiveFilter(f)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                    activeFilter === f
+                      ? 'bg-study-brown text-white'
+                      : 'bg-white border border-study-lightgray text-study-gray hover:border-study-brown/50'
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
 
-      <p className="text-xs text-study-gray">
-        Найдено: <span className="font-semibold text-study-dark">{filtered.length}</span> университетов
-      </p>
+            <p className="text-xs text-study-gray">
+              Найдено: <span className="font-semibold text-study-dark">{filtered.length}</span> университетов
+            </p>
+          </>
+        )}
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-study-gray text-sm">
@@ -244,10 +258,20 @@ export default function Universities() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {filtered.map((uni) => (
+          {visible.map((uni) => (
             <UniCard key={uni.name} uni={uni} query={query} activeFilter={activeFilter} />
           ))}
         </div>
+      )}
+
+      {compact && (
+        <button
+          onClick={() => setActiveTab('universities')}
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-study-lightgray bg-white px-4 py-3 text-sm font-semibold text-study-brown hover:border-study-brown/50 hover:bg-study-bg transition-colors"
+        >
+          Показать больше
+          <ArrowRight className="w-4 h-4" />
+        </button>
       )}
       </div>
     </div>

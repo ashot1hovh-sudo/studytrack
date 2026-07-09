@@ -124,7 +124,7 @@ export default function Dashboard() {
 
           <div className="flex flex-col xl:grid xl:grid-cols-3 gap-4 sm:gap-6 mb-5">
             <div className="xl:col-span-2">
-              <Universities />
+              <Universities compact />
             </div>
             <div className="xl:col-span-1">
               <Checklist />

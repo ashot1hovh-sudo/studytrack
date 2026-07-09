@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useApp } from '@/context/AppContext'
 import { MediaModuleCard } from '@/components/ui/media-button'
@@ -824,7 +824,10 @@ function ProtectedLesson({
   topExtra?: React.ReactNode
 }) {
   const prevent = (event: React.SyntheticEvent) => event.preventDefault()
-  const [isTocOpen, setIsTocOpen] = useState(true)
+  // TOC collapsed by default on mobile (compact bar); always shown on desktop via lg:block.
+  const [isTocOpen, setIsTocOpen] = useState(false)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const tocListRef = useRef<HTMLDivElement | null>(null)
 
   // AI Summary (b1 pilot)
   const AI_SUMMARY: Record<string, string> = {
@@ -866,7 +869,55 @@ function ProtectedLesson({
 
   const scrollToHeading = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setActiveId(id)
+    setIsTocOpen(false) // close the mobile panel after picking; desktop list stays (lg:block)
   }
+
+  const headingIds = headings.map((heading) => heading.id).join('|')
+
+  // Scroll-spy: mark the last heading scrolled past as active.
+  useEffect(() => {
+    if (headings.length === 0) return
+    const ids = headingIds.split('|').filter(Boolean)
+    let frame = 0
+    const update = () => {
+      frame = 0
+      const offset = 130
+      let current = ids[0]
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= offset) current = id
+        else break
+      }
+      setActiveId(current)
+    }
+    const onScroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(update)
+    }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [headingIds, headings.length])
+
+  // Keep the active item visible inside the TOC list without moving the page.
+  useEffect(() => {
+    const container = tocListRef.current
+    if (!container || !activeId) return
+    const btn = container.querySelector<HTMLElement>(`[data-toc-id="${activeId}"]`)
+    if (!btn) return
+    const cRect = container.getBoundingClientRect()
+    const bRect = btn.getBoundingClientRect()
+    if (bRect.top < cRect.top) container.scrollTop += bRect.top - cRect.top - 8
+    else if (bRect.bottom > cRect.bottom) container.scrollTop += bRect.bottom - cRect.bottom + 8
+  }, [activeId])
+
+  const activeText = headings.find((heading) => heading.id === activeId)?.text ?? ''
   let currentBlockNumber: number | null = null
   const insertedInfographics = new Set<number>()
   const blockStats = new Map<number, { lists: number; tables: number; paragraphs: number }>()
@@ -1278,30 +1329,74 @@ function ProtectedLesson({
   return (
     <div className={headings.length > 0 ? 'lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start' : ''}>
       {headings.length > 0 && (
-        <aside style={{ position: 'sticky', top: 20, alignSelf: 'flex-start' }}>
-          <div className="rounded-xl border border-study-lightgray bg-study-bg/70 p-3">
+        <aside className="sticky top-3 z-20 mb-4 self-start lg:top-5 lg:mb-0">
+          <nav className="overflow-hidden rounded-xl border border-study-lightgray bg-study-bg/85 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-study-bg/70">
             <button
+              type="button"
               onClick={() => setIsTocOpen((current) => !current)}
-              className="w-full flex items-center justify-between gap-3 text-left"
+              aria-expanded={isTocOpen}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left lg:cursor-default"
             >
-              <span className="text-xs font-bold text-study-dark">Содержание</span>
-              <span className="text-xs font-semibold text-study-brown">{isTocOpen ? 'Скрыть' : 'Показать'}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <svg viewBox="0 0 20 20" className="h-4 w-4 shrink-0 text-study-brown" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M7 5h9M7 10h9M7 15h9M3.4 5h.01M3.4 10h.01M3.4 15h.01" />
+                </svg>
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-study-dark">Содержание</span>
+              </span>
+              <span className="flex min-w-0 items-center gap-2 lg:hidden">
+                {!isTocOpen && activeText && (
+                  <span className="max-w-[42vw] truncate text-xs font-medium text-study-brown">{activeText}</span>
+                )}
+                <svg viewBox="0 0 20 20" className={`h-4 w-4 shrink-0 text-study-gray transition-transform duration-200 ${isTocOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 7.5l5 5 5-5" />
+                </svg>
+              </span>
             </button>
 
-            {isTocOpen && (
-              <div className="mt-2 flex lg:block gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0">
-                {headings.map((heading) => (
-                  <button
-                    key={heading.id}
-                    onClick={() => scrollToHeading(heading.id)}
-                    className="shrink-0 lg:w-full lg:text-left rounded-lg px-3 py-2 text-xs font-semibold text-study-gray hover:bg-white hover:text-study-brown transition-colors"
-                  >
-                    {heading.text}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            <div
+              ref={tocListRef}
+              className={`${isTocOpen ? 'block' : 'hidden'} max-h-[55vh] overflow-y-auto overscroll-contain border-t border-study-lightgray/70 lg:block lg:max-h-[calc(100vh-7rem)]`}
+            >
+              <ul className="py-1.5">
+                {headings.map((heading) => {
+                  const active = heading.id === activeId
+                  const sub = heading.level >= 2
+                  return (
+                    <li key={heading.id}>
+                      <button
+                        type="button"
+                        data-toc-id={heading.id}
+                        onClick={() => scrollToHeading(heading.id)}
+                        aria-current={active ? 'true' : undefined}
+                        className={`relative flex w-full items-start gap-2 py-2 pr-3 text-left text-[13px] leading-snug transition-colors ${
+                          sub ? 'pl-8 font-normal' : 'pl-4 font-semibold'
+                        } ${
+                          active
+                            ? 'bg-study-brown/[0.07] text-study-brown'
+                            : 'text-study-gray hover:bg-black/[0.03] hover:text-study-dark'
+                        }`}
+                      >
+                        {sub ? (
+                          <span
+                            className={`absolute inset-y-0 left-[18px] w-[2px] ${
+                              active ? 'bg-study-brown' : 'bg-study-lightgray'
+                            }`}
+                          />
+                        ) : (
+                          <span
+                            className={`absolute inset-y-0 left-0 w-[3px] rounded-r ${
+                              active ? 'bg-study-brown' : 'bg-transparent'
+                            }`}
+                          />
+                        )}
+                        <span>{heading.text}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </nav>
         </aside>
       )}
 

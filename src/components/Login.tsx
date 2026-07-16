@@ -14,6 +14,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [shake, setShake] = useState(false)
   const [registerSuccess, setRegisterSuccess] = useState<string | null>(null)
+  const [registerError, setRegisterError] = useState<string | null>(null)
   const [needsVerification, setNeedsVerification] = useState(false)
   const [resendStatus, setResendStatus] = useState<string | null>(null)
 
@@ -31,6 +32,7 @@ export default function Login() {
       e.preventDefault()
       setIsLoading(true)
       setRegisterSuccess(null)
+      setRegisterError(null)
 
       if (isRegister) {
         // DIY self-registration
@@ -48,10 +50,12 @@ export default function Login() {
             setPassword('')
             setFullName('')
           } else {
+            setRegisterError(data?.error ?? 'Не удалось создать аккаунт')
             setShake(true)
             setTimeout(() => setShake(false), 500)
           }
         } catch {
+          setRegisterError('Не удалось создать аккаунт. Проверьте соединение.')
           setShake(true)
           setTimeout(() => setShake(false), 500)
         }
@@ -126,7 +130,7 @@ export default function Login() {
           <div className="grid grid-cols-3 gap-2 p-1 bg-study-bg rounded-xl mb-6">
             <button
               type="button"
-              onClick={() => { setLoginMode('student'); setRegisterSuccess(null) }}
+              onClick={() => { setLoginMode('student'); setRegisterSuccess(null); setRegisterError(null) }}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
                 loginMode === 'student' ? 'bg-white text-study-brown card-shadow' : 'text-study-gray'
               }`}
@@ -138,7 +142,7 @@ export default function Login() {
             </button>
             <button
               type="button"
-              onClick={() => { setLoginMode('register'); setRegisterSuccess(null) }}
+              onClick={() => { setLoginMode('register'); setRegisterSuccess(null); setRegisterError(null) }}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
                 loginMode === 'register' ? 'bg-white text-study-brown card-shadow' : 'text-study-gray'
               }`}
@@ -150,7 +154,7 @@ export default function Login() {
             </button>
             <button
               type="button"
-              onClick={() => { setLoginMode('admin'); setRegisterSuccess(null) }}
+              onClick={() => { setLoginMode('admin'); setRegisterSuccess(null); setRegisterError(null) }}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
                 loginMode === 'admin' ? 'bg-white text-study-brown card-shadow' : 'text-study-gray'
               }`}
@@ -238,11 +242,11 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Error Message */}
-            {loginError && (
+            {/* Error Message — register mode shows its own error, not the stale login one */}
+            {(isRegister ? registerError : loginError) && (
               <div className="p-3 bg-study-red/10 border border-study-red/20 rounded-xl">
-                <p className="text-xs text-study-red font-medium">{loginError}</p>
-                {needsVerification && (
+                <p className="text-xs text-study-red font-medium">{isRegister ? registerError : loginError}</p>
+                {!isRegister && needsVerification && (
                   <button
                     type="button"
                     onClick={handleResendVerification}
@@ -252,7 +256,7 @@ export default function Login() {
                     Отправить письмо повторно
                   </button>
                 )}
-                {resendStatus && (
+                {!isRegister && resendStatus && (
                   <p className="mt-1 text-xs text-study-green font-medium">{resendStatus}</p>
                 )}
               </div>

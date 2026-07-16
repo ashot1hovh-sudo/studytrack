@@ -1,8 +1,12 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
+// Construct the client lazily inside the function, not at module load. The
+// Resend constructor throws when RESEND_API_KEY is absent, and `next build`
+// imports every route module during "collecting page data" — a module-level
+// client would crash the build in any environment without the key at build
+// time (e.g. the Timeweb Docker build, where env vars are runtime-only).
 export async function sendConfirmationEmail(email: string, confirmationUrl: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   return resend.emails.send({
     from: 'onboarding@resend.dev',
     to: email,

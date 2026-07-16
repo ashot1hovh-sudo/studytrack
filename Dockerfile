@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # --- deps: install node_modules ---
 FROM node:20-alpine AS deps
 WORKDIR /app

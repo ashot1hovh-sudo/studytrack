@@ -5,6 +5,8 @@ import Sidebar from '@/components/Sidebar'
 import Dashboard from '@/sections/Dashboard'
 import Login from '@/components/Login'
 import AdminDashboard from '@/sections/AdminDashboard'
+import OnboardingTour from '@/components/OnboardingTour'
+import ConsultantFab from '@/components/ConsultantFab'
 
 function AppContent() {
   const { isAuthenticated, isAuthLoading, user } = useApp()
@@ -31,6 +33,8 @@ function AppContent() {
       <main className="flex-1 min-w-0 min-h-screen">
         <Dashboard />
       </main>
+      <OnboardingTour />
+      <ConsultantFab />
     </div>
   )
 }

@@ -57,3 +57,226 @@
     padding-bottom: env(safe-area-inset-bottom, 8px);
   }
 }
+
+/* ── Onboarding tour (Driver.js), branded «Кай Китай» ───────────────── */
+.driver-popover.st-tour {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.18);
+  max-width: 380px;
+  padding: 20px 20px 16px;
+  overflow: visible; /* let the greeting doodles break out above the box */
+}
+.driver-popover.st-tour .driver-popover-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2b2622;
+}
+.driver-popover.st-tour .driver-popover-description {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: #6b6357;
+}
+.driver-popover.st-tour .driver-popover-progress-text {
+  font-size: 11px;
+  color: #a79c8e;
+}
+.driver-popover.st-tour .driver-popover-footer button {
+  border: none;
+  text-shadow: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 14px;
+}
+.driver-popover.st-tour .driver-popover-next-btn {
+  background: #8b5e3c;
+  color: #ffffff;
+}
+.driver-popover.st-tour .driver-popover-next-btn:hover {
+  background: #7a5133;
+}
+.driver-popover.st-tour .driver-popover-prev-btn {
+  background: transparent;
+  color: #8b5e3c;
+}
+.driver-popover.st-tour .driver-popover-close-btn {
+  color: #b8ad9e;
+}
+/* Two-founder greeting doodles — big, flanking the popover (Iana left, Ashot right) */
+.driver-popover.st-tour .st-doodle {
+  position: absolute;
+  bottom: -28px; /* stand slightly below the box, like on a floor */
+  width: 700px;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none; /* never block the popover buttons */
+  filter: drop-shadow(0 10px 14px rgb(0 0 0 / 0.2));
+  transform-origin: bottom center; /* pivot at the feet so the head sways most */
+  animation: st-rock 3s ease-in-out infinite;
+}
+/* positioning uses the independent `translate` property so the animated
+   `rotate` composes with it instead of overwriting it */
+.driver-popover.st-tour .st-iana {
+  left: 0;
+  translate: -78% 0; /* hang off the left edge */
+}
+.driver-popover.st-tour .st-ashot {
+  right: 0;
+  translate: 78% 0; /* hang off the right edge */
+  animation-delay: -1.5s; /* opposite phase: leans right while Iana leans left */
+}
+/* gentle side-to-side head tilt */
+@keyframes st-rock {
+  0%, 100% { rotate: -5deg; }
+  50%      { rotate: 5deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .driver-popover.st-tour .st-doodle,
+  .driver-popover.st-tour .st-step-doodle,
+  .driver-popover.st-tour .st-finale { animation: none; rotate: 0deg; }
+}
+
+/* Per-step doodle — big themed character standing in the open space to the
+   RIGHT of the popover (desktop). Mobile re-centres it on top (see media query). */
+.driver-popover.st-tour .st-step-doodle {
+  position: absolute;
+  right: 0;
+  bottom: -30px;
+  width: 300px;
+  height: auto;
+  translate: 90% 0; /* hang out to the right, standing beside the box */
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 14px rgb(0 0 0 / 0.2));
+  transform-origin: bottom center;
+  animation: st-rock 3s ease-in-out infinite;
+}
+/* Finale — both of them, centred on top of the box, big like the greeting */
+.driver-popover.st-tour .st-finale {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 440px;
+  height: auto;
+  translate: -50% -90%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 14px rgb(0 0 0 / 0.2));
+  transform-origin: bottom center;
+  animation: st-rock 4.5s ease-in-out infinite;
+}
+/* Mobile-first: a full-width box can't be flanked, so stand the pair
+   side-by-side ON TOP of the popover, sized to the narrow screen. */
+@media (max-width: 640px) {
+  .driver-popover.st-tour {
+    max-width: calc(100vw - 28px);
+  }
+  .driver-popover.st-tour .st-doodle {
+    width: 200px;
+    bottom: auto;
+    top: 0;
+  }
+  .driver-popover.st-tour .st-iana {
+    left: auto;
+    right: 50%;
+    translate: 12px -80%; /* just left of centre, lifted above the box */
+  }
+  .driver-popover.st-tour .st-ashot {
+    left: 50%;
+    right: auto;
+    translate: -12px -80%; /* just right of centre — they overlap a touch */
+  }
+  .driver-popover.st-tour .st-step-doodle {
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    top: 0;
+    width: 208px; /* ~2× bigger on phone; stays on top of the box */
+    translate: -50% -92%;
+  }
+  .driver-popover.st-tour .st-finale {
+    width: 320px;
+  }
+}
+
+/* ── Floating "call the consultant" doodle (Iana → Telegram) ─────────── */
+/* ALWAYS present, leaning in from the right border at half opacity. JS adds
+   .is-shown for a one-time peek (fuller + full opacity + label); she settles
+   back to the half-transparent rest after 20s or on a right-swipe. Desktop
+   hover produces the same peek so she can be summoned any time. */
+.st-consultant {
+  position: fixed;
+  right: 0;
+  bottom: 60px;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-decoration: none;
+  pointer-events: auto; /* always tappable */
+}
+/* Only the IMAGE slides toward/off the border, so the label always stays fully
+   on-screen (sliding the whole container clipped the pill off the right edge). */
+.st-consultant img {
+  width: 230px;
+  height: auto;
+  display: block;
+  translate: 120px 0; /* resting: partially peeking from the border */
+  opacity: 0.5; /* half-transparent at rest */
+  rotate: -22deg; /* leaning strongly to the left */
+  scale: 1;
+  transform-origin: bottom right;
+  transition: translate 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease,
+    rotate 0.35s ease, scale 0.35s ease;
+  filter: drop-shadow(-6px 8px 14px rgb(0 0 0 / 0.22));
+}
+.st-consultant.is-shown img,
+.st-consultant:hover img,
+.st-consultant:focus-visible img {
+  translate: 84px 0; /* peek further out */
+  opacity: 1;
+  rotate: -16deg;
+  scale: 1.04;
+}
+.st-consultant-label {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s;
+  margin: 0 24px 6px 0;
+  padding: 7px 14px;
+  border-radius: 14px;
+  background: #8b5e3c;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+  pointer-events: none;
+}
+.st-consultant.is-shown .st-consultant-label,
+.st-consultant:hover .st-consultant-label,
+.st-consultant:focus-visible .st-consultant-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .st-consultant img { transition: opacity 0.25s ease; }
+  .st-consultant.is-shown img,
+  .st-consultant:hover img,
+  .st-consultant:focus-visible img { scale: 1; }
+}
+/* Mobile: above the bottom nav, a bit smaller, still leaning from the border */
+@media (max-width: 1023px) {
+  .st-consultant { bottom: 92px; }
+  .st-consultant img {
+    width: 180px;
+    translate: 100px 0; /* resting */
+  }
+  .st-consultant.is-shown img,
+  .st-consultant:hover img,
+  .st-consultant:focus-visible img { translate: 64px 0; } /* peek */
+}
+

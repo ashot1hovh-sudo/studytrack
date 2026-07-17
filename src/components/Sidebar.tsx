@@ -37,6 +37,7 @@ export default function Sidebar() {
               return (
                 <li key={item.id}>
                   <button
+                    data-tour={`nav-${item.id}`}
                     onClick={() => setActiveTab(item.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
@@ -184,6 +185,7 @@ export default function Sidebar() {
             return (
               <button
                 key={item.id}
+                data-tour={`mnav-${item.id}`}
                 onClick={() => setActiveTab(item.id)}
                 className={`flex flex-col items-center gap-0.5 py-2 px-3 min-w-[64px] transition-all ${
                   isActive ? 'text-study-brown' : 'text-study-gray'

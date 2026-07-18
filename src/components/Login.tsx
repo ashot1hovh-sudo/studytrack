@@ -5,7 +5,8 @@ import { Compass, Eye, EyeOff, Lock, User, Mail, UserPlus, LogIn, KeyRound, Arro
 type LoginMode = 'student' | 'admin' | 'register'
 
 const SUPPORT_TELEGRAM = 'https://t.me/ash_china'
-// TODO: replace with the real Terms document once it's published.
+// Согласие на обработку персональных данных. A separate пользовательское
+// соглашение does not exist yet — when it does, add it as a second link.
 const TERMS_URL = '/terms'
 
 export default function Login() {
@@ -415,7 +416,7 @@ export default function Login() {
                     className="mt-0.5 w-4 h-4 shrink-0 rounded border-study-lightgray text-study-brown focus:ring-2 focus:ring-study-brown/20 cursor-pointer accent-study-brown"
                   />
                   <span className="text-xs text-study-dark leading-relaxed">
-                    Я принимаю{' '}
+                    Я даю{' '}
                     <a
                       href={TERMS_URL}
                       target="_blank"
@@ -423,9 +424,8 @@ export default function Login() {
                       onClick={(e) => e.stopPropagation()}
                       className="font-semibold text-study-brown hover:underline"
                     >
-                      пользовательское соглашение
-                    </a>{' '}
-                    и согласие на обработку персональных данных
+                      согласие на обработку персональных данных
+                    </a>
                     <span className="text-study-red"> *</span>
                   </span>
                 </label>

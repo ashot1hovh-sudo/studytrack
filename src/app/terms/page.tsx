@@ -1,49 +1,148 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Пользовательское соглашение — Кай Китай',
+  title: 'Согласие на обработку персональных данных — Кай Китай',
+  description:
+    'Согласие на обработку персональных данных пользователей платформы «Кай Китай».',
 }
 
-/**
- * PLACEHOLDER. The registration form links here and the checkbox is mandatory,
- * so this route must exist — but the text below is not a legal document.
- * Replace the body with the real соглашение before launch.
- */
+const SUPPORT_EMAIL = 'noreply@kaykitay.ru'
+
+function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-base font-bold text-study-dark mb-3">
+        {n}. {title}
+      </h2>
+      <div className="space-y-3 text-sm text-study-dark/85 leading-relaxed">{children}</div>
+    </section>
+  )
+}
+
+function List({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-1.5 pl-1">
+      {items.map((item) => (
+        <li key={item} className="flex gap-2.5">
+          <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-study-brown" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-study-bg py-12 px-4">
+    <main className="min-h-screen bg-study-bg py-10 px-4">
       <div className="mx-auto max-w-2xl bg-white rounded-2xl card-shadow p-6 sm:p-10">
-        <h1 className="text-2xl font-bold text-study-dark mb-2">
-          Пользовательское соглашение
+        <h1 className="text-2xl font-bold text-study-dark">
+          Согласие на обработку персональных данных
         </h1>
-        <p className="text-sm text-study-gray mb-8">
+        <p className="mt-2 text-sm text-study-gray">
           Платформа «Кай Китай» — самостоятельное поступление в университеты Китая
         </p>
 
-        <div className="p-4 bg-study-bg rounded-xl border border-study-lightgray">
-          <p className="text-sm text-study-dark leading-relaxed">
-            Полный текст пользовательского соглашения и политики обработки персональных
-            данных готовится к публикации и будет размещён здесь в ближайшее время.
-          </p>
-          <p className="text-sm text-study-gray leading-relaxed mt-3">
-            По любым вопросам о том, как мы обрабатываем ваши данные, напишите нам:{' '}
-            <a
-              href="https://t.me/ash_china"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-study-brown hover:underline"
-            >
-              @ash_china
-            </a>
-          </p>
-        </div>
+        <p className="mt-6 text-sm text-study-dark/85 leading-relaxed">
+          Настоящим я, пользователь платформы Кай Китай, свободно, своей волей и в своем
+          интересе даю согласие Медведевой Яне Олеговне, ИНН 230810218088, email{' '}
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-study-brown hover:underline">
+            {SUPPORT_EMAIL}
+          </a>
+          , далее — «Оператор», на обработку моих персональных данных на следующих условиях.
+        </p>
 
-        <a
-          href="/"
-          className="inline-block mt-8 text-sm font-semibold text-study-brown hover:underline"
-        >
-          ← Вернуться на главную
-        </a>
+        <Section n={1} title="Перечень персональных данных">
+          <p>Я даю согласие на обработку следующих персональных данных:</p>
+          <List items={['имя пользователя или юзернейм;', 'адрес электронной почты.']} />
+        </Section>
+
+        <Section n={2} title="Цели обработки">
+          <p>Персональные данные обрабатываются в целях:</p>
+          <List
+            items={[
+              'регистрации пользователя на платформе;',
+              'создания и обслуживания учетной записи;',
+              'идентификации и авторизации пользователя;',
+              'восстановления доступа к учетной записи;',
+              'предоставления доступа к функциям и материалам платформы;',
+              'направления сервисных и технических уведомлений;',
+              'обработки обращений пользователя в службу поддержки;',
+              'обеспечения безопасности и стабильной работы платформы.',
+            ]}
+          />
+        </Section>
+
+        <Section n={3} title="Действия с персональными данными">
+          <p>
+            Оператор вправе осуществлять сбор, запись, систематизацию, накопление, хранение,
+            уточнение, обновление, изменение, извлечение, использование, блокирование, удаление
+            и уничтожение персональных данных.
+          </p>
+          <p>
+            Обработка осуществляется с использованием средств автоматизации, в том числе
+            посредством информационно-телекоммуникационной сети Интернет.
+          </p>
+        </Section>
+
+        <Section n={4} title="Передача данных третьим лицам">
+          <p>
+            Оператор вправе предоставлять доступ к персональным данным организациям и лицам,
+            оказывающим услуги по размещению и техническому обслуживанию платформы, хранению
+            данных, авторизации пользователей и отправке сервисных сообщений, исключительно в
+            объеме, необходимом для оказания соответствующих услуг.
+          </p>
+          <p>
+            Оператор не распространяет персональные данные и не предоставляет их
+            неопределенному кругу лиц.
+          </p>
+        </Section>
+
+        <Section n={5} title="Срок действия согласия">
+          <p>
+            Согласие действует с момента его предоставления и в течение срока использования
+            учетной записи, а также в течение периода, необходимого для выполнения обязанностей
+            Оператора, установленных законодательством.
+          </p>
+          <p>
+            После прекращения обработки персональные данные подлежат удалению или уничтожению,
+            если их дальнейшее хранение не требуется в соответствии с законодательством.
+          </p>
+        </Section>
+
+        <Section n={6} title="Отзыв согласия">
+          <p>
+            Я вправе отозвать настоящее согласие, направив соответствующее заявление на адрес
+            электронной почты:{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-study-brown hover:underline">
+              {SUPPORT_EMAIL}
+            </a>
+            .
+          </p>
+          <p>
+            Отзыв согласия может привести к удалению учетной записи и невозможности дальнейшего
+            использования функций платформы, для предоставления которых необходима обработка
+            персональных данных.
+          </p>
+        </Section>
+
+        <Section n={7} title="Заключительные положения">
+          <p>Я подтверждаю, что предоставленные мной персональные данные являются достоверными.</p>
+          <p>
+            Я подтверждаю, что ознакомился(-ась) с Политикой обработки персональных данных
+            Оператора и понимаю цели и условия обработки моих персональных данных.
+          </p>
+          <p>
+            Согласие предоставляется путем проставления отметки в соответствующем поле при
+            регистрации на платформе.
+          </p>
+        </Section>
+
+        <div className="mt-10 pt-6 border-t border-study-lightgray">
+          <a href="/" className="text-sm font-semibold text-study-brown hover:underline">
+            ← Вернуться на платформу
+          </a>
+        </div>
       </div>
     </main>
   )

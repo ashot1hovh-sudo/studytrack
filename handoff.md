@@ -103,6 +103,33 @@ All pushed to `diy-product`. Latest commit: `ea84c48`.
 
 **10. Backups** — `/usr/local/bin/supabase-backup.sh`, nightly 03:30 via `/etc/cron.d/supabase-backup`, `pg_dumpall` gzipped to `/opt/backups/postgres`, 14-day retention, verified by *content* (gzip integrity + core tables present), logging to `/var/log/supabase-backup.log`.
 
+### Same day, second half — auth flow, consent, and two security fixes
+
+**11. Email confirmation actually works now (`383e181`).** After the migration, registration still behaved like TEST MODE. The cause wasn't config: registration called `admin.auth.admin.createUser({email_confirm:true})`, and **admin-created users never trigger a confirmation email regardless of GoTrue settings**. Registration now uses `supabase.auth.signUp()`, which sends the branded template.
+   - New route `POST /api/auth/verify-otp` — confirms with the 6-digit code and signs the user in via session cookies (no separate login step). The magic link in the same email does the same thing.
+   - `resend-verification` rewritten to use `supabase.auth.resend()` (GoTrue → Timeweb SMTP) instead of generating a link and pushing it through Resend. One sender, one template, no cross-border transfer. Handles GoTrue's per-address rate limit with a 429.
+   - `Login.tsx` gained a code-entry step, plus "Ввести код из письма" on the unverified-login error.
+   - Registration detects GoTrue's **empty-`identities` decoy** for already-registered addresses (GoTrue returns a fake user rather than leaking that an address exists) and reports 409 instead of creating a duplicate profile.
+
+**12. Human fallback for undelivered email.** The confirm screen carries "Письмо не пришло? … напишите в поддержку" → **`t.me/ash_china`**; the consultant then creates the account manually, pre-confirmed, and sends the password over Telegram. Doubles as an early-warning signal: a spike in fallback requests means deliverability is broken.
+
+**13. Consent checkboxes (`7f8c16e`).** Registration now captures consent, enforced **server-side** as well as in the UI — a disabled button proves nothing.
+   - `students.terms_accepted_at` (timestamptz), `marketing_consent` (bool, default false), `marketing_consent_at` (timestamptz). Timestamps rather than bare booleans because consent evidence is about *when*.
+   - Terms are mandatory (400 without them); promo is opt-in and unchecked by default. Filter promotional sends on `marketing_consent = true`.
+
+**14. `/terms` publishes the real Согласие на обработку персональных данных (`8f20931`).** Operator: Медведева Яна Олеговна, ИНН 230810218088. Two deliberate deviations from the source file: the preamble's `noreply@kaytikay.ru` is a **typo** (published as `kaykitay.ru`, since the typo'd domain isn't ours and section 6 is the consent-withdrawal address) — *fix the master copy*; and the checkbox no longer claims acceptance of a «пользовательское соглашение», which doesn't exist yet.
+
+**15. 🔒 Security: admin was granted by a hardcoded email (`b7c353e`, `62d390d`).** Found while creating a real admin account. Access was gated on `user.email === 'admin@gmail.com'` — **and with open registration that address was unclaimed on the live app**. Whoever registered it would have had every student's personal data. Fixed in *two* layers:
+   - **App layer (`b7c353e`)** — `getConsultantUser` now checks `students.role = 'consultant'` via the service-role client (so the caller's own RLS context can't influence it) and denies outright if that key is missing. Also removed the `auth/session` special case that returned `role: 'consultant'` for that email, and the list/delete routes' email filters.
+   - **Database layer (`62d390d`)** — **four RLS policies** carried the same hardcoded email (`students` read, `documents` read + update, `storage.objects` read). This was *worse*: RLS applies to any client, so a JWT for that address could read everything straight through PostgREST with the public anon key, never touching the app. Now keyed on `public.is_consultant()`, a `SECURITY DEFINER` helper (a policy on `students` cannot `SELECT` from `students` without recursing).
+   - **Symptom that exposed it:** the admin panel showed 0 students while the table held 3. The real admin didn't match the hardcoded address, so RLS returned only their own row, which the `role != 'consultant'` filter then excluded. *The empty panel was the security hole, not a separate bug.*
+
+**16. Privilege-default cleanups** — same shape, consultant-era leftovers that were harmless then and wrong now:
+   - `admin/students/create` hard-coded `service_type:'premium'`, `subscription_status:'active'`. The manual-account fallback would have handed every rescued user a **free paid subscription**. Now defaults to `diy`/`trial`, premium opt-in, and only premium gets the default document package.
+   - `auth/session` defaulted a profile-less user to `premium`/`active` → now `diy`/`trial` (least privilege).
+
+**17. Admin account** — `bigdaddy_admin@kaykitay.ru`, `role = 'consultant'`, created pre-confirmed. Credentials in `~/Downloads/kaykitay-admin-login.txt` (mode 600). **The generated password should be changed.** Verified both directions: admin reaches all admin routes and sees all 3 students; a plain student gets 403 on every admin endpoint and, querying PostgREST directly, sees only their own row.
+
 ---
 
 ## Self-hosted Supabase — operating notes
@@ -117,6 +144,9 @@ All pushed to `diy-product`. Latest commit: `ea84c48`.
 | Compose layers | `COMPOSE_FILE=docker-compose.yml:docker-compose.caddy.yml:docker-compose.mail.yml` |
 | Custom override | `docker-compose.mail.yml` — the nginx template server + GoTrue mail config (kept separate so upstream updates don't clobber it) |
 | Backups | `/opt/backups/postgres`, nightly 03:30, 14 days |
+| Admin login | `bigdaddy_admin@kaykitay.ru` — creds in `~/Downloads/kaykitay-admin-login.txt` (mode 600) |
+| Admin authority | `students.role = 'consultant'` — both in app code and in RLS via `public.is_consultant()`. Promote with `update public.students set role='consultant' where email='…'` |
+| Mail | `noreply@kaykitay.ru` via `smtp.timeweb.ru:587`; templates in `volumes/auth/templates/`, served to GoTrue by the internal `mail-templates` nginx |
 
 ---
 
@@ -186,17 +216,25 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 
 ## Next Steps (priority order)
 
-1. **Magic link / OTP login flow — app side** *(decided 2026-07-18; server side already done)*. The email now carries **both** a magic link and a 6-digit code; either completes login. GoTrue and the templates are configured and verified. What's left is entirely in the app: an email-entry screen → a code-entry screen, swapping the password calls for `supabase.auth.signInWithOtp()` / `verifyOtp({ email, token })`, and deciding whether password login stays as a fallback.
-   - **Keep passwords as a fallback for launch.** Email deliverability is the most fragile part of the system, and with magic-link-only, a spam-foldered message is a total lockout, not an inconvenience.
-   - **Naming:** call this «код подтверждения» / `otp` in the UI and code. The existing `pin_code` + `/api/auth/verify-pin` are the *subscription* unlock and are unrelated — two different 6-digit "codes" in one product will confuse users and future readers.
-2. **Payment / self-serve subscription — YooKassa (ЮKassa)** *(decided; not built)*. Today there is **no self-serve upgrade path**: the consultant sets `pin_code` manually via `/api/admin/students/update-subscription`, and the student enters it. Target flow: create-payment route → YooKassa `confirmation_url` → webhook on `payment.succeeded` → generate a PIN → email it → the existing `/api/auth/verify-pin` already flips `subscription_status` to `active`. Requires a legal entity (самозанятый/ИП/ООО). **Email is no longer a blocker here** — `noreply@kaykitay.ru` works.
-3. **Re-enable email verification** — flip `email_confirm` back to `false` in `src/app/api/auth/register/route.ts` and restore the confirmation-email block (both marked `TEST MODE`). No longer blocked: sender domain is verified and delivering. Note the app creates users via `admin.auth.admin.createUser({ email_confirm: true })`, which **bypasses** GoTrue's `ENABLE_EMAIL_AUTOCONFIRM=false` — so this is purely a code change, not a config one.
-4. **Move the app to `kaykitay.ru`** — point the apex/`www` at the Timeweb app, update `NEXT_PUBLIC_APP_URL`, and update `SITE_URL` in the VM's `.env` so magic links resolve to the right host. Also lets the email templates use the real logo (currently a text wordmark, deliberately — see gotchas).
-5. **Deliverability hardening** — test against Mail.ru / Yandex / Rambler inboxes (not Gmail; wrong audience). Once confident nothing legitimate fails, tighten DMARC from `p=none` to `p=quarantine`. Ask Timeweb what the mailbox's outbound sending limit is — with magic links it's one email *per login*, so volume scales faster than signups.
-6. **Grow the Мои шансы dataset** — real admission outcomes are a recurring moat; keep it fresh.
-7. **Mobile QA pass** on a real phone before launch (lesson reader, video modal/iframe, tracker + table tap targets, and the new tour + consultant widget).
+1. **Audit the remaining RLS policies.** Four of ~16 were found keyed on a hardcoded email and fixed on 2026-07-18; **the other twelve have not been reviewed** for similar assumptions. The audit query is `pg_policies` filtered on the suspect string — see `Self-hosting gotchas`. Do this before real students: RLS is the only thing standing between one user and another's data.
+2. **Missing legal documents.** `/terms` publishes the Согласие на обработку персональных данных only.
+   - **Политика обработки персональных данных** — section 7 of the consent has users confirm they've read it, and it doesn't exist. Normally a required published document under 152-FZ.
+   - **Пользовательское соглашение** — terms of service, refunds, liability. Matters more once YooKassa takes money.
+   - The consent covers only *username + email*. `students` still has `phone`, `age`, `telegram_chat_id`, `program` from the consultant era; if any start being populated, the consent no longer covers what's collected.
+3. **Test the PIN → paid-access flow end to end.** Admin sets `pin_code` in the dashboard → student enters it → `/api/auth/verify-pin` flips `subscription_status` to `active`. The code is unchanged and the column survived migration, but **nobody has exercised this since the cutover**, and it is the money path.
+4. **Payment / self-serve subscription — YooKassa (ЮKassa)** *(decided; not built)*. Target flow: create-payment route → YooKassa `confirmation_url` → webhook on `payment.succeeded` → generate a PIN → email it → the existing `verify-pin` activates access. Requires a legal entity (самозанятый/ИП/ООО). Email is no longer a blocker — `noreply@kaykitay.ru` works.
+5. **Vercel still points at supabase.com.** Two live deployments reading different databases off one codebase. Harmless while nobody uses the Vercel URL; the moment someone registers there you have split-brain data *and* personal data in the wrong country. Repoint or take it down.
+6. **Passwordless login (optional).** Registration confirmation already uses the code; login itself is still email+password. Moving login to `signInWithOtp` would reuse the same code-entry component. **Keep passwords as a fallback either way** — with magic-link-only, a spam-foldered email is a total lockout.
+   - **Naming:** «код подтверждения» / `otp` in UI and code. The existing `pin_code` + `verify-pin` are the *subscription* unlock — two different 6-digit "codes" in one product will confuse everyone.
+7. **Move the app to `kaykitay.ru`** — point apex/`www` at the Timeweb app, update `NEXT_PUBLIC_APP_URL`, and update `SITE_URL` in the VM's `.env` or magic links will keep resolving to the `*.twc1.net` host. Also lets the email templates use the real logo (currently a text wordmark, deliberately — see gotchas).
+8. **Deliverability hardening** — test against Mail.ru / Yandex / Rambler (not Gmail; wrong audience). First branded send landed in the Gmail **inbox**. Once confident, tighten DMARC `p=none` → `p=quarantine`. Ask Timeweb the mailbox's outbound limit: magic links mean one email *per login*, so volume scales faster than signups.
+9. **Change the admin password** from the generated one in `~/Downloads/kaykitay-admin-login.txt`.
+10. **Grow the Мои шансы dataset** — real admission outcomes are a recurring moat.
+11. **Mobile QA pass** on a real phone before launch (lesson reader, video modal/iframe, tracker + table tap targets, tour, consultant widget, and now the code-entry screen).
 
 ### Housekeeping
+- **Commit the email templates** into the repo (`infra/email-templates/`) — they exist only on the VM.
+- **Three real accounts** on the self-hosted DB: `ashot1hovh@gmail.com`, `ashoth1g@163.com`, `ianadved@yandex.ru` (all testing) + the admin. They registered *before* the consent deploy, so their `terms_accepted_at` is null — expected, not a bug.
 - ~~Delete the probe account~~ — moot; it lives in the old supabase.com project, which is out of the request path.
 - **Decommission the supabase.com project** once confident in self-hosting. Keep it until then as rollback + schema reference.
 - **Move backups off-box** — they currently sit on the same VM as the database.
@@ -227,4 +265,16 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 - **`403 "You cannot consume this service"` on `/rest/v1/` is not a bug.** Kong restricts the PostgREST OpenAPI root to the `admin` group by design; anon keys get 403 there but work fine on table routes like `/rest/v1/students`.
 - **`pg_dumpall` of an empty database is ~46 KB.** Don't size-check backups; check their *contents* (the backup script greps for core `CREATE TABLE` statements).
 - **The repo's `.sql` files can drift from production.** `pin_code`, `service_type` and `subscription_status` existed on supabase.com but were never written back to `supabase-schema.sql` — registration broke on cutover. To diff a live Supabase against a local one, fetch the PostgREST OpenAPI spec (`GET /rest/v1/` with the service-role key); its `definitions` list every table's columns. **If you add a column via the Studio UI, write it into the `.sql` file too.**
+- **Admin `createUser` never sends a confirmation email**, whatever GoTrue is configured to do. If registration must send one, it has to go through the anon client's `signUp()`. This is why the app looked stuck in TEST MODE after the migration — no config change could have fixed it.
+- **`signUp` returns a decoy user for an already-registered address** — a real-looking object with `identities: []` — so the endpoint can't be used to enumerate accounts. Check that array before treating a signup as new.
+- **Audit RLS policies for hardcoded identities, not just app code.** A permission rule wrong in the app is very likely wrong in the database too, and the database version is worse: RLS applies to *any* client, so it's reachable through PostgREST with the public anon key without touching the app. The query:
+  ```sql
+  select tablename, policyname, cmd, qual, with_check from pg_policies
+  where coalesce(qual,'') like '%suspect%' or coalesce(with_check,'') like '%suspect%';
+  ```
+- **A policy on a table cannot `SELECT` from that same table** — RLS recurses. Put the lookup in a `SECURITY DEFINER` function (see `public.is_consultant()`), which runs as the owner and bypasses RLS for that query.
+- **Watch for privilege defaults from the consultant era.** Three separate spots defaulted users to `premium`/`active` (`admin/students/create`, `auth/session` fallback, and the `students` column defaults). Harmless when every user was a paying client; in a DIY product each one silently gives away paid access. Default to the *least* privileged state.
+- **`$$` in SQL gets eaten by the shell** when passed through `ssh '...'` — zsh expands it to a PID, producing baffling errors like `coalesce types text and bigint cannot be matched`. Write the SQL to a file and `scp` it.
+- **Beware self-matching `pgrep`/`pkill` patterns.** `pgrep -f "docker compose pull"` matches the shell running the script that contains that string, so a wait loop never exits; `pkill -f "while pgrep"` kills its own session. Use a bracket trick (`whi[l]e pgrep`) or a different signal entirely.
+- **"No errors in the logs" is not verification.** GoTrue silently fell back to default email templates for ~20 minutes while the logs looked clean — the failure was one `templatemailer` line that a narrow grep missed. Verify the observable outcome (the received email, the rendered page), not the absence of complaints.
 - **Safari-only load failures** on the `*.twc1.net` app appeared once and resolved on their own. TLS was verified clean (GlobalSign, full chain, TLS 1.3), so the likely cause is iCloud Private Relay, which proxies Safari but not Chrome on iOS. If it recurs, get the exact Safari error text — "cannot find server" (DNS), "server stopped responding" (relay path) and a blank white page (app-side JS) point in completely different directions.

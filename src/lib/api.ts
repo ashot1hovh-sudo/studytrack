@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { hasSupabaseConfig } from '@/lib/supabase/config'
 
 export function missingSupabaseEnv() {
@@ -27,16 +28,40 @@ export async function getAuthenticatedUser() {
   return { supabase, user, response: null }
 }
 
+/**
+ * Gates the consultant/admin API surface.
+ *
+ * This used to compare the caller's email against a hardcoded 'admin@gmail.com'.
+ * With open registration that was a privilege-escalation hole: whoever registered
+ * that address first would have been handed every student's personal data.
+ *
+ * Authority now comes from students.role = 'consultant', which is what the schema
+ * always intended. The lookup uses the service-role client so it can't be
+ * influenced by the caller's own RLS context.
+ */
 export async function getConsultantUser() {
   const auth = await getAuthenticatedUser()
   if (auth.response || !auth.user) return auth
 
-  if (auth.user.email !== 'admin@gmail.com') {
-    return {
-      ...auth,
-      response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
-    }
+  const forbidden = {
+    ...auth,
+    response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
   }
+
+  const admin = createAdminClient()
+  if (!admin) {
+    // Without the service-role key the role can't be verified. Deny rather than
+    // fall back to a weaker check.
+    return forbidden
+  }
+
+  const { data: profile, error } = await admin
+    .from('students')
+    .select('role')
+    .eq('id', auth.user.id)
+    .maybeSingle()
+
+  if (error || profile?.role !== 'consultant') return forbidden
 
   return auth
 }

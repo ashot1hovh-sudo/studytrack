@@ -192,7 +192,7 @@ export default function AdminDashboard() {
       fetch(`/api/admin/students/${student.id}/universities`, { credentials: 'same-origin' }).then((response) => {
         if (!response.ok) {
           return response.json().catch(() => null).then((data) => {
-            throw new Error(data?.error === 'Unauthorized' ? 'Сессия админа истекла. Выйдите и войдите как admin@gmail.com.' : data?.error ?? 'Не удалось загрузить вузы')
+            throw new Error(data?.error === 'Unauthorized' ? 'Сессия админа истекла. Выйдите и войдите под админ-аккаунтом.' : data?.error ?? 'Не удалось загрузить вузы')
           })
         }
         return response.json()
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
       fetch(`/api/admin/students/${student.id}/documents`, { credentials: 'same-origin' }).then((response) => {
         if (!response.ok) {
           return response.json().catch(() => null).then((data) => {
-            throw new Error(data?.error === 'Unauthorized' ? 'Сессия админа истекла. Выйдите и войдите как admin@gmail.com.' : data?.error ?? 'Не удалось загрузить документы')
+            throw new Error(data?.error === 'Unauthorized' ? 'Сессия админа истекла. Выйдите и войдите под админ-аккаунтом.' : data?.error ?? 'Не удалось загрузить документы')
           })
         }
         return response.json()

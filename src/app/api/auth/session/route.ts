@@ -7,20 +7,8 @@ export async function GET() {
   const { supabase, user, response } = await getAuthenticatedUser()
   if (response) return response
 
-  if (user.email === 'admin@gmail.com') {
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: 'Admin',
-        role: 'consultant',
-        serviceType: 'premium',
-        subscriptionStatus: 'active',
-        pinCode: null,
-      },
-    })
-  }
-
+  // Role comes from the students row, not from a hardcoded email. The old
+  // special case here handed 'consultant' to whoever held one specific address.
   const { data: student } = await supabase
     .from('students')
     .select('id,email,full_name,role,service_type,subscription_status,pin_code')
@@ -33,8 +21,10 @@ export async function GET() {
       email: user.email,
       fullName: student?.full_name ?? user.email ?? 'Студент',
       role: student?.role ?? 'student',
-      serviceType: student?.service_type ?? 'premium',
-      subscriptionStatus: student?.subscription_status ?? 'active',
+      // Fall back to the *least* privileged state. These previously defaulted to
+      // premium/active, so a user with no profile row got paid access for free.
+      serviceType: student?.service_type ?? 'diy',
+      subscriptionStatus: student?.subscription_status ?? 'trial',
       pinCode: student?.pin_code ?? null,
     },
   })

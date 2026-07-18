@@ -22,7 +22,7 @@ export async function GET() {
   const studentsResult = await supabase
     .from('students')
     .select('id,email,full_name,role,age,program,service_type,subscription_status,pin_code')
-    .neq('email', 'admin@gmail.com')
+    .neq('role', 'consultant')
     .order('created_at', { ascending: false })
 
   students = studentsResult.data
@@ -32,7 +32,7 @@ export async function GET() {
     const fallback = await supabase
       .from('students')
       .select('id,email,full_name,role,service_type,subscription_status')
-      .neq('email', 'admin@gmail.com')
+      .neq('role', 'consultant')
       .order('created_at', { ascending: false })
 
     students = fallback.data

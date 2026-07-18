@@ -26,11 +26,11 @@ export async function DELETE(request: Request) {
   // Prevent deleting admin
   const { data: student } = await admin
     .from('students')
-    .select('email')
+    .select('email,role')
     .eq('id', studentId)
     .maybeSingle()
 
-  if (student?.email === 'admin@gmail.com') {
+  if (student?.role === 'consultant') {
     return NextResponse.json({ error: 'Нельзя удалить администратора' }, { status: 403 })
   }
 

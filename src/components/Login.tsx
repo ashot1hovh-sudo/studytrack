@@ -5,6 +5,8 @@ import { Compass, Eye, EyeOff, Lock, User, Mail, UserPlus, LogIn, KeyRound, Arro
 type LoginMode = 'student' | 'admin' | 'register'
 
 const SUPPORT_TELEGRAM = 'https://t.me/ash_china'
+// TODO: replace with the real Terms document once it's published.
+const TERMS_URL = '/terms'
 
 export default function Login() {
   const { login, loginError } = useApp()
@@ -24,6 +26,8 @@ export default function Login() {
   const [awaitingCode, setAwaitingCode] = useState(false)
   const [code, setCode] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [marketingConsent, setMarketingConsent] = useState(false)
 
   const isRegister = loginMode === 'register'
 
@@ -47,7 +51,7 @@ export default function Login() {
           const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, fullName }),
+            body: JSON.stringify({ email, password, fullName, acceptedTerms, marketingConsent }),
           })
           const data = await response.json().catch(() => null)
 
@@ -399,6 +403,47 @@ export default function Login() {
               </div>
             </div>
 
+            {/* Consent — terms are mandatory, promo is opt-in. Both are re-checked
+                server-side; the disabled button is convenience, not enforcement. */}
+            {isRegister && (
+              <div className="space-y-2.5 pt-1">
+                <label className="flex items-start gap-2.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 shrink-0 rounded border-study-lightgray text-study-brown focus:ring-2 focus:ring-study-brown/20 cursor-pointer accent-study-brown"
+                  />
+                  <span className="text-xs text-study-dark leading-relaxed">
+                    Я принимаю{' '}
+                    <a
+                      href={TERMS_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="font-semibold text-study-brown hover:underline"
+                    >
+                      пользовательское соглашение
+                    </a>{' '}
+                    и согласие на обработку персональных данных
+                    <span className="text-study-red"> *</span>
+                  </span>
+                </label>
+
+                <label className="flex items-start gap-2.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={marketingConsent}
+                    onChange={(e) => setMarketingConsent(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 shrink-0 rounded border-study-lightgray text-study-brown focus:ring-2 focus:ring-study-brown/20 cursor-pointer accent-study-brown"
+                  />
+                  <span className="text-xs text-study-gray leading-relaxed">
+                    Хочу получать новости, полезные материалы и специальные предложения на почту
+                  </span>
+                </label>
+              </div>
+            )}
+
             {/* Error Message — register mode shows its own error, not the stale login one */}
             {(isRegister ? registerError : loginError) && (
               <div className="p-3 bg-study-red/10 border border-study-red/20 rounded-xl">
@@ -431,7 +476,12 @@ export default function Login() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || !email || !password || (isRegister && !fullName)}
+              disabled={
+                isLoading ||
+                !email ||
+                !password ||
+                (isRegister && (!fullName || !acceptedTerms))
+              }
               className="w-full py-3.5 bg-study-brown text-white font-semibold text-sm rounded-xl hover:bg-study-brown/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed shadow-lg shadow-study-brown/20"
             >
               {isLoading ? (

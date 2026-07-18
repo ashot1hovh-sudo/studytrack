@@ -13,6 +13,12 @@ create table public.students (
   service_type text default 'premium',
   subscription_status text default 'active',
   pin_code text,
+  -- Consent captured at registration. terms_accepted_at is mandatory (the API
+  -- refuses registration without it); marketing_consent is opt-in and must be
+  -- checked before any promotional send.
+  terms_accepted_at timestamptz,
+  marketing_consent boolean not null default false,
+  marketing_consent_at timestamptz,
   created_at timestamptz not null default now()
 );
 

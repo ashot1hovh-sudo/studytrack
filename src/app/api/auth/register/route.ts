@@ -18,10 +18,21 @@ export async function POST(request: Request) {
   const email = String(body?.email ?? '').trim().toLowerCase()
   const password = String(body?.password ?? '')
   const fullName = String(body?.fullName ?? '').trim()
+  const acceptedTerms = body?.acceptedTerms === true
+  const marketingConsent = body?.marketingConsent === true
 
   if (!email || !password || !fullName) {
     return NextResponse.json(
       { error: 'Email, пароль и имя обязательны' },
+      { status: 400 }
+    )
+  }
+
+  // Enforced server-side, not just by the disabled submit button: consent has to
+  // be provable, and a client-side-only check proves nothing.
+  if (!acceptedTerms) {
+    return NextResponse.json(
+      { error: 'Необходимо принять пользовательское соглашение' },
       { status: 400 }
     )
   }
@@ -78,6 +89,7 @@ export async function POST(request: Request) {
   const studentId = authData.user.id
 
   // Create DIY student profile
+  const now = new Date().toISOString()
   const { error: profileError } = await admin.from('students').insert({
     id: studentId,
     email,
@@ -86,6 +98,9 @@ export async function POST(request: Request) {
     service_type: 'diy',
     subscription_status: 'trial',
     pin_code: null,
+    terms_accepted_at: now,
+    marketing_consent: marketingConsent,
+    marketing_consent_at: marketingConsent ? now : null,
   })
 
   if (profileError) {

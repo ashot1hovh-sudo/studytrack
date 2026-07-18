@@ -1,8 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useApp } from '@/context/AppContext'
-import { Compass, Eye, EyeOff, Lock, User, Mail, UserPlus, LogIn } from 'lucide-react'
+import { Compass, Eye, EyeOff, Lock, User, Mail, UserPlus, LogIn, KeyRound, ArrowLeft } from 'lucide-react'
 
 type LoginMode = 'student' | 'admin' | 'register'
+
+const SUPPORT_TELEGRAM = 'https://t.me/ash_china'
 
 export default function Login() {
   const { login, loginError } = useApp()
@@ -17,6 +19,11 @@ export default function Login() {
   const [registerError, setRegisterError] = useState<string | null>(null)
   const [needsVerification, setNeedsVerification] = useState(false)
   const [resendStatus, setResendStatus] = useState<string | null>(null)
+  // Set once registration succeeds: the account exists but is unconfirmed, so
+  // the whole card swaps to the code-entry step.
+  const [awaitingCode, setAwaitingCode] = useState(false)
+  const [code, setCode] = useState('')
+  const [codeError, setCodeError] = useState<string | null>(null)
 
   const isRegister = loginMode === 'register'
 
@@ -45,8 +52,14 @@ export default function Login() {
           const data = await response.json().catch(() => null)
 
           if (response.ok) {
-            setRegisterSuccess(data?.message ?? 'Аккаунт создан. Теперь войдите с вашим email и паролем.')
-            setLoginMode('student')
+            if (data?.needsConfirmation) {
+              setAwaitingCode(true)
+              setCode('')
+              setCodeError(null)
+            } else {
+              setRegisterSuccess(data?.message ?? 'Аккаунт создан. Теперь войдите с вашим email и паролем.')
+              setLoginMode('student')
+            }
             setPassword('')
             setFullName('')
           } else {
@@ -78,6 +91,35 @@ export default function Login() {
     [email, password, fullName, login, isRegister]
   )
 
+  const handleVerifyCode = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      setIsLoading(true)
+      setCodeError(null)
+      try {
+        const response = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, token: code }),
+        })
+        const data = await response.json().catch(() => null)
+        if (response.ok) {
+          // verifyOtp already set the session cookies, so a reload lands the
+          // user inside the app rather than back on the login screen.
+          window.location.reload()
+          return
+        }
+        setCodeError(data?.error ?? 'Неверный код')
+        setShake(true)
+        setTimeout(() => setShake(false), 500)
+      } catch {
+        setCodeError('Не удалось проверить код. Проверьте соединение.')
+      }
+      setIsLoading(false)
+    },
+    [email, code]
+  )
+
   const handleResendVerification = async () => {
     setResendStatus(null)
     setIsLoading(true)
@@ -98,6 +140,121 @@ export default function Login() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Post-registration: the account exists but is unconfirmed. Show the code entry
+  // step, with a human fallback for anyone whose email never arrives.
+  if (awaitingCode) {
+    return (
+      <div className="min-h-screen bg-study-bg flex items-center justify-center p-4">
+        <div className={`w-full max-w-sm transition-transform duration-300 ${shake ? 'animate-shake' : ''}`}>
+          <div className="flex flex-col items-center mb-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-16 w-auto mb-2" />
+            <p className="text-sm text-study-gray mt-1">Трекер поступления</p>
+          </div>
+
+          <div className="bg-white rounded-2xl card-shadow p-6 sm:p-8">
+            <h2 className="text-lg font-bold text-study-dark mb-1">Подтвердите почту</h2>
+            <p className="text-sm text-study-gray mb-5">
+              Мы отправили код на <span className="font-medium text-study-dark">{email}</span>. Введите
+              его ниже — или просто откройте ссылку из письма.
+            </p>
+
+            <form onSubmit={handleVerifyCode} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-study-dark mb-1.5">Код из письма</label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-study-gray">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    autoFocus
+                    className="w-full pl-10 pr-4 py-3 bg-study-bg border border-study-lightgray rounded-xl text-center text-lg font-semibold tracking-[0.4em] text-study-dark placeholder:tracking-[0.4em] placeholder:text-study-gray/40 focus:outline-none focus:border-study-brown focus:ring-2 focus:ring-study-brown/10 transition-all"
+                  />
+                </div>
+              </div>
+
+              {codeError && (
+                <div className="p-3 bg-study-red/10 border border-study-red/20 rounded-xl">
+                  <p className="text-xs text-study-red font-medium">{codeError}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoading || code.length < 6}
+                className="w-full py-3.5 bg-study-brown text-white font-semibold text-sm rounded-xl hover:bg-study-brown/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed shadow-lg shadow-study-brown/20"
+              >
+                {isLoading ? 'Проверяем...' : 'Подтвердить'}
+              </button>
+            </form>
+
+            <div className="mt-5 pt-5 border-t border-study-lightgray space-y-3">
+              <div>
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={isLoading}
+                  className="text-xs font-semibold text-study-brown hover:underline disabled:opacity-50"
+                >
+                  Отправить письмо ещё раз
+                </button>
+                {resendStatus && (
+                  <p className="mt-1 text-xs text-study-green font-medium">{resendStatus}</p>
+                )}
+              </div>
+
+              <p className="text-[11px] text-study-gray leading-relaxed">
+                Письмо не пришло? Проверьте папку <span className="font-medium">«Спам»</span>. Если его
+                там нет —{' '}
+                <a
+                  href={SUPPORT_TELEGRAM}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-study-brown hover:underline"
+                >
+                  напишите в поддержку
+                </a>
+                , и мы создадим аккаунт вручную — вы сможете войти сразу.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setAwaitingCode(false)
+              setCode('')
+              setCodeError(null)
+              setResendStatus(null)
+              setLoginMode('student')
+            }}
+            className="mt-6 mx-auto flex items-center gap-1.5 text-xs text-study-gray hover:text-study-dark transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Вернуться ко входу
+          </button>
+        </div>
+
+        <style>{`
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+          }
+          .animate-shake { animation: shake 0.4s ease-in-out; }
+        `}</style>
+      </div>
+    )
   }
 
   return (
@@ -247,14 +404,23 @@ export default function Login() {
               <div className="p-3 bg-study-red/10 border border-study-red/20 rounded-xl">
                 <p className="text-xs text-study-red font-medium">{isRegister ? registerError : loginError}</p>
                 {!isRegister && needsVerification && (
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    disabled={isLoading}
-                    className="mt-2 text-xs font-semibold text-study-brown hover:underline disabled:opacity-50"
-                  >
-                    Отправить письмо повторно
-                  </button>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <button
+                      type="button"
+                      onClick={() => { setAwaitingCode(true); setCode(''); setCodeError(null) }}
+                      className="text-xs font-semibold text-study-brown hover:underline"
+                    >
+                      Ввести код из письма
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={isLoading}
+                      className="text-xs font-semibold text-study-brown hover:underline disabled:opacity-50"
+                    >
+                      Отправить письмо повторно
+                    </button>
+                  </div>
                 )}
                 {!isRegister && resendStatus && (
                   <p className="mt-1 text-xs text-study-green font-medium">{resendStatus}</p>

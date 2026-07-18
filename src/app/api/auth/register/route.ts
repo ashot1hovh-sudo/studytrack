@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 
 export async function POST(request: Request) {
@@ -46,19 +47,31 @@ export async function POST(request: Request) {
     )
   }
 
-  // TEST MODE: email verification disabled — email_confirm: true auto-confirms
-  // the user so they can log in immediately without a confirmation email.
-  const { data: authData, error: authError } = await admin.auth.admin.createUser({
+  // Sign up through the normal (anon) client rather than the admin API: admin
+  // createUser never sends a confirmation email, whatever GoTrue is configured
+  // to do. signUp triggers the branded confirmation template, which carries both
+  // a magic link and a 6-digit code.
+  const supabase = createClient()
+  const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
-    email_confirm: true,
-    user_metadata: { full_name: fullName },
+    options: { data: { full_name: fullName } },
   })
 
   if (authError || !authData.user) {
     return NextResponse.json(
       { error: authError?.message ?? 'Не удалось создать аккаунт' },
       { status: 500 }
+    )
+  }
+
+  // GoTrue returns a decoy user with an empty identities array when the address
+  // is already registered, so signUp cannot be used to enumerate accounts. Treat
+  // that as "already exists" rather than creating a duplicate profile row.
+  if (authData.user.identities && authData.user.identities.length === 0) {
+    return NextResponse.json(
+      { error: 'Этот email уже зарегистрирован' },
+      { status: 409 }
     )
   }
 
@@ -84,9 +97,11 @@ export async function POST(request: Request) {
     )
   }
 
-  // TEST MODE: no confirmation email — account is ready to use right away.
+  // The account exists but is unconfirmed: the user must enter the 6-digit code
+  // from the email (or follow its link) before they can sign in.
   return NextResponse.json({
     ok: true,
-    message: 'Аккаунт создан. Теперь войдите с вашим email и паролем.',
+    needsConfirmation: true,
+    message: 'Мы отправили код подтверждения на вашу почту.',
   })
 }

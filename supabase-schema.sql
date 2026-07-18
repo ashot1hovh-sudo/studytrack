@@ -10,6 +10,9 @@ create table public.students (
   phone text,
   telegram_chat_id text,
   role public.student_role not null default 'student',
+  service_type text default 'premium',
+  subscription_status text default 'active',
+  pin_code text,
   created_at timestamptz not null default now()
 );
 

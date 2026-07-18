@@ -31,6 +31,12 @@ export async function POST(request: Request) {
   const email = String(body?.email ?? '').trim().toLowerCase()
   const password = String(body?.password ?? '')
   const fullName = String(body?.fullName ?? '').trim()
+  // Defaults to 'diy' so a manually created account matches a self-registered
+  // one. This route predates the DIY pivot and used to hard-code premium/active,
+  // which would have handed every manually created student a free paid
+  // subscription. Premium is now opt-in.
+  const serviceType = body?.serviceType === 'premium' ? 'premium' : 'diy'
+  const subscriptionStatus = serviceType === 'premium' ? 'active' : 'trial'
   const age = body?.age ? Number(body.age) : null
   const program = String(body?.program ?? 'bachelor')
   const universities: string[] = Array.isArray(body?.universities)
@@ -72,8 +78,8 @@ export async function POST(request: Request) {
     age,
     program,
     role: 'student',
-    service_type: 'premium',
-    subscription_status: 'active',
+    service_type: serviceType,
+    subscription_status: subscriptionStatus,
     pin_code: null,
   })
 
@@ -82,7 +88,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: profileError.message }, { status: 500 })
   }
 
-  const uniqueDocuments = Array.from(new Set(documents.length > 0 ? documents : defaultDocumentsPackage))
+  // The default document package is consultant-era onboarding. DIY students get
+  // one only if the caller asked for it explicitly — document upload is off.
+  const fallbackDocuments = serviceType === 'premium' ? defaultDocumentsPackage : []
+  const uniqueDocuments = Array.from(new Set(documents.length > 0 ? documents : fallbackDocuments))
 
   const documentRows = uniqueDocuments.map((name, index) => ({
     student_id: studentId,
@@ -98,8 +107,10 @@ export async function POST(request: Request) {
     order_index: index + 1,
   }))
 
-  const { error: documentsError } = await admin.from('documents').insert(documentRows)
-  if (documentsError) return NextResponse.json({ error: documentsError.message }, { status: 500 })
+  if (documentRows.length > 0) {
+    const { error: documentsError } = await admin.from('documents').insert(documentRows)
+    if (documentsError) return NextResponse.json({ error: documentsError.message }, { status: 500 })
+  }
 
   if (universityRows.length > 0) {
     const { error: universitiesError } = await admin.from('universities').insert(universityRows)

@@ -13,9 +13,11 @@ Launching into the **Russian market** — this drives the infrastructure migrati
 ## Stack
 
 - **Next.js 14** App Router, TypeScript, Tailwind CSS
-- **Supabase** — auth + Postgres DB + Storage (documents bucket)
-- **Vercel** — original production deploy (still working)
-- **Timeweb Cloud — Docker app, Moscow** — Russian-market deploy, **LIVE**: `https://ashot1hovh-sudo-studytrack-9bc8.twc1.net` (still talks to supabase.com — data migration pending, see below)
+- **Supabase, self-hosted** — auth + Postgres 17 + Storage, running on a Timeweb VM at **`https://db.kaykitay.ru`** (`104.171.138.217`, Moscow). Same `supabase-js` API as hosted Supabase.
+- **Vercel** — original production deploy. ⚠️ Still points at **supabase.com**, so it and Timeweb now read different databases. Decommission or repoint it.
+- **Timeweb Cloud — Docker app, Moscow** — Russian-market deploy, **LIVE**: `https://ashot1hovh-sudo-studytrack-9bc8.twc1.net`, talking to the self-hosted Supabase above.
+- **Timeweb mail** — `noreply@kaykitay.ru` via `smtp.timeweb.ru:587`, SPF/DKIM/DMARC configured. Sends all auth email.
+- **Domain** — `kaykitay.ru` (registered at Timeweb 2026-07-18)
 - **Driver.js** — first-login onboarding tour
 - **Repo:** `https://github.com/ashot1hovh-sudo/studytrack.git`
 - **Branch:** `diy-product` (active branch — both Vercel and Timeweb deploy from here)
@@ -77,11 +79,52 @@ All pushed to `diy-product`. Latest commit: `ea84c48`.
 
 ---
 
+## Session log — 2026-07-18
+
+**Path A migration COMPLETE.** The app now runs entirely on Russian infrastructure: Timeweb app → self-hosted Supabase on a Timeweb VM → Timeweb mail. supabase.com is no longer in the request path.
+
+**1. Domain registered: `kaykitay.ru`** (Timeweb, NS at Timeweb, paid to 2026-07-18+1y). ⚠️ **Автопродление was OFF at purchase** — verify it's on; the whole platform dies on expiry. Subdomain `db.kaykitay.ru` → the Supabase VM.
+
+**2. Cloud server provisioned** — `104.171.138.217`, Ubuntu 24.04 LTS, 2 vCPU / 4 GB / 50 GB NVMe, Moscow (MSK-1), backups enabled, ~1 480 ₽/мес. Chose 24.04 over 22.04 deliberately: 22.04's standard support ends April 2027, which would force an OS upgrade within a year of launch.
+
+**3. Server hardened** — ufw (only 22/80/443 in; Postgres never public), fail2ban, 4 GB swap, full `apt upgrade`, SSH key-only (password auth disabled at order time).
+
+**4. Self-hosted Supabase stack up** — `/opt/supabase/docker/supabase-project`, 12 containers, all healthy. Postgres 17.6, GoTrue 2.189, PostgREST 14.12, Kong, Studio, Realtime, Storage, Supavisor, Caddy. Managed with `sh run.sh {start|stop|status|logs}`.
+
+**5. TLS** — Caddy override (`docker-compose.caddy.yml`) auto-issued a Let's Encrypt cert for `db.kaykitay.ru`, auto-renewing.
+
+**6. Schema restored + drift fixed.** The three `.sql` files applied cleanly, but registration then failed on `pin_code`. Diffing the old supabase.com schema (via its PostgREST OpenAPI spec) against the new one revealed **3 columns on `students` that existed in production but were never captured in the repo's SQL**: `pin_code`, `service_type` (default `'premium'`), `subscription_status` (default `'active'`). Added to both the database and `supabase-schema.sql`. Nothing else had drifted.
+
+**7. Email — Timeweb mail, not Resend.** Resend has no Russian region (US/Ireland/Brazil/Japan only), which makes every send a cross-border transfer under Art. 12 with a Roskomnadzor notification duty. Switched to a `noreply@kaykitay.ru` mailbox on Timeweb: SPF, DKIM and DMARC were auto-configured, and domestic senders get materially better inbox placement at Mail.ru/Yandex. Outbound 25/465/587 are blocked by default on Timeweb — **these were unblocked on request** (2525 remains blocked).
+
+**8. Branded Russian email templates** — `volumes/auth/templates/{magic_link,confirmation,recovery}.html`, brand palette, 6-digit code + magic link in the same message. First delivery landed in Gmail spam; after branding it landed in the **Inbox**.
+
+**9. App repointed** — Timeweb env vars now target `db.kaykitay.ru`. Verified end-to-end: register → 200, login → 200 with a session cookie whose JWT `iss` is `https://db.kaykitay.ru`, and **RLS confirmed isolating** (3 rows in the table, an authenticated user sees exactly their own; anon sees `[]`). Test accounts cleaned up; the database is a clean slate.
+
+**10. Backups** — `/usr/local/bin/supabase-backup.sh`, nightly 03:30 via `/etc/cron.d/supabase-backup`, `pg_dumpall` gzipped to `/opt/backups/postgres`, 14-day retention, verified by *content* (gzip integrity + core tables present), logging to `/var/log/supabase-backup.log`.
+
+---
+
+## Self-hosted Supabase — operating notes
+
+| | |
+|---|---|
+| Server | `104.171.138.217` (`ssh root@…`, key-only) |
+| Project dir | `/opt/supabase/docker/supabase-project` |
+| Secrets | that dir's `.env` (mode 600) — Postgres password, JWT secret, anon/service keys, dashboard login |
+| Manage | `sh run.sh start\|stop\|restart\|status\|logs [service]` |
+| Studio (admin UI) | `https://db.kaykitay.ru` — basic auth, creds in `.env` (`DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD`) |
+| Compose layers | `COMPOSE_FILE=docker-compose.yml:docker-compose.caddy.yml:docker-compose.mail.yml` |
+| Custom override | `docker-compose.mail.yml` — the nginx template server + GoTrue mail config (kept separate so upstream updates don't clobber it) |
+| Backups | `/opt/backups/postgres`, nightly 03:30, 14 days |
+
+---
+
 ## Infrastructure migration (Vercel+Supabase → Russian)
 
 **Why:** 152-FZ requires Russian citizens' personal data on Russian servers. DB + Storage + Auth must move before onboarding real students.
 
-**Status:** ✅ **Hosting done** — the app runs on Timeweb (Docker app, Moscow region). ❌ **Data not migrated** — it still reads/writes supabase.com. That's fine while there are no real users (test data → 152-FZ doesn't bite yet), but it is the blocker before onboarding real students.
+**Status:** ✅ **DONE (2026-07-18).** Hosting, database, auth, storage and email all run on Russian infrastructure. supabase.com and Resend are out of the request path. The old supabase.com project still exists untouched — useful as a rollback and as the reference for any further schema-drift checks, but it should be decommissioned once you're confident.
 
 ### ✅ Decision locked: **Path A — self-host Supabase on a Timeweb VM**
 
@@ -92,12 +135,14 @@ Run the open-source Supabase stack (Postgres + Auth + Storage) via `docker compo
 - Dropping Supabase Auth kills `auth.uid()`, so **every RLS policy** must be re-implemented as explicit ownership checks in app code — the highest-risk part (this is where data leaks happen).
 - Realistic estimate 7–11 days. **Plan: launch on A, migrate to B later**, calmly, with real load data to justify it.
 
-**Path A steps (not started):**
-1. Provision a Timeweb Cloud Server (suggested 2 vCPU / 4 GB / 40–80 GB SSD, Ubuntu 22.04, Russian region).
-2. `docker compose up` the self-hosted Supabase stack; lock down firewall/SSH.
-3. Restore schema (`supabase-schema.sql`, `supabase-admin.sql`, `supabase-storage.sql`), migrate data + the documents bucket.
-4. Repoint the Timeweb app's env vars at the self-hosted instance and redeploy.
-5. Set up backups + update policy (this is the VM "babysitting" cost of Path A).
+**Path A steps — all complete (2026-07-18):**
+1. ✅ Timeweb Cloud Server provisioned (2 vCPU / 4 GB / 50 GB, Ubuntu 24.04, Moscow).
+2. ✅ Stack up via `docker compose`; firewall + SSH locked down.
+3. ✅ Schema restored (+3 drifted columns found and fixed). Data migration was a no-op — no real users, and document upload is disabled by product decision.
+4. ✅ Timeweb app env vars repointed; verified end-to-end incl. RLS isolation.
+5. ✅ Nightly `pg_dumpall` backups with content verification + 14-day retention.
+
+**Remaining VM "babysitting" duties:** OS security updates (`unattended-upgrades` is *not* configured yet), Supabase stack version bumps, cert renewal (automatic via Caddy, but worth watching), and moving backups off-box.
 
 ---
 
@@ -123,31 +168,42 @@ The repo-root `Dockerfile` handles everything (install → build → `node serve
 Set on **both** Vercel and Timeweb (Timeweb → App → Переменные). Copy values from local `.env.local`. These are read at **runtime** by server code, so no build-time baking is needed:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY   # app also reads ANON_KEY; PUBLISHABLE is what's set
-SUPABASE_SERVICE_ROLE_KEY
-RESEND_API_KEY                          # verification emails (unused while test mode is on)
-NEXT_PUBLIC_APP_URL                     # set to the deploy's own domain (Timeweb: the *.twc1.net URL)
-CASES_SHEET_ID                          # optional — Мои шансы falls back to built-in data
+NEXT_PUBLIC_SUPABASE_URL            # NOW: https://db.kaykitay.ru  (was *.supabase.co)
+NEXT_PUBLIC_SUPABASE_ANON_KEY       # self-hosted anon JWT (from the VM's .env)
+SUPABASE_SERVICE_ROLE_KEY           # self-hosted service_role JWT — real secret, bypasses RLS
+RESEND_API_KEY                      # app-side email only; auth email goes via Timeweb SMTP now
+NEXT_PUBLIC_APP_URL                 # the deploy's own domain (Timeweb: the *.twc1.net URL)
+CASES_SHEET_ID                      # optional — Мои шансы falls back to built-in data
 ```
 
 Without the Supabase vars the API routes return setup errors and nothing loads.
+
+⚠️ `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` was **deleted** in the cutover. `src/lib/supabase/config.ts` reads `ANON_KEY ?? PUBLISHABLE_KEY`, so a stale `PUBLISHABLE` value would be shadowed by `ANON_KEY` and silently do nothing — but leaving an old supabase.com credential lying around is a trap for a future debugging session. Note the `??` only falls back on `null`/`undefined`, **not** on empty string: an empty `ANON_KEY` breaks the app rather than falling through.
+
+**Auth/mail env now lives on the VM**, in `/opt/supabase/docker/supabase-project/.env` — `SMTP_HOST=smtp.timeweb.ru`, `SMTP_PORT=587`, `SMTP_USER=noreply@kaykitay.ru`, plus `SITE_URL`/`API_EXTERNAL_URL`/`ADDITIONAL_REDIRECT_URLS`. When the app moves to `kaykitay.ru`, `SITE_URL` must be updated there too or magic links will point at the old `*.twc1.net` host.
 
 ---
 
 ## Next Steps (priority order)
 
-1. **Path A migration** — stand up self-hosted Supabase on a Timeweb VM and repoint the app (5 steps above). This is the gate before any real student data.
-2. **Payment / self-serve subscription — YooKassa (ЮKassa)** *(decided; not built)*. Today there is **no self-serve upgrade path**: the consultant sets `pin_code` manually via `/api/admin/students/update-subscription`, and the student enters it. Target flow: create-payment route → YooKassa `confirmation_url` → webhook on `payment.succeeded` → generate a PIN → email it → the existing `/api/auth/verify-pin` already flips `subscription_status` to `active`. Requires a legal entity (самозанятый/ИП/ООО).
-3. **Re-enable email verification before production** — flip `email_confirm` back to `false` in `src/app/api/auth/register/route.ts` and restore the confirmation-email block (both marked `TEST MODE`). ⚠️ **Blocked on a verified sender domain:** `src/lib/email.ts` sends from `onboarding@resend.dev`, Resend's shared test sender, which **only delivers to the account owner's own inbox**. Verify a real domain in Resend and send from `noreply@<domain>` — this blocks both verification emails *and* the PIN emails in step 2.
-4. **Set `NEXT_PUBLIC_APP_URL`** on the Timeweb app to `https://ashot1hovh-sudo-studytrack-9bc8.twc1.net`, and add that domain to **Supabase → Auth → URL Configuration → Redirect URLs** (needed once email verification is back on).
-5. **Grow the Мои шансы dataset** — real admission outcomes are a recurring moat; keep it fresh.
-6. **Mobile QA pass** on a real phone before launch (lesson reader, video modal/iframe, tracker + table tap targets, and the new tour + consultant widget).
+1. **Magic link / OTP login flow — app side** *(decided 2026-07-18; server side already done)*. The email now carries **both** a magic link and a 6-digit code; either completes login. GoTrue and the templates are configured and verified. What's left is entirely in the app: an email-entry screen → a code-entry screen, swapping the password calls for `supabase.auth.signInWithOtp()` / `verifyOtp({ email, token })`, and deciding whether password login stays as a fallback.
+   - **Keep passwords as a fallback for launch.** Email deliverability is the most fragile part of the system, and with magic-link-only, a spam-foldered message is a total lockout, not an inconvenience.
+   - **Naming:** call this «код подтверждения» / `otp` in the UI and code. The existing `pin_code` + `/api/auth/verify-pin` are the *subscription* unlock and are unrelated — two different 6-digit "codes" in one product will confuse users and future readers.
+2. **Payment / self-serve subscription — YooKassa (ЮKassa)** *(decided; not built)*. Today there is **no self-serve upgrade path**: the consultant sets `pin_code` manually via `/api/admin/students/update-subscription`, and the student enters it. Target flow: create-payment route → YooKassa `confirmation_url` → webhook on `payment.succeeded` → generate a PIN → email it → the existing `/api/auth/verify-pin` already flips `subscription_status` to `active`. Requires a legal entity (самозанятый/ИП/ООО). **Email is no longer a blocker here** — `noreply@kaykitay.ru` works.
+3. **Re-enable email verification** — flip `email_confirm` back to `false` in `src/app/api/auth/register/route.ts` and restore the confirmation-email block (both marked `TEST MODE`). No longer blocked: sender domain is verified and delivering. Note the app creates users via `admin.auth.admin.createUser({ email_confirm: true })`, which **bypasses** GoTrue's `ENABLE_EMAIL_AUTOCONFIRM=false` — so this is purely a code change, not a config one.
+4. **Move the app to `kaykitay.ru`** — point the apex/`www` at the Timeweb app, update `NEXT_PUBLIC_APP_URL`, and update `SITE_URL` in the VM's `.env` so magic links resolve to the right host. Also lets the email templates use the real logo (currently a text wordmark, deliberately — see gotchas).
+5. **Deliverability hardening** — test against Mail.ru / Yandex / Rambler inboxes (not Gmail; wrong audience). Once confident nothing legitimate fails, tighten DMARC from `p=none` to `p=quarantine`. Ask Timeweb what the mailbox's outbound sending limit is — with magic links it's one email *per login*, so volume scales faster than signups.
+6. **Grow the Мои шансы dataset** — real admission outcomes are a recurring moat; keep it fresh.
+7. **Mobile QA pass** on a real phone before launch (lesson reader, video modal/iframe, tracker + table tap targets, and the new tour + consultant widget).
 
 ### Housekeeping
-- Delete the throwaway probe account created while debugging login: `probe-timeweb-1784177917@example.com` (Supabase → Authentication → Users).
-- `src/data/China_Universities_Programs.json` has an **uncommitted local modification** predating this session — decide whether to keep or discard it.
+- ~~Delete the probe account~~ — moot; it lives in the old supabase.com project, which is out of the request path.
+- **Decommission the supabase.com project** once confident in self-hosting. Keep it until then as rollback + schema reference.
+- **Move backups off-box** — they currently sit on the same VM as the database.
+- **Configure `unattended-upgrades`** on the VM for OS security patches; not set up yet.
+- `src/data/China_Universities_Programs.json` has an **uncommitted local modification** predating the 07-15 session — decide whether to keep or discard it.
 - `src/lib/supabase/client.ts` (browser Supabase client) is **dead code** — safe to delete.
+- Consider committing the email templates into the repo (`infra/email-templates/`); they currently exist only on the VM.
 
 ---
 
@@ -161,3 +217,14 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 - **React StrictMode** (on by default in dev) mounts → cleans up → remounts, so an effect that schedules a timer and clears it on cleanup will be cancelled if a "already ran" guard blocks the second run. Put the guard *inside* the timer callback (see `OnboardingTour.tsx`).
 - The doodle PNGs are ~400–650 KB each at 1024². Fine for now, but **resize/compress them** if the tour ever feels slow on mobile data.
 - The consultant's reveal delay is `REVEAL_DELAY_MS` in `ConsultantFab.tsx` (currently `120000` = 2 min; was `5000` while testing).
+
+### Self-hosting gotchas (2026-07-18 — each cost real time)
+
+- **Docker Hub rate-limits by IPv6 prefix.** Pulls failed with `429 Too Many Requests`; the header `docker-ratelimit-source: 2a03:6f00:a::` showed the limit was attributed to Timeweb's **shared /48 IPv6 block**, not the server. Fix: IPv6 is disabled host-wide in `/etc/sysctl.d/99-disable-ipv6.conf` so pulls go over the dedicated IPv4. **If IPv6 is ever re-enabled, image pulls will start failing again.**
+- **`Permission denied (publickey)` can mean the client, not the server.** Hours were lost on a key that was correct all along. sshd logged `Accepted key … found at /root/.ssh/authorized_keys:1` followed by `Postponed publickey` — i.e. the server accepted the key and asked for a signature, and the *client* couldn't sign because the key has a passphrase and the connection used `BatchMode=yes` (which forbids prompting). Fix: `ssh-add --apple-use-keychain ~/.ssh/id_ed25519`. **Read the server's auth log before theorising about server config.**
+- **Timeweb may not install your SSH key at provisioning** even with the key checkbox ticked. Add it manually via the VNC console (`/root/.ssh/authorized_keys`).
+- **`GOTRUE_MAILER_TEMPLATES_*` are URLs, not file paths.** Pointing them at a mounted file makes GoTrue resolve the path against `SITE_URL`, 404, and **silently fall back to its default English templates** — no error unless you look for `templatemailer` in the logs. Solved with an internal nginx (`mail-templates` service in `docker-compose.mail.yml`) serving them over the Docker network at `http://mail-templates/*.html`. **Verification of an email template means looking at the received email — "no errors in the logs" proves nothing.**
+- **`403 "You cannot consume this service"` on `/rest/v1/` is not a bug.** Kong restricts the PostgREST OpenAPI root to the `admin` group by design; anon keys get 403 there but work fine on table routes like `/rest/v1/students`.
+- **`pg_dumpall` of an empty database is ~46 KB.** Don't size-check backups; check their *contents* (the backup script greps for core `CREATE TABLE` statements).
+- **The repo's `.sql` files can drift from production.** `pin_code`, `service_type` and `subscription_status` existed on supabase.com but were never written back to `supabase-schema.sql` — registration broke on cutover. To diff a live Supabase against a local one, fetch the PostgREST OpenAPI spec (`GET /rest/v1/` with the service-role key); its `definitions` list every table's columns. **If you add a column via the Studio UI, write it into the `.sql` file too.**
+- **Safari-only load failures** on the `*.twc1.net` app appeared once and resolved on their own. TLS was verified clean (GlobalSign, full chain, TLS 1.3), so the likely cause is iCloud Private Relay, which proxies Safari but not Chrome on iOS. If it recurs, get the exact Safari error text — "cannot find server" (DNS), "server stopped responding" (relay path) and a blank white page (app-side JS) point in completely different directions.

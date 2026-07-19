@@ -45,7 +45,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setActiveTab = useCallback((tab: string, replace = false) => {
     const hash = tab === 'dashboard' ? '' : '#' + tab
-    const url = window.location.pathname + hash
+    // Keep the query string: this used to rebuild the URL from pathname + hash
+    // alone, so any param was silently dropped on the first tab change — which
+    // made ?tour=1 survive a refresh but not a click.
+    const url = window.location.pathname + window.location.search + hash
     if (replace) {
       window.history.replaceState({ tab }, '', url)
     } else {

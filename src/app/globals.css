@@ -107,7 +107,7 @@
 .driver-popover.st-tour .st-doodle {
   position: absolute;
   bottom: -28px; /* stand slightly below the box, like on a floor */
-  width: 700px;
+  width: 350px;
   height: auto;
   object-fit: contain;
   pointer-events: none; /* never block the popover buttons */
@@ -143,7 +143,7 @@
   position: absolute;
   right: 0;
   bottom: -30px;
-  width: 300px;
+  width: 250px;
   height: auto;
   translate: 90% 0; /* hang out to the right, standing beside the box */
   object-fit: contain;
@@ -157,7 +157,7 @@
   position: absolute;
   left: 50%;
   top: 0;
-  width: 440px;
+  width: 270px;
   height: auto;
   translate: -50% -90%;
   object-fit: contain;
@@ -173,7 +173,7 @@
     max-width: calc(100vw - 28px);
   }
   .driver-popover.st-tour .st-doodle {
-    width: 200px;
+    width: 170px;
     bottom: auto;
     top: 0;
   }
@@ -192,11 +192,11 @@
     bottom: auto;
     left: 50%;
     top: 0;
-    width: 208px; /* ~2× bigger on phone; stays on top of the box */
+    width: 200px; /* stays on top of the box */
     translate: -50% -92%;
   }
   .driver-popover.st-tour .st-finale {
-    width: 320px;
+    width: 240px;
   }
 }
 
@@ -219,7 +219,7 @@
 /* Only the IMAGE slides toward/off the border, so the label always stays fully
    on-screen (sliding the whole container clipped the pill off the right edge). */
 .st-consultant img {
-  width: 230px;
+  width: 250px;
   height: auto;
   display: block;
   translate: 120px 0; /* resting: partially peeking from the border */

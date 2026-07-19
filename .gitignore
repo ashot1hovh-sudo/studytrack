@@ -2,5 +2,8 @@
 node_modules/
 out/
 dist/
-.env*.local
+# Broad on purpose: `.env*.local` missed `.env.local.pre-selfhost.bak`, which held
+# a live service-role key. Anything env-shaped stays out, suffix regardless.
+.env*
 *.tsbuildinfo
+.DS_Store

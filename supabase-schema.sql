@@ -10,8 +10,11 @@ create table public.students (
   phone text,
   telegram_chat_id text,
   role public.student_role not null default 'student',
-  service_type text default 'premium',
-  subscription_status text default 'active',
+  -- Least privilege: a row created without these named must not come out paid.
+  -- Both INSERT paths set them explicitly; these defaults are the backstop for
+  -- any future one that forgets. Premium is always opt-in.
+  service_type text default 'diy',
+  subscription_status text default 'trial',
   pin_code text,
   -- Consent captured at registration. terms_accepted_at is mandatory (the API
   -- refuses registration without it); marketing_consent is opt-in and must be

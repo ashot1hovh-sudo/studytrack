@@ -5,7 +5,17 @@ import { driver, type DriveStep } from 'driver.js'
 import 'driver.js/dist/driver.css'
 import { useApp } from '@/context/AppContext'
 
-const STORAGE_KEY = 'st_onboarded_v1'
+// Local cache only — the source of truth is students.onboarding_completed_at,
+// delivered as user.onboardingCompleted. This exists so a page reload doesn't
+// flash the tour in the moment before the session request comes back, and it is
+// scoped per account: a shared browser must not swallow the next user's tour.
+const seenKey = (userId: string) => `st_onboarded_v2:${userId}`
+
+// How long to wait for the nav to paint before giving up on anchored steps.
+// The previous fixed 400ms silently produced a two-step tour (greeting + finale)
+// on any device slow enough to miss the deadline — and said nothing about it.
+const TARGET_WAIT_MS = 3000
+const TARGET_POLL_MS = 100
 
 // Module-scoped so it survives React StrictMode's mount→cleanup→mount cycle in
 // dev (a component-level ref would let the double-invoke cancel the tour).
@@ -30,19 +40,25 @@ const navSteps: { id: string; title: string; description: string }[] = [
 ]
 
 export default function OnboardingTour() {
-  const { isAuthenticated } = useApp()
+  const { isAuthenticated, user } = useApp()
 
   useEffect(() => {
-    if (!isAuthenticated) return
+    if (!isAuthenticated || !user) return
 
     const forced = new URLSearchParams(window.location.search).get('tour') === '1'
     if (hasLaunched && !forced) return
-    if (!forced && localStorage.getItem(STORAGE_KEY)) return
+    // Account-level truth first, local cache second.
+    if (!forced && (user.onboardingCompleted || localStorage.getItem(seenKey(user.id)))) return
 
-    // Give the shell a beat to paint so nav targets exist and are laid out.
-    // The launch guard lives inside the timer, so StrictMode's cleanup can
-    // cancel this timer and the re-mounted effect simply schedules a new one.
-    const timer = setTimeout(() => {
+    // Wait for the nav to actually exist rather than betting on a fixed delay.
+    // The launch guard lives inside the callback, so StrictMode's cleanup can
+    // cancel this and the re-mounted effect simply schedules a new one.
+    let cancelled = false
+    let pollTimer: ReturnType<typeof setTimeout> | null = null
+    const deadline = Date.now() + TARGET_WAIT_MS
+
+    const launch = () => {
+      if (cancelled) return
       if (hasLaunched && !forced) return
       hasLaunched = true
 
@@ -86,7 +102,12 @@ export default function OnboardingTour() {
         doneBtnText: 'Готово',
         steps,
         onDestroyed: () => {
-          localStorage.setItem(STORAGE_KEY, '1')
+          // Cache locally first so a reload can't replay it while the write is
+          // still in flight, then record it against the account.
+          localStorage.setItem(seenKey(user.id), '1')
+          // Fire-and-forget: failing to record completion must not break the app.
+          // Worst case the tour replays once on the next visit.
+          fetch('/api/auth/onboarded', { method: 'POST' }).catch(() => {})
           // Signal the floating consultant that the intro is over so it can
           // start its reveal timer (see ConsultantFab).
           window.dispatchEvent(new Event('st:intro-done'))
@@ -94,10 +115,32 @@ export default function OnboardingTour() {
       })
 
       tour.drive()
-    }, 400)
+    }
 
-    return () => clearTimeout(timer)
-  }, [isAuthenticated])
+    // Poll until the nav targets exist, then launch. If they never show up
+    // (unexpected layout, very slow device) launch anyway on the deadline —
+    // a greeting-and-finale tour beats no tour at all.
+    const waitForTargets = () => {
+      if (cancelled) return
+
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+      const prefix = isDesktop ? 'nav-' : 'mnav-'
+      const ready = navSteps.some((s) => document.querySelector(`[data-tour="${prefix}${s.id}"]`))
+
+      if (ready || Date.now() > deadline) {
+        launch()
+        return
+      }
+      pollTimer = setTimeout(waitForTargets, TARGET_POLL_MS)
+    }
+
+    pollTimer = setTimeout(waitForTargets, TARGET_POLL_MS)
+
+    return () => {
+      cancelled = true
+      if (pollTimer) clearTimeout(pollTimer)
+    }
+  }, [isAuthenticated, user])
 
   return null
 }

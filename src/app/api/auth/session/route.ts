@@ -11,7 +11,7 @@ export async function GET() {
   // special case here handed 'consultant' to whoever held one specific address.
   const { data: student } = await supabase
     .from('students')
-    .select('id,email,full_name,role,service_type,subscription_status,access_expires_at')
+    .select('id,email,full_name,role,service_type,subscription_status,access_expires_at,onboarding_completed_at')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -32,6 +32,9 @@ export async function GET() {
       serviceType: student?.service_type ?? 'diy',
       subscriptionStatus: rawStatus === 'active' && !entitled ? 'inactive' : rawStatus,
       accessExpiresAt: student?.access_expires_at ?? null,
+      // Per account, not per browser: the tour should follow the user across
+      // devices and not be swallowed by whoever used this browser first.
+      onboardingCompleted: Boolean(student?.onboarding_completed_at),
       // pin_code deliberately not returned: the browser has no use for it, and a
       // secret sent where it isn't needed is one that leaks via a screenshot or
       // a bug report later.

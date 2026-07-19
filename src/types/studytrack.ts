@@ -13,6 +13,8 @@ export interface StudentProfile {
   subscriptionStatus: 'trial' | 'active' | 'inactive'
   /** When paid access lapses. null = never expires (staff, pre-window purchases). */
   accessExpiresAt?: string | null
+  /** Has this account finished the intro tour? Per account, not per browser. */
+  onboardingCompleted?: boolean
 }
 
 export interface University {

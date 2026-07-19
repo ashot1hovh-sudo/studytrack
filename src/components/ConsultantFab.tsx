@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useApp } from '@/context/AppContext'
 
 // She appears this long after the intro tour finishes (2 minutes).
 // (Was 5000 during testing.)
@@ -15,6 +16,7 @@ const SWIPE_DISMISS_PX = 50
 // fully (`is-shown`) for VISIBLE_MS, then settles back to the half-transparent
 // rest — or snaps back immediately on a right-swipe. A tap opens Iana's Telegram.
 export default function ConsultantFab() {
+  const { user } = useApp()
   const [shown, setShown] = useState(false)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const startX = useRef<number | null>(null)
@@ -29,8 +31,11 @@ export default function ConsultantFab() {
       revealTimer = setTimeout(() => setShown(true), REVEAL_DELAY_MS)
     }
 
+    // Must agree with OnboardingTour about whether the intro is going to play,
+    // or she either interrupts it or never appears. Same account-level source of
+    // truth, not the browser-level flag the tour used to key off.
     const forced = new URLSearchParams(window.location.search).get('tour') === '1'
-    const introWillPlay = forced || !localStorage.getItem('st_onboarded_v1')
+    const introWillPlay = forced || (Boolean(user) && !user?.onboardingCompleted)
 
     if (!introWillPlay) {
       startTimer()
@@ -46,7 +51,7 @@ export default function ConsultantFab() {
       window.removeEventListener('st:intro-done', onIntroDone)
       if (revealTimer) clearTimeout(revealTimer)
     }
-  }, [])
+  }, [user])
 
   // Auto-retract after she's been shown for VISIBLE_MS.
   useEffect(() => {

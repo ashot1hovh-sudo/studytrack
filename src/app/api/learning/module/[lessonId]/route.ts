@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises'
 import path from 'path'
 import { NextResponse } from 'next/server'
-import { getAuthenticatedUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
+import { getEntitledUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 
 const LESSON_FILES: Record<string, { file: string; title: string }> = {
   'b1':  { file: 'module-b1.md',  title: 'Оценка шансов' },
@@ -26,7 +26,9 @@ export async function GET(
 ) {
   if (missingSupabaseEnv()) return setupErrorResponse()
 
-  const { user, response } = await getAuthenticatedUser()
+  // Entitlement, not just authentication. Every lesson served here is paid
+  // content; the paywall in the UI is a convenience, not the gate.
+  const { user, response } = await getEntitledUser()
   if (response) return response
 
   const lesson = LESSON_FILES[params.lessonId]

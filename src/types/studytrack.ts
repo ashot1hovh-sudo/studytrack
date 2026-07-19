@@ -11,7 +11,8 @@ export interface StudentProfile {
   program?: 'language_year' | 'bachelor' | 'master' | null
   serviceType: 'diy' | 'premium'
   subscriptionStatus: 'trial' | 'active' | 'inactive'
-  pinCode?: string | null
+  /** When paid access lapses. null = never expires (staff, pre-window purchases). */
+  accessExpiresAt?: string | null
 }
 
 export interface University {

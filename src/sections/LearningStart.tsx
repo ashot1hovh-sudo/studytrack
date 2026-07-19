@@ -810,6 +810,30 @@ function CitySlideshow({ images }: { images: { src: string; alt: string }[] }) {
   )
 }
 
+/**
+ * One tile of the lesson watermark: the reader's email next to the brand, so a
+ * leaked screenshot carries the name of whoever leaked it.
+ *
+ * Built as an SVG data URI so it can tile a page of any length. Text is
+ * XML-escaped because an email is user-controlled and would otherwise be able to
+ * break out of the markup.
+ */
+function watermarkSvg(email: string) {
+  const label = `${email} · КайКитай`
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="340" height="180">` +
+    `<text x="10" y="120" transform="rotate(-18 10 120)" ` +
+    `font-family="system-ui,-apple-system,sans-serif" font-size="13" font-weight="700" ` +
+    `fill="#1f1f1f" fill-opacity="0.055">${label}</text>` +
+    `</svg>`
+  )
+}
+
 function ProtectedLesson({
   title,
   blocks,
@@ -1408,15 +1432,25 @@ function ProtectedLesson({
         onDragStart={prevent}
         style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
       >
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.055]">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 rotate-[-18deg] scale-125">
-            {Array.from({ length: 36 }).map((_, index) => (
-              <span key={index} className="text-xs font-bold text-study-dark whitespace-nowrap">
-                {userEmail} · StudyTrack
-              </span>
-            ))}
-          </div>
-        </div>
+        {/*
+          Tiled as a repeating background rather than a fixed run of elements.
+          The previous version rendered 36 spans, which covered only as much
+          height as 36 spans need — so on a long lesson the whole lower half was
+          unmarked, which is where most of the content is.
+
+          This is deterrence, not protection: anyone can strip it in devtools.
+          What it does is make screenshotting into a group chat feel like putting
+          your own name on it, which is the behaviour we actually want to
+          discourage.
+        */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(watermarkSvg(userEmail))}")`,
+            backgroundRepeat: 'repeat',
+          }}
+        />
 
         <div className="relative z-10">
           <div className="flex items-start justify-between gap-3 mb-2">

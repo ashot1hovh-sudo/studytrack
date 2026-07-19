@@ -16,6 +16,10 @@ create table public.students (
   service_type text default 'diy',
   subscription_status text default 'trial',
   pin_code text,
+  -- Paid access is a one-time purchase covering a fixed window (see
+  -- supabase-access-window.sql). NULL = never expires: staff, and anyone who
+  -- bought before the window existed.
+  access_expires_at timestamptz,
   -- Consent captured at registration. terms_accepted_at is mandatory (the API
   -- refuses registration without it); marketing_consent is opt-in and must be
   -- checked before any promotional send.

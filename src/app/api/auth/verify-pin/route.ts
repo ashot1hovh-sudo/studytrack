@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAuthenticatedUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
+import { accessExpiryFromNow, getAuthenticatedUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: Request) {
@@ -39,9 +39,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Сервисный ключ не настроен' }, { status: 500 })
   }
 
+  // Activation starts the access window and burns the PIN. Clearing it makes the
+  // PIN single-use: a PIN that stays valid forever would let a lapsed account
+  // reactivate itself for free once the window starts expiring.
   const { error: updateError } = await admin
     .from('students')
-    .update({ subscription_status: 'active' })
+    .update({
+      subscription_status: 'active',
+      access_expires_at: accessExpiryFromNow(),
+      pin_code: null,
+    })
     .eq('id', user.id)
 
   if (updateError) {

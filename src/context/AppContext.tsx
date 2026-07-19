@@ -60,6 +60,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch('/api/auth/session')
       if (!response.ok) {
+        // A device-limit eviction looks identical to an ordinary logout unless we
+        // say so. An unexplained logout reads as a broken app and costs a support
+        // message; an explained one costs nothing.
+        const data = await response.json().catch(() => null)
+        if (data?.code === 'session_evicted' && data?.error) {
+          setLoginError(data.error)
+        }
         setIsAuthenticated(false)
         setUser(null)
         return

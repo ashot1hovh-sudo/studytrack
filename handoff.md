@@ -25,7 +25,7 @@ Launching into the **Russian market** — this drives the infrastructure migrati
 
 ---
 
-## Current State (as of commit `ea84c48`)
+## Current State (as of commit `2f71922`)
 
 App is deployed and functional on **both Vercel and Timeweb (Moscow)**. Six main pages (sidebar / mobile nav): **Начало обучения, Главная, Чек-лист, Вузы, Дедлайны, Мои шансы** (+ consultant Admin dashboard).
 
@@ -35,8 +35,8 @@ Full functional breakdown lives in **`PRODUCT_OVERVIEW.md`** (repo root; a copy 
 - **Learning (`src/sections/LearningStart.tsx`)** — 3 tutorial tracks (Языковой год / Предвуз / Бакалавриат), 12 shared lessons b1–b12 (Языковой год omits b7/b11). Lessons are markdown from `src/content/modules/`, rendered by `ProtectedLesson` with an anti-copy watermark + custom parser (headings, lists, tables, inline PDF/iframe). Free info cards + locked paid cards below.
 - **Мои шансы (`src/sections/ChancesEvaluator.tsx`)** — transparent, filterable **table** of ~40 real admission cases (was an opaque matcher). Search + numeric filters (GPA/IELTS/CSCA Math).
 - **Вузы (`src/sections/Universities.tsx`)** — personal application **tracker** (`UniTracker.tsx`, Supabase-backed via `/api/universities`) on top, program **explorer** (182 unis / 670 English programs, `China_Universities_Programs.json`) below.
-- **Auth** — register / login / session / PIN unlock via Supabase Auth. **Email verification is still OFF (test mode)** — see Next Steps. The app is **fully server-side**: every `NEXT_PUBLIC_*` is read by server code at runtime, and the browser Supabase client (`src/lib/supabase/client.ts`) is dead code, imported nowhere. Practical upshot: runtime env vars are enough, build-time baking is irrelevant.
-- **Onboarding tour (`src/components/OnboardingTour.tsx`)** — Driver.js. Runs once on first login (`localStorage` key `st_onboarded_v1`; append `?tour=1` to any URL to force a replay). 8 steps: two-founder greeting → one themed doodle per nav section → "both of them" finale. Targets the desktop sidebar or the mobile bottom nav depending on viewport, via `data-tour` / `data-tour="mnav-*"` attributes added to `Sidebar.tsx`.
+- **Auth** — register / login / session / PIN unlock via Supabase Auth. Email verification is ON (6-digit code + magic link). **2 concurrent sessions per account** (`public.enforce_session_limit`), consultants exempt. The app is **fully server-side**: every `NEXT_PUBLIC_*` is read by server code at runtime, and the browser Supabase client (`src/lib/supabase/client.ts`) is dead code, imported nowhere. Practical upshot: runtime env vars are enough, build-time baking is irrelevant.
+- **Onboarding tour (`src/components/OnboardingTour.tsx`)** — Driver.js. Runs once **per account** — `students.onboarding_completed_at`, surfaced as `user.onboardingCompleted`; `localStorage` (`st_onboarded_v2:<uuid>`) is only a per-user cache to prevent a flash before the session loads. Append `?tour=1` to any URL to force a replay (the param now survives tab clicks). 8 steps: two-founder greeting → one themed doodle per nav section → "both of them" finale. Targets the desktop sidebar or the mobile bottom nav depending on viewport, via `data-tour` / `data-tour="mnav-*"` attributes added to `Sidebar.tsx`.
 - **Consultant widget (`src/components/ConsultantFab.tsx`)** — Iana doodle fixed at the right border at 50% opacity, always present. **2 minutes after the tour finishes** she peeks out for 20s (desktop hover peeks her too), a right-swipe snaps her back, tap → `t.me/ianadved`. Sequenced with the tour via a `window` `st:intro-done` event so she never interrupts the intro.
 - **Doodle assets** — 10 transparent PNGs in `public/images/doodles/`. Source art lives in `ProdVersion_doodles/` (deliberately **not** committed, and excluded from the Docker image via `.dockerignore`).
 
@@ -132,6 +132,102 @@ All pushed to `diy-product`. Latest commit: `ea84c48`.
 
 ---
 
+## Session log — 2026-07-19/20
+
+**Theme: the product was sellable but not defensible.** Access is now a one-time
+purchase (10 000 ₽, first ten at 5–6 000 ₽ for custdev) covering **2 years**, sold
+manually — no YooKassa for launch. That model makes one account worth sharing, so
+this session closed the ways to take the product without paying for it. Commits
+`d6056c2` → `2f71922`.
+
+**1. 🔒 The paywall was client-side only — any free account could read every paid
+lesson.** `/api/learning/module/[lessonId]` checked that you were authenticated and
+nothing else. Verified against the live app: a `trial` user got `200` and 11 KB of
+the apply-guide. The lock icons and paywall modal were decoration; the API behind
+them was open to anyone who registered. Fixed with `getEntitledUser()` in
+`src/lib/api.ts`, which checks entitlement through the **service-role** client so
+the caller's own RLS context can't influence the answer (same reasoning as
+`getConsultantUser`). *This was found by accident, while looking for where to
+enforce the 2-year window — not by looking for it.*
+
+**2. RLS audit complete (was Next Step #1).** All 16 policies read, not just
+grepped: every one is correctly scoped to `student_id = uid()` or
+`is_consultant()`, no hardcoded identities remain, no table is reachable by `anon`
+(policies are all `{authenticated}`, so anon has zero applicable policies and RLS
+fails closed), and `is_consultant()` is `SECURITY DEFINER` with a pinned
+`search_path`. Then **proven empirically** rather than by reading: two real JWTs
+against PostgREST — A sees exactly its own row, B's row returns `[]`, anon gets
+`[]`, and **both escalation attempts failed at the database** (`role=consultant`
+and `subscription_status=active` → 0 rows). Note `students` has *no* UPDATE policy,
+which is why; don't add one.
+
+**3. Access window + single-use PINs.** New `students.access_expires_at`; `verify-pin`
+sets it to **+2 years** and clears `pin_code` in the same write. NULL = never
+expires (staff, pre-window purchases) — nobody was locked out retroactively. An
+expired window reports as `inactive` to the client so the UI relocks itself without
+duplicating the rules; `getEntitledUser` is the real gate. PINs had been infinitely
+reusable, which was harmless only until expiry existed — after that, any customer
+could reactivate themselves forever from an old email.
+
+**4. Device limit: 2 concurrent sessions.** No registry table — GoTrue already
+tracks sessions in `auth.sessions`. `public.enforce_session_limit()` evicts
+everything outside the N most recently **active** sessions (ordering by
+`created_at` would evict the owner's own laptop and keep the freeloader).
+Consultants are exempt, checked *inside* the SQL so it costs no extra round trip.
+**Fails open** on RPC error — a broken session check must not lock out paying
+customers.
+
+**5. Column defaults were still `premium`/`active`.** The 07-18 session fixed two of
+the three spots; the third (the column defaults themselves) was identified but
+never applied. Demonstrated live: an INSERT omitting those columns came back
+premium/active. Now `diy`/`trial` in both the DB and `supabase-schema.sql`.
+
+**6. Onboarding tour ran once per *browser*, not per account.** `localStorage` under
+one global key meant a second account on a shared computer got **no tour at all**,
+the same account on a second device replayed it, and clearing site data replayed
+it. Truth moved to `students.onboarding_completed_at` (surfaced as
+`user.onboardingCompleted`); localStorage stays as a per-user-scoped cache
+(`st_onboarded_v2:<uuid>`) purely to stop a flash before the session loads. Marking
+is idempotent, so `?tour=1` doesn't overwrite the original timestamp — **completion
+is now queryable data**.
+
+**7. Silent degradation in the tour.** It launched on a fixed `400ms` timer and then
+filtered its steps to nav targets present *at that instant*. On a device slow enough
+to miss it, all six nav steps were dropped and the user got greeting-then-finale
+with no error anywhere — affecting only users on the worst phones, i.e. the ones
+who never report anything. Now polls up to 3s for the targets.
+
+**8. A live service-role key nearly went into git.** `.gitignore` had `.env*.local`,
+which does **not** match `.env.local.pre-selfhost.bak` — the backup made while
+repointing local dev. Widened to `.env*`. History checked: only `.env.example` was
+ever committed, and it's placeholders.
+
+**9. Local `.env.local` was still the old stack** — supabase.com URL, the deleted
+`PUBLISHABLE_KEY`, the old service-role key, Resend. `npm run dev` was reading and
+writing **the wrong database in the wrong country**. Repointed at `db.kaykitay.ru`.
+⚠️ **Local dev now writes to production** — there is no safe sandbox anymore.
+
+**10. Watermark + artwork.** The lesson watermark was a fixed run of 36 spans, so it
+covered only the top of a long lesson — i.e. not the part with most of the content.
+Now a tiled repeating SVG carrying `email · КайКитай`. All ten doodles replaced with
+v2 art and the tour sizing retuned by hand.
+
+### Decisions taken this session (product)
+
+- **Manual payments for launch.** No YooKassa. Someone messages Ashot or Iana → bank
+  transfer → PIN issued by hand. The existing PIN flow already *is* this system, and
+  early sales being conversations is worth more than the saved minutes. ⚠️ If taking
+  money as самозанятый, each payment still needs a чек via «Мой налог».
+- **2 years, not permanent.** Covers a 10th-grader through application; makes a
+  resold account a depreciating asset. Extensions handled individually and free at
+  Ashot's discretion.
+- **9th graders: marketing decision, not a code one.** 2 years expires before they
+  apply, so market to 10–11 and handle any 9th grader by hand.
+- **Anti-sharing stops here for now.** Session limit + watermark shipped. No further
+  DRM before there are real users to measure.
+
+---
+
 ## Self-hosted Supabase — operating notes
 
 | | |
@@ -216,8 +312,13 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 
 ## Next Steps (priority order)
 
-1. **Audit the remaining RLS policies.** Four of ~16 were found keyed on a hardcoded email and fixed on 2026-07-18; **the other twelve have not been reviewed** for similar assumptions. The audit query is `pg_policies` filtered on the suspect string — see `Self-hosting gotchas`. Do this before real students: RLS is the only thing standing between one user and another's data.
-2. **Missing legal documents.** `/terms` publishes the Согласие на обработку персональных данных only.
+1. ~~Audit the remaining RLS policies~~ ✅ **done 2026-07-19** — all 16 reviewed and isolation proven empirically. See session log.
+2. **Tell the buyer about the 2-year window.** It is enforced in code but stated
+   *nowhere* in the UI or the terms. Selling time-limited access without saying so
+   is the shape of a refund argument, and it blocks the first ten sales. Frame it as
+   «2 года доступа к постоянно обновляемой платформе» — the constant updates are
+   what makes the window honest rather than stingy.
+3. **Missing legal documents.** `/terms` publishes the Согласие на обработку персональных данных only.
    - **Политика обработки персональных данных** — section 7 of the consent has users confirm they've read it, and it doesn't exist. Normally a required published document under 152-FZ.
    - **Пользовательское соглашение** — terms of service, refunds, liability. Matters more once YooKassa takes money.
    - The consent covers only *username + email*. `students` still has `phone`, `age`, `telegram_chat_id`, `program` from the consultant era; if any start being populated, the consent no longer covers what's collected.
@@ -233,8 +334,11 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 11. **Mobile QA pass** on a real phone before launch (lesson reader, video modal/iframe, tracker + table tap targets, tour, consultant widget, and now the code-entry screen).
 
 ### Housekeeping
+- **⚠️ Local dev now writes to PRODUCTION.** `.env.local` points at `db.kaykitay.ru`. Registering a test user locally creates a real account in the real database. There is no sandbox — the old supabase.com values are in `.env.local.pre-selfhost.bak` (gitignored) but repointing back means writing to the wrong country again.
+- **Crop the transparent padding off the doodles.** They're 1024² with the figure filling ~40% of the width, which is both why they total 4.4 MB (all loaded during the mobile intro tour) and why CSS `width` doesn't mean what it looks like.
+- **Admin session sprawl:** consultants are exempt from the device limit *and* nothing prunes their sessions, so the admin account accumulates them without bound. Harmless for two staff accounts. Don't let `role='consultant'` become a general "trusted user" flag — it is now also an exemption from sharing limits.
 - **Commit the email templates** into the repo (`infra/email-templates/`) — they exist only on the VM.
-- **Three real accounts** on the self-hosted DB: `ashot1hovh@gmail.com`, `ashoth1g@163.com`, `ianadved@yandex.ru` (all testing) + the admin. They registered *before* the consent deploy, so their `terms_accepted_at` is null — expected, not a bug.
+- **Three real accounts** on the self-hosted DB: `ashot1hovh@gmail.com`, `ashoth1g@163.com`, `ianadved@yandex.ru` (all testing) + the admin. They registered *before* the consent deploy, so their `terms_accepted_at` is null — expected, not a bug. All are `diy`/`trial`, so **they now hit the paywall** on lessons — that's the server-side gate working, not a regression.
 - ~~Delete the probe account~~ — moot; it lives in the old supabase.com project, which is out of the request path.
 - **Decommission the supabase.com project** once confident in self-hosting. Keep it until then as rollback + schema reference.
 - **Move backups off-box** — they currently sit on the same VM as the database.
@@ -255,6 +359,17 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 - **React StrictMode** (on by default in dev) mounts → cleans up → remounts, so an effect that schedules a timer and clears it on cleanup will be cancelled if a "already ran" guard blocks the second run. Put the guard *inside* the timer callback (see `OnboardingTour.tsx`).
 - The doodle PNGs are ~400–650 KB each at 1024². Fine for now, but **resize/compress them** if the tour ever feels slow on mobile data.
 - The consultant's reveal delay is `REVEAL_DELAY_MS` in `ConsultantFab.tsx` (currently `120000` = 2 min; was `5000` while testing).
+
+### Gotchas from 2026-07-19/20
+
+- **A client-side paywall is not a paywall.** The lock icon and the modal were UI; the API behind them checked authentication only. Whenever a route serves something people pay for, the gate belongs in the route — and the entitlement lookup must use the service-role client so the caller's own RLS context can't influence the answer.
+- **Deleting a row from `auth.sessions` invalidates its access token immediately.** GoTrue re-checks the session on every `getUser()`; there is no "valid until exp" window. Good for security, but it means an evicted request fails auth *before* your own logic runs — so you can't explain the eviction from there without a breadcrumb (`public.evicted_sessions`).
+- **`supabase.auth.getSession()` returns null once the session row is gone** (its refresh fails), and **supabase-ssr clears the auth cookie as a side effect of the failed `getUser()`**. To read the token of a dead session, parse the cookie yourself *before* calling `getUser()`. Both of these produced an identical bare `401`, so testing "does eviction happen" passed while "does the user learn why" silently failed.
+- **`.env*.local` does not match `.env.local.anything.bak`.** Use `.env*`. A live service-role key was one `git add -A` from a public repo.
+- **A fixed `setTimeout` before querying the DOM is a silent failure on slow devices.** The tour dropped every anchored step when the nav hadn't painted in 400 ms, and reported nothing. Poll for the element instead — and remember the users this hits are the ones least likely to tell you.
+- **`localStorage` answers "has this browser seen it", never "has this user seen it".** Anything per-account belongs on the account, or a shared computer swallows it for the next person.
+- **PostgREST caches its schema**, so a newly created table can 404 until it reloads — but it picked up `evicted_sessions` immediately here, so check before blaming the cache.
+- **Verify what the user experiences, not what the system does.** Eviction worked on the first run; the *message* didn't, and only a test that asserted on the response body caught it. Same lesson as the GoTrue email templates on 07-18.
 
 ### Self-hosting gotchas (2026-07-18 — each cost real time)
 

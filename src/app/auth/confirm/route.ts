@@ -16,8 +16,28 @@ import { getSupabaseConfig, hasSupabaseConfig } from '@/lib/supabase/config'
  * Here the token hash is redeemed server-side instead: verifyOtp sets the auth
  * cookies on the redirect response, so `/` sees an authenticated user.
  */
+/**
+ * Where to send the browser afterwards.
+ *
+ * NEXT_PUBLIC_APP_URL is set by hand in a hosting panel, so it can easily be a
+ * bare host with no scheme — which makes `new URL()` throw and turns every
+ * confirmation into a 500. It is validated rather than trusted, and the request's
+ * own origin is the fallback.
+ */
+function resolveOrigin(request: NextRequest) {
+  const configured = process.env.NEXT_PUBLIC_APP_URL
+  if (configured) {
+    try {
+      return new URL(configured).origin
+    } catch {
+      // Fall through to the request origin.
+    }
+  }
+  return request.nextUrl.origin
+}
+
 export async function GET(request: NextRequest) {
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin
+  const origin = resolveOrigin(request)
   const tokenHash = request.nextUrl.searchParams.get('token_hash')
   const type = request.nextUrl.searchParams.get('type') as EmailOtpType | null
 

@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useApp } from '@/context/AppContext'
-import Logo from '@/components/Logo'
 import { Compass, Eye, EyeOff, Lock, User, Mail, UserPlus, LogIn, KeyRound, ArrowLeft } from 'lucide-react'
 
 type LoginMode = 'student' | 'admin' | 'register'
@@ -176,11 +175,12 @@ export default function Login() {
       <div className="min-h-screen bg-study-bg flex items-center justify-center p-4">
         <div className={`w-full max-w-sm transition-transform duration-300 ${shake ? 'animate-shake' : ''}`}>
           <div className="flex flex-col items-center mb-8">
-            <Logo className="h-16 w-auto mb-2" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-16 w-auto mb-2" />
             <p className="text-sm text-study-gray mt-1">Трекер поступления</p>
           </div>
 
-          <div className="bg-study-card rounded-2xl card-shadow p-6 sm:p-8">
+          <div className="bg-white rounded-2xl card-shadow p-6 sm:p-8">
             <h2 className="text-lg font-bold text-study-dark mb-1">Подтвердите почту</h2>
             <p className="text-sm text-study-gray mb-5">
               Мы отправили код на <span className="font-medium text-study-dark">{email}</span>. Введите
@@ -290,12 +290,13 @@ export default function Login() {
       >
         {/* Logo & Header */}
         <div className="flex flex-col items-center mb-8">
-          <Logo className="h-16 w-auto mb-2" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-16 w-auto mb-2" />
           <p className="text-sm text-study-gray mt-1">Трекер поступления</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-study-card rounded-2xl card-shadow p-6 sm:p-8">
+        <div className="bg-white rounded-2xl card-shadow p-6 sm:p-8">
           <h2 className="text-lg font-bold text-study-dark mb-1">
             {isRegister
               ? 'Регистрация'
@@ -314,7 +315,7 @@ export default function Login() {
               type="button"
               onClick={() => { setLoginMode('student'); setRegisterSuccess(null); setRegisterError(null) }}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
-                loginMode === 'student' ? 'bg-study-card text-study-brown card-shadow' : 'text-study-gray'
+                loginMode === 'student' ? 'bg-white text-study-brown card-shadow' : 'text-study-gray'
               }`}
             >
               <span className="flex items-center justify-center gap-1">
@@ -326,7 +327,7 @@ export default function Login() {
               type="button"
               onClick={() => { setLoginMode('register'); setRegisterSuccess(null); setRegisterError(null) }}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
-                loginMode === 'register' ? 'bg-study-card text-study-brown card-shadow' : 'text-study-gray'
+                loginMode === 'register' ? 'bg-white text-study-brown card-shadow' : 'text-study-gray'
               }`}
             >
               <span className="flex items-center justify-center gap-1">
@@ -338,7 +339,7 @@ export default function Login() {
               type="button"
               onClick={() => { setLoginMode('admin'); setRegisterSuccess(null); setRegisterError(null) }}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
-                loginMode === 'admin' ? 'bg-study-card text-study-brown card-shadow' : 'text-study-gray'
+                loginMode === 'admin' ? 'bg-white text-study-brown card-shadow' : 'text-study-gray'
               }`}
             >
               Админ
@@ -352,7 +353,7 @@ export default function Login() {
           )}
 
           {linkError && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-xs text-red-600 font-medium">{linkError}</p>
             </div>
           )}

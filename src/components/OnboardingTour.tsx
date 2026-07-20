@@ -9,7 +9,11 @@ import { useApp } from '@/context/AppContext'
 // delivered as user.onboardingCompleted. This exists so a page reload doesn't
 // flash the tour in the moment before the session request comes back, and it is
 // scoped per account: a shared browser must not swallow the next user's tour.
-const seenKey = (userId: string) => `st_onboarded_v2:${userId}`
+// v3: the v2 flag was written on *any* dismissal, before the server write, so
+// browsers are carrying "seen" flags for accounts whose onboarding_completed_at
+// is still null — the tour is blocked locally for people who never saw it.
+// Bumping the key drops those stale flags; the account record stays the truth.
+const seenKey = (userId: string) => `st_onboarded_v3:${userId}`
 
 // How long to wait for the nav to paint before giving up on anchored steps.
 // The previous fixed 400ms silently produced a two-step tour (greeting + finale)
@@ -21,6 +25,25 @@ const TARGET_POLL_MS = 100
 // dev (a component-level ref would let the double-invoke cancel the tour).
 // Resets naturally on a full page reload.
 let hasLaunched = false
+
+/**
+ * Pull every doodle into the browser cache up front.
+ *
+ * The images live inside each step's popover HTML, so without this they only
+ * start downloading when that step is rendered — the user taps «Далее» and the
+ * character is simply absent until the download finishes. On a phone that means
+ * most people never see the art at all, and the tour runs once, so they never
+ * get a second chance.
+ *
+ * Deliberately not awaited: a slow connection must delay the pictures, never
+ * the tour itself.
+ */
+function preloadDoodles(ids: string[]) {
+  for (const id of ids) {
+    const img = new Image()
+    img.src = `/images/doodles/${id}.png`
+  }
+}
 
 // Greeting step shows both founders. Add more doodle poses here later.
 const greeting = `
@@ -36,7 +59,7 @@ const navSteps: { id: string; title: string; description: string }[] = [
   { id: 'checklist', title: 'Чек-лист', description: 'Все документы и задачи в одном списке. Ничего не забудете.' },
   { id: 'universities', title: 'Вузы', description: 'Подберите вузы и программы и ведите список своих заявок.' },
   { id: 'deadlines', title: 'Дедлайны', description: 'Держите сроки подачи под контролем — без пропущенных дат.' },
-  { id: 'chances', title: 'Мои шансы', description: 'Реальные кейсы поступления — оцените свои шансы честно.' },
+  { id: 'chances', title: 'Кейсы поступлений', description: 'Реальные результаты поступлений — оцените свои шансы честно.' },
 ]
 
 export default function OnboardingTour() {
@@ -49,6 +72,10 @@ export default function OnboardingTour() {
     if (hasLaunched && !forced) return
     // Account-level truth first, local cache second.
     if (!forced && (user.onboardingCompleted || localStorage.getItem(seenKey(user.id)))) return
+
+    // Start fetching the art immediately — it has the whole target-polling
+    // window plus the greeting step to arrive before it is first needed.
+    preloadDoodles(['iana', 'ashot', 'finale', ...navSteps.map((s) => s.id)])
 
     // Wait for the nav to actually exist rather than betting on a fixed delay.
     // The launch guard lives inside the callback, so StrictMode's cleanup can
@@ -90,7 +117,17 @@ export default function OnboardingTour() {
         },
       ]
 
+      // Set once the final step is displayed. onDestroyed cannot ask driver.js
+      // which step it was on — by the time it fires the state is already torn
+      // down — so completion has to be recorded while the tour is still alive.
+      let reachedLastStep = false
+
       const tour = driver({
+        onHighlightStarted: () => {
+          // isLastStep() is `activeIndex === steps.length - 1`, so this latches
+          // true the moment the finale is shown, whatever happens afterwards.
+          if (tour.isLastStep()) reachedLastStep = true
+        },
         showProgress: true,
         allowClose: true,
         stagePadding: 6,
@@ -102,14 +139,33 @@ export default function OnboardingTour() {
         doneBtnText: 'Готово',
         steps,
         onDestroyed: () => {
-          // Cache locally first so a reload can't replay it while the write is
-          // still in flight, then record it against the account.
-          localStorage.setItem(seenKey(user.id), '1')
-          // Fire-and-forget: failing to record completion must not break the app.
-          // Worst case the tour replays once on the next visit.
-          fetch('/api/auth/onboarded', { method: 'POST' }).catch(() => {})
+          // Only count the tour as seen if the user actually reached the end.
+          //
+          // driver.js calls onDestroyed for *every* dismissal — the X, Escape,
+          // a click on the overlay — so marking completion here unconditionally
+          // burned the tour for anyone who closed it early or whose images had
+          // not loaded yet. It runs once per account, so that was permanent:
+          // they could never see the intro again. Abandoning it now simply
+          // leaves it to run again next time.
+          const finished = reachedLastStep
+
+          if (finished) {
+            // Cache locally first so a reload can't replay it while the write is
+            // still in flight, then record it against the account.
+            localStorage.setItem(seenKey(user.id), '1')
+            // Fire-and-forget: failing to record completion must not break the
+            // app. Worst case the tour replays once on the next visit.
+            fetch('/api/auth/onboarded', { method: 'POST' }).catch(() => {})
+          }
+          // Note: `hasLaunched` deliberately stays true when abandoned. The
+          // effect re-runs whenever the `user` object identity changes (a
+          // session refresh is enough), so clearing it here would re-open the
+          // tour on top of someone who had just closed it. Nothing was written,
+          // so it simply runs again on the next page load.
+
           // Signal the floating consultant that the intro is over so it can
-          // start its reveal timer (see ConsultantFab).
+          // start its reveal timer (see ConsultantFab). Fires either way —
+          // the intro is off screen regardless of how it ended.
           window.dispatchEvent(new Event('st:intro-done'))
         },
       })

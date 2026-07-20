@@ -32,6 +32,23 @@ export default function Login() {
 
   const isRegister = loginMode === 'register'
 
+  // /auth/confirm bounces back here with ?auth=… when a link can't be redeemed.
+  // Without this the user just sees a login form and no reason for it.
+  const [linkError, setLinkError] = useState<string | null>(null)
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get('auth')
+    if (!reason) return
+    setLinkError(
+      reason === 'expired'
+        ? 'Ссылка из письма устарела или уже была использована. Войдите по паролю или запросите новое письмо.'
+        : 'Не удалось открыть ссылку из письма. Войдите по паролю или запросите новое письмо.'
+    )
+    // Drop the param so a refresh doesn't resurrect the message.
+    const url = new URL(window.location.href)
+    url.searchParams.delete('auth')
+    window.history.replaceState({}, '', url)
+  }, [])
+
   // Watch loginError from context to detect unverified email
   useEffect(() => {
     if (loginError?.includes('Email не подтверждён')) {
@@ -328,6 +345,12 @@ export default function Login() {
           {registerSuccess && (
             <div className="mb-4 p-3 bg-study-green/10 border border-study-green/20 rounded-xl">
               <p className="text-xs text-study-green font-medium">{registerSuccess}</p>
+            </div>
+          )}
+
+          {linkError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-xs text-red-600 font-medium">{linkError}</p>
             </div>
           )}
 

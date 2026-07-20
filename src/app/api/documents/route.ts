@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { formatRuShortDate, getAuthenticatedUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 import { getStorageFileName } from '@/lib/documents'
+import { TEMPLATES_BY_KEY } from '@/lib/documentTemplates'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET() {
@@ -11,9 +12,34 @@ export async function GET() {
 
   let { data, error } = await supabase
     .from('documents')
-    .select('id,name,status,deadline,file_url,uploaded_at,target_university_id,review_comment,review_file_url,universities(name)')
+    .select('id,name,status,deadline,file_url,uploaded_at,target_university_id,review_comment,review_file_url,template_key,lead_time_days,deadline_manual,universities(name)')
     .eq('student_id', user.id)
+    // Soft-deleted standard documents stay in the table so seeding won't
+    // recreate them, but the student should never see them again.
+    .is('deleted_at', null)
     .order('order_index', { ascending: true })
+
+  // The template columns are added by supabase-document-templates.sql; until
+  // that has run the query above fails and this falls back to the old shape.
+  if (
+    error?.message.includes('template_key') ||
+    error?.message.includes('lead_time_days') ||
+    error?.message.includes('deleted_at')
+  ) {
+    const withoutTemplates = await supabase
+      .from('documents')
+      .select('id,name,status,deadline,file_url,uploaded_at,target_university_id,review_comment,review_file_url,universities(name)')
+      .eq('student_id', user.id)
+      .order('order_index', { ascending: true })
+
+    data = withoutTemplates.data?.map((document) => ({
+      ...document,
+      template_key: null,
+      lead_time_days: null,
+      deadline_manual: false,
+    })) ?? null
+    error = withoutTemplates.error
+  }
 
   if (error?.message.includes('review_comment') || error?.message.includes('target_university_id')) {
     const fallback = await supabase
@@ -28,6 +54,9 @@ export async function GET() {
       universities: [],
       review_comment: null,
       review_file_url: null,
+      template_key: null,
+      lead_time_days: null,
+      deadline_manual: false,
     })) ?? null
     error = fallback.error
   }
@@ -36,13 +65,21 @@ export async function GET() {
 
   return NextResponse.json({
     documents: (data ?? []).map((document) => {
-      const university = Array.isArray(document.universities) ? document.universities[0] : null
+      // PostgREST returns a many-to-one embed as an object, not an array, so the
+      // array branch is the exception rather than the rule. Treating a non-array
+      // as null meant every document tied to a university displayed as «все».
+      const university = Array.isArray(document.universities)
+        ? document.universities[0]
+        : document.universities
+
+      const template = document.template_key ? TEMPLATES_BY_KEY.get(document.template_key) : undefined
 
       return {
         id: document.id,
         name: document.name,
         status: document.status,
         deadline: formatRuShortDate(document.deadline),
+        rawDeadline: document.deadline ?? null,
         fileUrl: document.file_url ?? undefined,
         fileName: getStorageFileName(document.file_url),
         uploadedAt: formatRuShortDate(document.uploaded_at),
@@ -51,6 +88,12 @@ export async function GET() {
         reviewComment: document.review_comment,
         reviewFileUrl: document.review_file_url,
         reviewFileName: getStorageFileName(document.review_file_url),
+        // Lead-time metadata: the hint lives in the catalogue rather than the
+        // database, so the wording can be improved without a migration.
+        templateKey: document.template_key ?? null,
+        leadTimeDays: document.lead_time_days ?? null,
+        deadlineManual: Boolean(document.deadline_manual),
+        hint: template?.hint ?? null,
       }
     }),
   })

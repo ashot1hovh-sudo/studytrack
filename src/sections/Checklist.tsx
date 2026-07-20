@@ -19,7 +19,7 @@ const diyStatusConfig = {
 }
 
 export default function Checklist() {
-  const { isParentMode, user } = useApp()
+  const { user } = useApp()
   const isPremium = user?.serviceType === 'premium'
   const [documents, setDocuments] = useState<StudentDocument[]>([])
   const [universities, setUniversities] = useState<University[]>([])
@@ -38,6 +38,29 @@ export default function Checklist() {
   const [isOpening, setIsOpening] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  // Deletion is confirmed in a dialog rather than done on the click: the row is
+  // small, sits next to the status toggle, and the delete is not undoable.
+  const [docToDelete, setDocToDelete] = useState<StudentDocument | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [isDeletingDoc, setIsDeletingDoc] = useState(false)
+
+  const confirmDeleteDocument = async () => {
+    if (!docToDelete) return
+    setIsDeletingDoc(true)
+    setDeleteError(null)
+    try {
+      const response = await fetch(`/api/documents/${docToDelete.id}`, { method: 'DELETE' })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось удалить документ')
+
+      setDocuments((current) => current.filter((item) => item.id !== docToDelete.id))
+      setDocToDelete(null)
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Не удалось удалить документ')
+    } finally {
+      setIsDeletingDoc(false)
+    }
+  }
 
   const loadDocuments = () => {
     setIsLoading(true)
@@ -70,6 +93,16 @@ export default function Checklist() {
   useEffect(() => {
     loadDocuments()
     loadUniversities()
+
+    // Adding or deleting a university reseeds and reschedules the checklist on
+    // the server. Both sections can be mounted at once, so without this the
+    // student sees stale dates until a reload.
+    const reload = () => {
+      loadDocuments()
+      loadUniversities()
+    }
+    window.addEventListener('st:documents-changed', reload)
+    return () => window.removeEventListener('st:documents-changed', reload)
   }, [])
 
   const openUploadModal = (document: StudentDocument) => {
@@ -252,7 +285,7 @@ export default function Checklist() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+      <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
         <LoadingState heightClass="h-36" />
       </div>
     )
@@ -260,40 +293,17 @@ export default function Checklist() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+      <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-bold text-study-dark mb-4">
-          {isParentMode ? 'Статус документов' : 'Чек-лист документов'}
+          Чек-лист документов
         </h2>
         <ErrorState title="Документы не загрузились" description={error} onAction={loadDocuments} />
       </div>
     )
   }
 
-  if (isParentMode) {
-    return (
-      <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
-        <h2 className="text-base sm:text-lg font-bold text-study-dark mb-4">Статус документов</h2>
-        <div className="flex items-center gap-4 p-3 sm:p-4 bg-study-bg rounded-xl">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-study-green/10 flex items-center justify-center shrink-0">
-            <Check className="w-5 h-5 sm:w-6 sm:h-6 text-study-green" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-study-dark">
-              {completedCount} из {documents.length} документов готово
-            </p>
-            <p className="text-xs text-study-gray mt-0.5">Студент работает над оставшимися документами</p>
-          </div>
-        </div>
-        <div className="mt-4">
-          <Progress value={progress} className="h-2" />
-          <p className="text-xs text-study-gray mt-2 text-right">{Math.round(progress)}%</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+    <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
       <div className="flex items-center justify-between mb-3 sm:mb-4">
         <h2 className="text-base sm:text-lg font-bold text-study-dark">Чек-лист документов</h2>
         <div className="flex items-center gap-2">
@@ -328,41 +338,107 @@ export default function Checklist() {
             : config.not_started
           const Icon = status.icon
           return (
-            <button
+            // A row, not a <button>: the delete control is a button of its own,
+            // and nesting buttons is invalid HTML with unpredictable clicks.
+            <div
               key={doc.id}
-              onClick={() => isPremium ? openUploadModal(doc) : toggleDocument(doc)}
-              className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-study-bg transition-colors text-left active:bg-study-bg/70"
+              className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-study-bg transition-colors group"
             >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${status.color}`}>
-                <Icon className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium truncate ${isDone ? 'text-study-gray line-through' : 'text-study-dark'}`}>
-                  {doc.name}
-                </p>
-                {doc.deadline && (
-                  <p className="text-xs text-study-gray">Дедлайн: {doc.deadline}</p>
-                )}
-                <p className="text-xs text-study-gray">
-                  Вуз: {doc.targetUniversityName ?? 'Все'}
-                </p>
-              </div>
+              <button
+                onClick={() => isPremium ? openUploadModal(doc) : toggleDocument(doc)}
+                className="flex items-center gap-3 flex-1 min-w-0 text-left active:opacity-70"
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${status.color}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium truncate ${isDone ? 'text-study-gray line-through' : 'text-study-dark'}`}>
+                    {doc.name}
+                  </p>
+                  {doc.hint && !isDone && (
+                    <p className="text-xs text-study-orange/90 mt-0.5">{doc.hint}</p>
+                  )}
+                  {doc.deadline && (
+                    <p className="text-xs text-study-gray">
+                      {/* Lead-time documents are ordered, not submitted, so the
+                          date means "start by", not "hand in by". */}
+                      {doc.leadTimeDays ? 'Заказать до' : 'Дедлайн'}: {doc.deadline}
+                      {doc.deadlineManual && ' · вручную'}
+                    </p>
+                  )}
+                  <p className="text-xs text-study-gray">
+                    Вуз: {doc.targetUniversityName ?? 'Все'}
+                  </p>
+                </div>
+              </button>
               <span className={`text-xs font-medium shrink-0 ${status.color.split(' ')[0]}`}>
                 {status.label}
               </span>
-            </button>
+              <button
+                onClick={() => setDocToDelete(doc)}
+                className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-study-gray hover:text-study-red hover:bg-study-red/10 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+                title="Удалить документ"
+                aria-label={`Удалить документ «${doc.name}»`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           )
         })}
       </div>}
 
+      {/* Delete confirmation */}
+      {docToDelete && (
+        <div
+          className="fixed inset-0 bg-study-overlay/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => !isDeletingDoc && setDocToDelete(null)}
+        >
+          <div
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-sm p-4 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-bold text-study-dark">Удалить документ?</h3>
+            <p className="text-sm text-study-gray mt-2">
+              «{docToDelete.name}» будет удалён из чек-листа
+              {docToDelete.fileUrl ? ' вместе с загруженным файлом' : ''}. Отменить это действие нельзя.
+            </p>
+            {docToDelete.templateKey && (
+              <p className="text-xs text-study-gray mt-2">
+                Это стандартный документ. Он не вернётся при добавлении новых вузов —
+                чтобы он появился снова, добавьте его вручную.
+              </p>
+            )}
+            {deleteError && (
+              <p className="text-xs text-study-red mt-3">{deleteError}</p>
+            )}
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setDocToDelete(null)}
+                disabled={isDeletingDoc}
+                className="flex-1 py-2.5 rounded-xl border border-study-lightgray text-sm font-medium text-study-dark hover:bg-study-bg disabled:opacity-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={confirmDeleteDocument}
+                disabled={isDeletingDoc}
+                className="flex-1 py-2.5 rounded-xl bg-study-red text-white text-sm font-semibold hover:bg-study-red/90 disabled:opacity-50"
+              >
+                {isDeletingDoc ? 'Удаляем...' : 'Удалить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Upload Modal */}
       {selectedDoc && (
         <div
-          className="fixed inset-0 bg-study-dark/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 bg-study-overlay/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={closeUploadModal}
         >
           <div
-            className="bg-white sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md animate-in slide-in-from-bottom-10 sm:fade-in sm:zoom-in-95 duration-200"
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md animate-in slide-in-from-bottom-10 sm:fade-in sm:zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 sm:p-6">
@@ -397,7 +473,7 @@ export default function Checklist() {
                       type="button"
                       onClick={openReviewFile}
                       disabled={isOpening}
-                      className="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-white border border-study-red/20 rounded-lg text-xs font-semibold text-study-dark hover:bg-study-red/5 disabled:opacity-50"
+                      className="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-study-card border border-study-red/20 rounded-lg text-xs font-semibold text-study-dark hover:bg-study-red/5 disabled:opacity-50"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       {isOpening ? 'Открываем...' : selectedDoc.reviewFileName ?? 'Открыть пример'}
@@ -428,7 +504,7 @@ export default function Checklist() {
                       type="button"
                       onClick={openUploadedFile}
                       disabled={isOpening || isUploading || isDeleting}
-                      className="inline-flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold text-study-dark bg-white border border-study-lightgray rounded-lg hover:bg-study-bg transition-colors disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold text-study-dark bg-study-card border border-study-lightgray rounded-lg hover:bg-study-bg transition-colors disabled:opacity-50"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       {isOpening ? 'Открываем...' : 'Открыть'}
@@ -437,7 +513,7 @@ export default function Checklist() {
                       type="button"
                       onClick={deleteUploadedFile}
                       disabled={isDeleting || isUploading}
-                      className="inline-flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold text-study-red bg-white border border-study-red/20 rounded-lg hover:bg-study-red/5 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold text-study-red bg-study-card border border-study-red/20 rounded-lg hover:bg-study-red/5 transition-colors disabled:opacity-50"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       {isDeleting ? 'Удаляем...' : 'Удалить'}
@@ -501,11 +577,11 @@ export default function Checklist() {
 
       {isAddOpen && (
         <div
-          className="fixed inset-0 bg-study-dark/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 bg-study-overlay/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setIsAddOpen(false)}
         >
           <div
-            className="bg-white sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md"
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 sm:p-6 border-b border-study-lightgray flex items-start justify-between gap-3">

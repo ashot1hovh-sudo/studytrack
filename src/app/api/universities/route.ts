@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { formatRuDate, getAuthenticatedUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { syncStudentDocuments } from '@/lib/studentDocuments'
 
 export async function GET() {
   if (missingSupabaseEnv()) return setupErrorResponse()
@@ -92,7 +93,13 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
+  // Seed the standard document checklist and reschedule it around the new
+  // deadline. Deliberately not fatal: the university was created, and failing
+  // the whole request over the checklist would lose that.
+  const sync = await syncStudentDocuments(admin, user.id)
+
   return NextResponse.json({
+    documentsChanged: !sync.error,
     university: {
       id: data.id,
       name: data.name,

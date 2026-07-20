@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useApp } from '@/context/AppContext'
-import { ExternalLink, Clock, ChevronRight, X, Plus } from 'lucide-react'
+import { ExternalLink, Clock, ChevronRight, X, Plus, Trash2 } from 'lucide-react'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import type { ApplicationStatus, University } from '@/types/studytrack'
 import rawData from '@/data/China_Universities_Programs.json'
@@ -69,7 +68,6 @@ function UniLogo({ name }: { name: string }) {
 }
 
 export default function UniTracker() {
-  const { isParentMode } = useApp()
   const [universities, setUniversities] = useState<University[]>([])
   const [selectedUni, setSelectedUni] = useState<University | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -82,6 +80,32 @@ export default function UniTracker() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [uniToDelete, setUniToDelete] = useState<University | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const confirmDeleteUniversity = async () => {
+    if (!uniToDelete) return
+    setIsDeleting(true)
+    setDeleteError(null)
+    try {
+      const response = await fetch(`/api/universities/${uniToDelete.id}`, { method: 'DELETE' })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось удалить вуз')
+
+      setUniversities((current) => current.filter((item) => item.id !== uniToDelete.id))
+      setUniToDelete(null)
+      setSelectedUni(null)
+      // Removing a university can change the earliest deadline, which the server
+      // has just used to reschedule the checklist. Tell the rest of the app so
+      // Чек-лист doesn't keep showing dates derived from a vuz that is gone.
+      window.dispatchEvent(new Event('st:documents-changed'))
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Не удалось удалить вуз')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const loadUniversities = () => {
     setIsLoading(true)
@@ -113,6 +137,9 @@ export default function UniTracker() {
       setUniversities((current) => [...current, data.university])
       setNewUniversity({ name: '', deadline: '', price: '', examRequirements: '', city: '', major: '', portalUrl: '' })
       setIsAddOpen(false)
+      // The server just seeded the standard checklist for this vuz and
+      // rescheduled the shared documents; Чек-лист needs to re-read them.
+      if (data.documentsChanged) window.dispatchEvent(new Event('st:documents-changed'))
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Не удалось добавить вуз')
     } finally {
@@ -140,21 +167,19 @@ export default function UniTracker() {
   }
 
   return (
-    <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+    <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-study-dark">Мои вузы — воронка заявок</h2>
           <p className="text-xs text-study-gray mt-0.5">Добавляйте вузы из списка ниже и отслеживайте статус заявок</p>
         </div>
-        {!isParentMode && (
-          <button
-            onClick={() => setIsAddOpen(true)}
-            className="shrink-0 w-9 h-9 rounded-lg bg-study-brown text-white flex items-center justify-center hover:bg-study-brown/90"
-            title="Добавить вуз"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
-        )}
+        <button
+          onClick={() => setIsAddOpen(true)}
+          className="shrink-0 w-9 h-9 rounded-lg bg-study-brown text-white flex items-center justify-center hover:bg-study-brown/90"
+          title="Добавить вуз"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
       </div>
 
       {isLoading && <LoadingState heightClass="h-40" />}
@@ -214,14 +239,14 @@ export default function UniTracker() {
       {/* Detail modal */}
       {selectedUni && (
         <div
-          className="fixed inset-0 bg-study-dark/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 bg-study-overlay/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setSelectedUni(null)}
         >
           <div
-            className="bg-white sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-lg max-h-[85vh] overflow-y-auto"
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-lg max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-white rounded-t-2xl p-4 sm:p-6 border-b border-study-lightgray z-10">
+            <div className="sticky top-0 bg-study-card rounded-t-2xl p-4 sm:p-6 border-b border-study-lightgray z-10">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
                   <UniLogo name={selectedUni.name} />
@@ -293,6 +318,16 @@ export default function UniTracker() {
               )}
             </div>
 
+            <div className="px-4 sm:px-6 pb-4">
+              <button
+                onClick={() => setUniToDelete(selectedUni)}
+                className="w-full py-2.5 rounded-xl border border-study-red/30 text-sm font-medium text-study-red hover:bg-study-red/10 flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Удалить вуз
+              </button>
+            </div>
+
             <div className="p-4 sm:hidden border-t border-study-lightgray">
               <button
                 onClick={() => setSelectedUni(null)}
@@ -305,14 +340,53 @@ export default function UniTracker() {
         </div>
       )}
 
+      {/* Delete confirmation */}
+      {uniToDelete && (
+        <div
+          className="fixed inset-0 bg-study-overlay/50 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => !isDeleting && setUniToDelete(null)}
+        >
+          <div
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-sm p-4 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-bold text-study-dark">Удалить вуз?</h3>
+            <p className="text-sm text-study-gray mt-2">
+              «{uniToDelete.name}» и его история будут удалены. Отменить это действие нельзя.
+            </p>
+            <p className="text-xs text-study-gray mt-2">
+              Общие документы останутся в чек-листе, но их сроки пересчитаются по ближайшему из
+              оставшихся дедлайнов. Мотивационное письмо для этого вуза будет удалено.
+            </p>
+            {deleteError && <p className="text-xs text-study-red mt-3">{deleteError}</p>}
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setUniToDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 rounded-xl border border-study-lightgray text-sm font-medium text-study-dark hover:bg-study-bg disabled:opacity-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={confirmDeleteUniversity}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 rounded-xl bg-study-red text-white text-sm font-semibold hover:bg-study-red/90 disabled:opacity-50"
+              >
+                {isDeleting ? 'Удаляем...' : 'Удалить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add modal */}
       {isAddOpen && (
         <div
-          className="fixed inset-0 bg-study-dark/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 bg-study-overlay/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setIsAddOpen(false)}
         >
           <div
-            className="bg-white sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 sm:p-6 border-b border-study-lightgray flex items-start justify-between gap-3">
@@ -340,7 +414,7 @@ export default function UniTracker() {
                   autoComplete="off"
                 />
                 {suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl card-shadow-hover border border-study-lightgray z-10 overflow-hidden">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-study-card rounded-xl card-shadow-hover border border-study-lightgray z-10 overflow-hidden">
                     {suggestions.map((u, i) => (
                       <button
                         key={i}

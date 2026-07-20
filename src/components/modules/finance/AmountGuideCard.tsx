@@ -1,7 +1,7 @@
 import { GraduationCap, Home, ShoppingBag, Shield, PlusCircle } from 'lucide-react'
 
 const items = [
-  { icon: GraduationCap, label: 'Обучение (1 год)',   range: '$2 000 – $4 000',  color: 'bg-blue-50 text-blue-600',         circle: 'bg-blue-100' },
+  { icon: GraduationCap, label: 'Обучение (1 год)',   range: '$2 000 – $4 000',  color: 'bg-blue-50 dark:bg-blue-500/10 text-blue-600',         circle: 'bg-blue-100 dark:bg-blue-500/20' },
   { icon: Home,          label: 'Общежитие (1 год)',  range: '$1 200 – $2 400',  color: 'bg-study-green/10 text-study-green', circle: 'bg-study-green/20' },
   { icon: ShoppingBag,   label: 'Расходы на жизнь',  range: '$1 500 – $2 500',  color: 'bg-study-orange/10 text-study-orange', circle: 'bg-study-orange/20' },
   { icon: Shield,        label: 'Страховка',          range: '$200 – $400',      color: 'bg-purple-50 text-purple-600',       circle: 'bg-purple-100' },
@@ -10,7 +10,7 @@ const items = [
 export default function AmountGuideCard() {
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 bg-study-bg border-b border-study-lightgray">
           <p className="text-sm font-semibold text-study-dark">Из чего складывается нужная сумма</p>
           <p className="text-xs text-study-gray mt-0.5">Ориентировочно — точную цифру проверяйте в требованиях вуза</p>

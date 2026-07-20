@@ -13,7 +13,7 @@ const sections = [
 export default function CVStructureList() {
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 bg-study-bg border-b border-study-lightgray">
           <p className="text-sm font-semibold text-study-dark">Возможная структура резюме</p>
           <p className="text-xs text-study-gray mt-0.5">Не обязательно использовать все разделы — оставляйте только сильные</p>

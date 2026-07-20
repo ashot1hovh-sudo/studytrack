@@ -36,7 +36,7 @@ export default function MedFormChecklist() {
 
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-study-lightgray flex items-center justify-between">
           <span className="text-sm font-semibold text-study-dark">Чек-лист перед сканированием</span>
           <span

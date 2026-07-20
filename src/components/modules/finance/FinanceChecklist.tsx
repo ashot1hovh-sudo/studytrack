@@ -33,7 +33,7 @@ export default function FinanceChecklist() {
 
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 bg-study-bg border-b border-study-lightgray flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-study-dark">Чек-лист перед загрузкой</p>

@@ -89,7 +89,7 @@ export default function ConsultantFab() {
 
   return (
     <a
-      href="https://t.me/ianadved"
+      href="https://t.me/ianamedvedeva"
       target="_blank"
       rel="noopener noreferrer"
       className={`st-consultant${shown ? ' is-shown' : ''}`}

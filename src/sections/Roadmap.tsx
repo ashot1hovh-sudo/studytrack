@@ -35,7 +35,7 @@ export default function Roadmap() {
     : '0%'
 
   return (
-    <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+    <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
       <h2 className="text-base sm:text-lg font-bold text-study-dark mb-4 sm:mb-6">Дорожная карта поступления</h2>
 
       {isLoading && <LoadingState heightClass="h-24" />}
@@ -68,8 +68,8 @@ export default function Roadmap() {
                       isCompleted
                         ? 'bg-study-green'
                         : isCurrent
-                          ? 'bg-white border-[3px] border-study-orange'
-                          : 'bg-white border-2 border-study-gray'
+                          ? 'bg-study-card border-[3px] border-study-orange'
+                          : 'bg-study-card border-2 border-study-gray'
                     }`}
                   >
                     {isCompleted ? (
@@ -119,8 +119,8 @@ export default function Roadmap() {
                     isCompleted
                       ? 'bg-study-green shadow-lg shadow-study-green/30'
                       : isCurrent
-                        ? 'bg-white border-[3px] border-study-orange shadow-lg shadow-study-orange/20'
-                        : 'bg-white border-2 border-study-gray'
+                        ? 'bg-study-card border-[3px] border-study-orange shadow-lg shadow-study-orange/20'
+                        : 'bg-study-card border-2 border-study-gray'
                   }`}
                 >
                   {isCompleted ? (
@@ -140,9 +140,9 @@ export default function Roadmap() {
                 </p>
 
                 {/* Tooltip */}
-                <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 top-16 bg-study-dark text-white text-xs rounded-lg px-3 py-2 max-w-[160px] text-center pointer-events-none z-20">
+                <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 top-16 bg-study-inverse text-white text-xs rounded-lg px-3 py-2 max-w-[160px] text-center pointer-events-none z-20">
                   {stage.description}
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-study-dark rotate-45" />
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-study-inverse rotate-45" />
                 </div>
               </div>
             )

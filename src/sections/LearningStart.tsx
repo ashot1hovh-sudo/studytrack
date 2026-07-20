@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useApp } from '@/context/AppContext'
+import { useTheme } from '@/context/ThemeContext'
 import { MediaModuleCard } from '@/components/ui/media-button'
 import {
   AlertTriangle,
@@ -15,6 +16,10 @@ import {
   Clock,
   FileText,
   GraduationCap,
+  Youtube,
+  Instagram,
+  Send,
+  Users,
   Home,
   KeyRound,
   Languages,
@@ -25,7 +30,6 @@ import {
   Route,
   Star,
   Trophy,
-  Wallet,
   X,
   XCircle,
 } from 'lucide-react'
@@ -101,6 +105,94 @@ const moduleBoxesByModuleId: Record<string, typeof sharedLessons> = {
   'bachelor': sharedLessons,
 }
 
+/**
+ * Exams a Chinese university may ask for before admission.
+ *
+ * `logo` is the official mark; where it is absent the tile falls back to `mark`
+ * on `color`. CSCA has no logo on purpose — the file that was supplied for it
+ * belongs to China Standard Conformity Assessment Co., a certification company
+ * that shares the acronym and has nothing to do with admissions.
+ */
+const EXAMS = [
+  {
+    id: 'ielts',
+    name: 'IELTS',
+    mark: 'IELTS',
+    color: '#E31837',
+    logo: '/images/exams/ielts.jpeg',
+    note: 'Языковой · принимают почти везде',
+  },
+  {
+    id: 'toefl',
+    name: 'TOEFL iBT',
+    mark: 'TOEFL',
+    color: '#0055A5',
+    logo: '/images/exams/toefl.png',
+    note: 'Языковой · важно: Home Edition принимают не все',
+  },
+  {
+    id: 'csca',
+    name: 'CSCA',
+    mark: 'CSCA',
+    color: '#6B4F4B',
+    logo: null,
+    note: 'Предметный · чаще на инженерных и IT-программах',
+  },
+  {
+    id: 'duolingo',
+    name: 'Duolingo English Test',
+    mark: 'DET',
+    color: '#58CC02',
+    logo: '/images/exams/duolingo.png',
+    note: 'Языковой · быстрый и дешёвый, но принимают выборочно',
+  },
+] as const
+
+/**
+ * Where to find us. The two personal accounts are last on purpose — the channel
+ * and the public pages answer most questions without anyone having to reply.
+ *
+ * Brand colours are inline hex rather than palette tokens: these are other
+ * companies' marks and must not shift with our theme.
+ */
+const SOCIALS = [
+  {
+    label: 'Telegram-канал',
+    handle: '@kaykitay',
+    href: 'https://t.me/kaykitay',
+    icon: Send,
+    color: '#229ED9',
+  },
+  {
+    label: 'Instagram',
+    handle: '@kaykitay',
+    href: 'https://www.instagram.com/kaykitay/',
+    icon: Instagram,
+    color: '#C13584',
+  },
+  {
+    label: 'YouTube',
+    handle: '@kaykitay',
+    href: 'https://www.youtube.com/@kaykitay',
+    icon: Youtube,
+    color: '#FF0000',
+  },
+  {
+    label: 'Ашот — личный Telegram',
+    handle: '@ash_china',
+    href: 'https://t.me/ash_china',
+    icon: Send,
+    color: '#6B4F4B',
+  },
+  {
+    label: 'Яна — личный Telegram',
+    handle: '@ianamedvedeva',
+    href: 'https://t.me/ianamedvedeva',
+    icon: Send,
+    color: '#6B4F4B',
+  },
+] as const
+
 export default function LearningStart() {
   const { user } = useApp()
   const isPremium = user?.serviceType === 'premium'
@@ -112,6 +204,7 @@ export default function LearningStart() {
   const [pinError, setPinError] = useState<string | null>(null)
   const [isVerifyingPin, setIsVerifyingPin] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
+  const [examsOpen, setExamsOpen] = useState(false)
   const [activeLessonKey, setActiveLessonKey] = useState<string | null>(null)
   const [lesson, setLesson] = useState<{ title: string; content: string; userEmail?: string } | null>(null)
   const [isLessonLoading, setIsLessonLoading] = useState(false)
@@ -186,7 +279,7 @@ export default function LearningStart() {
 
   if (activeLessonKey) {
     return (
-      <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+      <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
         <button
           onClick={() => { setActiveLessonKey(null); setLesson(null); setLessonError(null) }}
           className="inline-flex items-center gap-2 rounded-lg bg-study-bg px-3 py-2 text-sm font-semibold text-study-dark mb-4"
@@ -211,7 +304,7 @@ export default function LearningStart() {
             )}
             {activeLessonKey === 'apply-guide' && APPLICATION_VIDEO_URL && (
               <div
-                className="relative w-full mb-6 rounded-xl overflow-hidden bg-study-dark"
+                className="relative w-full mb-6 rounded-xl overflow-hidden bg-study-inverse"
                 style={{ paddingTop: '56.25%' }}
               >
                 <iframe
@@ -247,13 +340,13 @@ export default function LearningStart() {
       <div className="space-y-5">
         <button
           onClick={() => { setActiveModule(null); setLockedBox(null) }}
-          className="inline-flex items-center gap-2 rounded-lg bg-white card-shadow px-3 py-2 text-sm font-semibold text-study-dark"
+          className="inline-flex items-center gap-2 rounded-lg bg-study-card card-shadow px-3 py-2 text-sm font-semibold text-study-dark"
         >
           <ArrowLeft className="w-4 h-4" />
           Назад
         </button>
 
-        <div className="bg-white rounded-xl card-shadow p-5 sm:p-6">
+        <div className="bg-study-card rounded-xl card-shadow p-5 sm:p-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
               <Lock className="w-6 h-6 text-study-brown" />
@@ -293,8 +386,8 @@ export default function LearningStart() {
 
         {/* PIN modal */}
         {lockedBox && (
-          <div className="fixed inset-0 z-[70] bg-study-dark/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl card-shadow-hover p-5 sm:p-6">
+          <div className="fixed inset-0 z-[70] bg-study-overlay/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="bg-study-card w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl card-shadow-hover p-5 sm:p-6">
               <div className="flex items-start justify-between gap-4 mb-5">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-study-brown">{activeModule.title}</p>
@@ -323,7 +416,7 @@ export default function LearningStart() {
                 onKeyDown={(e) => e.key === 'Enter' && verifyPin()}
                 placeholder="Введите PIN-код"
                 autoFocus
-                className="w-full rounded-xl border border-study-lightgray bg-white px-4 py-3 text-sm text-study-dark focus:outline-none focus:border-study-brown"
+                className="w-full rounded-xl border border-study-lightgray bg-study-card px-4 py-3 text-sm text-study-dark focus:outline-none focus:border-study-brown"
               />
 
               {pinError && (
@@ -364,7 +457,7 @@ export default function LearningStart() {
       <div className="grid lg:grid-cols-[1fr_1.5fr_1.5fr] gap-4">
         <button
           onClick={() => openLesson('intro', '/api/learning/intro')}
-          className="text-left bg-white rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all"
+          className="text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all"
         >
           <div className="flex items-start justify-between gap-3 mb-5">
             <div className="w-12 h-12 rounded-xl bg-study-green/10 flex items-center justify-center shrink-0">
@@ -376,7 +469,7 @@ export default function LearningStart() {
           <p className="text-sm text-study-gray mt-2">Первый блок для старта работы с платформой.</p>
         </button>
 
-        <button className="text-left bg-white rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all">
+        <button className="text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all">
           <div className="flex items-start justify-between gap-3 mb-5">
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
               <BookOpen className="w-6 h-6 text-study-brown" />
@@ -389,7 +482,7 @@ export default function LearningStart() {
 
         <button
           onClick={() => openLesson('how-to-choose', '/api/learning/how-to-choose')}
-          className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all overflow-hidden"
+          className="relative text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all overflow-hidden"
         >
           <div className="flex items-start justify-between gap-4 mb-5">
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
@@ -410,7 +503,7 @@ export default function LearningStart() {
           <button
             key={module.id}
             onClick={() => { window.history.pushState({ tab: 'learning-start', module: module.id }, '', '#learning-start'); setActiveModule(module) }}
-            className="relative text-left bg-amber-50 border border-amber-200 rounded-xl card-shadow p-5 min-h-[120px] hover:card-shadow-hover transition-all overflow-hidden"
+            className="relative text-left bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl card-shadow p-5 min-h-[120px] hover:card-shadow-hover transition-all overflow-hidden"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -429,7 +522,7 @@ export default function LearningStart() {
       <div className="grid sm:grid-cols-2 gap-4">
         <button
           onClick={() => openLesson('cities', '/api/learning/cities')}
-          className="text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
+          className="text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
         >
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="w-12 h-12 rounded-xl bg-study-green/10 flex items-center justify-center shrink-0">
@@ -442,7 +535,7 @@ export default function LearningStart() {
 
         <button
           onClick={() => isSubscribed ? openLesson('apply-guide', '/api/learning/module/apply-guide') : setVideoOpen(true)}
-          className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
+          className="relative text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
         >
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
@@ -463,7 +556,7 @@ export default function LearningStart() {
       <div className="grid sm:grid-cols-2 gap-4">
         <button
           onClick={() => isSubscribed ? openLesson('scholarships', '/api/learning/module/scholarships') : setVideoOpen(true)}
-          className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
+          className="relative text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
         >
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
@@ -479,39 +572,138 @@ export default function LearningStart() {
           <p className="text-sm text-study-gray mt-1">Какие бывают стипендии на бакалавриат и что важно понимать</p>
         </button>
 
-        <button className="relative text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all">
+        <button
+          onClick={() => setExamsOpen(true)}
+          className="relative text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
+        >
           <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
-              <Wallet className="w-6 h-6 text-study-brown" />
+            <div className="w-12 h-12 rounded-xl bg-study-green/10 flex items-center justify-center shrink-0">
+              <GraduationCap className="w-6 h-6 text-study-green" />
             </div>
-            <div className="w-8 h-8 rounded-full bg-study-dark/10 flex items-center justify-center shrink-0">
-              <Lock className="w-4 h-4 text-study-dark" />
-            </div>
+            <span className="text-xs font-bold text-study-green bg-study-green/10 rounded-full px-2.5 py-1 shrink-0">
+              Бесплатно
+            </span>
           </div>
-          <p className="font-bold text-study-dark">Как оплатить регистрационные взносы и обучение</p>
+          <p className="font-bold text-study-dark">Экзамены</p>
+          <p className="text-sm text-study-gray mt-1">
+            IELTS, TOEFL, CSCA и Duolingo — какой нужен именно вам
+          </p>
         </button>
       </div>
 
-      {/* Wide free card */}
-      <button className="w-full text-left bg-white rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all">
-        <div className="flex items-start justify-between gap-3 mb-4">
+      {/* Socials */}
+      <div className="w-full bg-study-card rounded-xl card-shadow p-5 sm:p-6">
+        <div className="flex items-start gap-3 mb-4">
           <div className="w-12 h-12 rounded-xl bg-study-green/10 flex items-center justify-center shrink-0">
-            <Briefcase className="w-6 h-6 text-study-green" />
+            <Users className="w-6 h-6 text-study-green" />
           </div>
-          <span className="text-xs font-bold text-study-green bg-study-green/10 rounded-full px-2.5 py-1">Бесплатно</span>
+          <div>
+            <p className="font-bold text-study-dark">Мы в соцсетях</p>
+            <p className="text-sm text-study-gray mt-1">
+              Новости, разборы и ответы на вопросы — пишите напрямую
+            </p>
+          </div>
         </div>
-        <p className="font-bold text-study-dark">Докупить пакет услуг</p>
-        <p className="text-sm text-study-gray mt-1">консультации, подбор ВУЗов, сопровождение</p>
-      </button>
+
+        <div className="grid sm:grid-cols-2 gap-2.5">
+          {SOCIALS.map((social) => (
+            <a
+              key={social.href}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 rounded-xl border border-study-lightgray hover:bg-study-bg hover:card-shadow transition-all"
+            >
+              <span
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white"
+                style={{ backgroundColor: social.color }}
+              >
+                <social.icon className="w-4 h-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-study-dark truncate">{social.label}</span>
+                <span className="block text-xs text-study-gray truncate">{social.handle}</span>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* Exams picker — free module */}
+      {examsOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[70] bg-study-overlay/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setExamsOpen(false)}
+        >
+          <div
+            className="bg-study-card w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl card-shadow-hover overflow-hidden max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 p-4 sm:p-5 border-b border-study-lightgray">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-study-green">Бесплатный модуль</p>
+                <p className="text-lg font-bold text-study-dark mt-0.5">Экзамены</p>
+                <p className="text-sm text-study-gray mt-1">
+                  Какие экзамены просят китайские вузы до поступления
+                </p>
+              </div>
+              <button
+                onClick={() => setExamsOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-study-bg flex items-center justify-center shrink-0"
+                aria-label="Закрыть"
+              >
+                <X className="w-5 h-5 text-study-gray" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-5 space-y-2.5">
+              {EXAMS.map((exam) => (
+                <button
+                  key={exam.id}
+                  onClick={() => {
+                    setExamsOpen(false)
+                    openLesson(exam.id, `/api/learning/exam/${exam.id}`)
+                  }}
+                  className="w-full flex items-center gap-3.5 p-3.5 rounded-xl border border-study-lightgray hover:bg-study-bg hover:card-shadow transition-all text-left"
+                >
+                  {exam.logo ? (
+                    // Logos are square and full-bleed to the tile; object-contain
+                    // keeps the artwork intact whatever its aspect ratio.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={exam.logo}
+                      alt=""
+                      className="w-14 h-14 rounded-xl shrink-0 object-contain bg-white border border-study-lightgray"
+                    />
+                  ) : (
+                    <span
+                      className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-[11px] tracking-tight"
+                      style={{ backgroundColor: exam.color }}
+                    >
+                      {exam.mark}
+                    </span>
+                  )}
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-bold text-study-dark">{exam.name}</span>
+                    <span className="block text-xs text-study-gray mt-0.5">{exam.note}</span>
+                  </span>
+                  <ChevronRight className="w-5 h-5 text-study-gray shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Paid module paywall modal */}
       {videoOpen && createPortal(
         <div
-          className="fixed inset-0 z-[70] bg-study-dark/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[70] bg-study-overlay/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setVideoOpen(false)}
         >
           <div
-            className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl card-shadow-hover overflow-hidden"
+            className="bg-study-card w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl card-shadow-hover overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 p-4 sm:p-5 border-b border-study-lightgray">
@@ -697,7 +889,10 @@ function renderInline(text: string): React.ReactNode[] {
   while ((match = regex.exec(text)) !== null) {
     if (match.index > last) parts.push(text.slice(last, match.index))
     const bold = match[0].match(/^\*\*(.*)\*\*$/)
-    if (bold) { parts.push(<strong key={match.index}>{bold[1]}</strong>); last = match.index + match[0].length; continue }
+    // Recurse into the bold text: the bold alternative matches first and
+    // swallows anything inside it, so **[text](url)** would otherwise render
+    // the link as literal markdown.
+    if (bold) { parts.push(<strong key={match.index}>{renderInline(bold[1])}</strong>); last = match.index + match[0].length; continue }
     const link = match[0].match(/^\[(.*?)\]\((.*?)\)$/)
     if (link) {
       const isExternal = link[2].startsWith('http')
@@ -796,7 +991,7 @@ function CitySlideshow({ images }: { images: { src: string; alt: string }[] }) {
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
-                className={`h-1.5 rounded-full transition-all ${i === current ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
+                className={`h-1.5 rounded-full transition-all ${i === current ? 'w-5 bg-study-card' : 'w-1.5 bg-study-card/50'}`}
               />
             ))}
           </div>
@@ -818,18 +1013,24 @@ function CitySlideshow({ images }: { images: { src: string; alt: string }[] }) {
  * XML-escaped because an email is user-controlled and would otherwise be able to
  * break out of the markup.
  */
-function watermarkSvg(email: string) {
+function watermarkSvg(email: string, isDark = false) {
   const label = `${email} · КайКитай`
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
+  // Near-black ink disappears entirely on a dark page, which silently removes
+  // the anti-leak watermark exactly where a screenshot is most likely. Light ink
+  // on dark needs slightly more opacity to read at the same subtlety.
+  const fill = isDark ? '#ffffff' : '#1f1f1f'
+  const opacity = isDark ? '0.075' : '0.055'
+
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="340" height="180">` +
     `<text x="10" y="120" transform="rotate(-18 10 120)" ` +
     `font-family="system-ui,-apple-system,sans-serif" font-size="13" font-weight="700" ` +
-    `fill="#1f1f1f" fill-opacity="0.055">${label}</text>` +
+    `fill="${fill}" fill-opacity="${opacity}">${label}</text>` +
     `</svg>`
   )
 }
@@ -848,6 +1049,8 @@ function ProtectedLesson({
   topExtra?: React.ReactNode
 }) {
   const prevent = (event: React.SyntheticEvent) => event.preventDefault()
+  // The watermark ink has to flip with the theme or it vanishes on a dark page.
+  const { theme } = useTheme()
   // TOC collapsed by default on mobile (compact bar); always shown on desktop via lg:block.
   const [isTocOpen, setIsTocOpen] = useState(false)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -1425,7 +1628,7 @@ function ProtectedLesson({
       )}
 
       <article
-        className="relative overflow-clip rounded-xl border border-study-lightgray bg-white p-4 sm:p-6 select-none min-w-0"
+        className="relative overflow-clip rounded-xl border border-study-lightgray bg-study-card p-4 sm:p-6 select-none min-w-0"
         onCopy={prevent}
         onCut={prevent}
         onContextMenu={prevent}
@@ -1447,7 +1650,7 @@ function ProtectedLesson({
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0"
           style={{
-            backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(watermarkSvg(userEmail))}")`,
+            backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(watermarkSvg(userEmail, theme === 'dark'))}")`,
             backgroundRepeat: 'repeat',
           }}
         />
@@ -1610,14 +1813,14 @@ function ProtectedLesson({
 
               if (block.type === 'pdf') {
                 return (
-                  <div key={index} className="my-4 rounded-xl overflow-hidden border border-gray-200">
+                  <div key={index} className="my-4 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10">
                     <iframe
                       src={block.src}
                       className="w-full"
                       style={{ height: '520px' }}
                       title="PDF документ"
                     />
-                    <div className="bg-gray-50 border-t border-gray-200 px-4 py-2 text-center">
+                    <div className="bg-gray-50 dark:bg-white/5 border-t border-gray-200 dark:border-white/10 px-4 py-2 text-center">
                       <a
                         href={block.src}
                         target="_blank"
@@ -1708,7 +1911,9 @@ function ProtectedLesson({
                 return renderWithInfographic(
                   <ul className="space-y-2 pl-5 list-disc text-sm sm:text-base leading-7">
                     {block.items.map((item, itemIndex) => (
-                      <li key={itemIndex}>{item}</li>
+                      // renderInline, not the raw string: bold and links inside
+                      // list items were being printed as literal markdown.
+                      <li key={itemIndex}>{renderInline(item)}</li>
                     ))}
                   </ul>,
                 )
@@ -1720,10 +1925,10 @@ function ProtectedLesson({
                     <table className="w-full text-sm">
                       <tbody>
                         {block.rows.map((row, rowIndex) => (
-                          <tr key={rowIndex} className={rowIndex === 0 ? 'bg-study-bg font-bold' : 'bg-white'}>
+                          <tr key={rowIndex} className={rowIndex === 0 ? 'bg-study-bg font-bold' : 'bg-study-card'}>
                             {row.map((cell, cellIndex) => (
                               <td key={cellIndex} className="border-t border-study-lightgray px-3 py-2 align-top">
-                                {cell}
+                                {renderInline(cell)}
                               </td>
                             ))}
                           </tr>
@@ -1802,7 +2007,7 @@ function ScholarshipComparison() {
   return (
     <InfographicShell title="Виды стипендий: сравнение" subtitle="Что покрывает, как подаётся и кому подходит каждая стипендия.">
       <div className="overflow-x-auto rounded-xl border border-study-lightgray">
-        <table className="w-full min-w-[720px] text-sm bg-white">
+        <table className="w-full min-w-[720px] text-sm bg-study-card">
           <thead>
             <tr className="bg-study-bg text-left">
               <th className="p-3 font-semibold text-study-dark">Стипендия</th>
@@ -1844,14 +2049,14 @@ function CoverageTiers() {
           </div>
         ))}
       </div>
-      <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
+      <p className="mt-3 rounded-xl bg-study-card p-3 text-sm text-study-gray">
         Перед подачей проверьте: что покрывается, срок действия, нужно ли ежегодно подтверждать успеваемость и включено ли проживание.
       </p>
     </InfographicShell>
   )
 }
 
-const cardButton = 'rounded-xl border border-study-lightgray bg-white p-3'
+const cardButton = 'rounded-xl border border-study-lightgray bg-study-card p-3'
 
 function SystemsContrast() {
   const left = ['ЕГЭ', 'заочное', 'специалитет', 'общие предметы']
@@ -1860,14 +2065,14 @@ function SystemsContrast() {
   return (
     <InfographicShell title="Россия и Китай: разные системы" subtitle="Главные отличия двух систем поступления и учебы.">
       <div className="grid md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
-        <div className="rounded-xl bg-white border border-study-lightgray p-4">
+        <div className="rounded-xl bg-study-card border border-study-lightgray p-4">
           <h4 className="font-bold text-study-dark mb-3">Россия</h4>
           <div className="grid gap-2">
             {left.map((item) => <span key={item} className="rounded-lg bg-study-bg px-3 py-2 text-sm text-study-gray">{item}</span>)}
           </div>
         </div>
         <div className="hidden md:flex items-center justify-center text-3xl font-bold text-study-brown">≠</div>
-        <div className="rounded-xl bg-white border border-study-lightgray p-4">
+        <div className="rounded-xl bg-study-card border border-study-lightgray p-4">
           <h4 className="font-bold text-study-dark mb-3">Китай</h4>
           <div className="grid gap-2">
             {right.map((item) => (
@@ -1876,7 +2081,7 @@ function SystemsContrast() {
           </div>
         </div>
       </div>
-      <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
+      <p className="mt-3 rounded-xl bg-study-card p-3 text-sm text-study-gray">
         Главная мысль: в Китае поступление больше завязано на язык, очный формат и требования конкретного вуза.
       </p>
     </InfographicShell>
@@ -1892,8 +2097,8 @@ function StudyYearHeatmap() {
   const colors: Record<string, string> = {
     green: 'bg-study-green/15 text-study-green border-study-green/25',
     yellow: 'bg-study-orange/15 text-study-orange border-study-orange/25',
-    red: 'bg-red-100 text-red-500 border-red-200',
-    blue: 'bg-blue-100 text-blue-600 border-blue-200',
+    red: 'bg-red-100 dark:bg-red-500/20 text-red-500 border-red-200 dark:border-red-500/30',
+    blue: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 border-blue-200 dark:border-blue-500/30',
   }
   const legend: [string, string][] = [
     ['green', 'Обычная учеба'], ['yellow', 'Подготовка к сессии'],
@@ -1932,7 +2137,7 @@ function AdmissionsFlow() {
           const isOutcome = number >= 9
           const color = isExam ? 'bg-study-orange' : isOutcome ? 'bg-study-dark' : 'bg-teal-600'
           return (
-            <div key={step} className="flex items-center gap-3 rounded-xl border border-study-lightgray bg-white p-3">
+            <div key={step} className="flex items-center gap-3 rounded-xl border border-study-lightgray bg-study-card p-3">
               <span className={`w-9 h-9 rounded-full ${color} text-white flex items-center justify-center text-sm font-bold`}>{number}</span>
               <span className="font-semibold text-study-dark">{step}</span>
             </div>
@@ -1964,9 +2169,9 @@ function WorkDecisionTree() {
         </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
-        <span className="rounded-full bg-white px-3 py-2">Студенческая виза</span>
-        <span className="rounded-full bg-white px-3 py-2">Разрешение университета</span>
-        <span className="rounded-full bg-white px-3 py-2">Миграционная служба</span>
+        <span className="rounded-full bg-study-card px-3 py-2">Студенческая виза</span>
+        <span className="rounded-full bg-study-card px-3 py-2">Разрешение университета</span>
+        <span className="rounded-full bg-study-card px-3 py-2">Миграционная служба</span>
       </div>
     </InfographicShell>
   )
@@ -1976,12 +2181,12 @@ function ArmyCard() {
   return (
     <InfographicShell title="Армия: что важно запомнить" subtitle="Схема не заменяет консультацию, но показывает главное действие.">
       <div className="grid md:grid-cols-3 gap-3">
-        <div className="rounded-xl bg-white border border-red-200 p-4">
+        <div className="rounded-xl bg-study-card border border-red-200 dark:border-red-500/30 p-4">
           <XCircle className="w-7 h-7 text-red-500 mb-3" />
           <p className="font-bold text-study-dark">Китайский вуз</p>
           <p className="text-sm text-study-gray mt-1">Сам по себе не дает автоматическую отсрочку.</p>
         </div>
-        <div className="rounded-xl bg-white border border-study-green/30 p-4">
+        <div className="rounded-xl bg-study-card border border-study-green/30 p-4">
           <CheckCircle className="w-7 h-7 text-study-green mb-3" />
           <p className="font-bold text-study-dark">Выезд больше 6 месяцев</p>
           <p className="text-sm text-study-gray mt-1">Нужно заранее разобраться с воинским учетом.</p>
@@ -2082,16 +2287,16 @@ function ExamMatrix() {
   const badgeStyle: Record<string, string> = {
     HSK: 'bg-study-orange/15 text-study-orange',
     IELTS: 'bg-study-orange/15 text-study-orange',
-    Math: 'bg-blue-100 text-blue-600',
-    Physics: 'bg-blue-100 text-blue-600',
-    Chemistry: 'bg-blue-100 text-blue-600',
+    Math: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600',
+    Physics: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600',
+    Chemistry: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600',
     Portfolio: 'bg-purple-100 text-purple-600',
   }
 
   return (
     <InfographicShell title="Матрица экзаменов по направлениям" subtitle="Бейджи помогают быстро увидеть типичные требования.">
       <div className="overflow-x-auto rounded-xl border border-study-lightgray">
-        <table className="w-full min-w-[620px] text-sm bg-white">
+        <table className="w-full min-w-[620px] text-sm bg-study-card">
           <thead>
             <tr className="bg-study-bg text-left">
               <th className="p-3">Программа</th>
@@ -2147,7 +2352,7 @@ function CostChart() {
           </span>
         ))}
       </div>
-      <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
+      <p className="mt-3 rounded-xl bg-study-card p-3 text-sm text-study-gray">
         Жизнь и ежедневные расходы часто становятся самой незаметной частью бюджета. Держите ориентир около 3 000¥ в месяц.
       </p>
     </InfographicShell>
@@ -2173,7 +2378,7 @@ function DormPlan() {
           </div>
         ))}
       </div>
-      <p className="mt-3 rounded-xl bg-white p-3 text-sm text-study-gray">
+      <p className="mt-3 rounded-xl bg-study-card p-3 text-sm text-study-gray">
         Комендантский час часто бывает около 00:00–06:00, но правила зависят от кампуса.
       </p>
     </InfographicShell>
@@ -2184,7 +2389,7 @@ function ScholarshipPyramid() {
   return (
     <InfographicShell title="Гранты как пирамида конкуренции" subtitle="Чем выше уровень гранта, тем выше конкуренция и сильнее пакет.">
       <div className="mx-auto max-w-xl space-y-2 text-center">
-        <div className="mx-auto w-2/3 rounded-xl bg-study-dark p-3 text-white">
+        <div className="mx-auto w-2/3 rounded-xl bg-study-inverse p-3 text-white">
           <Trophy className="w-5 h-5 mx-auto mb-1" />
           <p className="font-bold">Правительственный грант</p>
           <p className="text-xs opacity-80">высокая конкуренция, часто полное покрытие</p>

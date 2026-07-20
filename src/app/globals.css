@@ -32,6 +32,74 @@
     --sidebar-accent-foreground: 233 23% 22%;
     --sidebar-border: 214 32% 91%;
     --sidebar-ring: 12 22% 35%;
+
+    /* Brand palette. Space-separated RGB so Tailwind's <alpha-value> works.
+       These are the exact values the app shipped with — light mode is
+       unchanged by the move to variables. */
+    --study-bg: 242 244 248;        /* #F2F4F8 */
+    --study-card: 255 255 255;      /* #FFFFFF */
+    --study-brown: 107 79 75;       /* #6B4F4B */
+    --study-green: 74 103 65;       /* #4A6741 */
+    --study-orange: 245 158 11;     /* #F59E0B */
+    --study-red: 239 68 68;         /* #EF4444 */
+    --study-dark: 43 45 66;         /* #2B2D42 */
+    --study-gray: 141 153 174;      /* #8D99AE */
+    --study-lightgray: 226 232 240; /* #E2E8F0 */
+    --study-overlay: 43 45 66;      /* scrim — same as text in light mode */
+    /* A solid surface that always carries white text: tooltips, the top tier of
+       the grants pyramid, video backdrops. Distinct from --study-dark, which is
+       the text colour and inverts. */
+    --study-inverse: 43 45 66;
+  }
+
+  /* Night theme.
+     Surfaces go dark and text inverts; the accent colours are lightened
+     rather than reused, because #6B4F4B and #4A6741 are chosen for contrast
+     against white and become unreadable on a dark surface. */
+  .dark {
+    /* shadcn base tokens — the <body> uses bg-background/text-foreground, so
+       these have to flip too or the page stays light behind the cards. */
+    --background: 233 23% 9%;
+    --foreground: 228 25% 93%;
+    --card: 231 21% 15%;
+    --card-foreground: 228 25% 93%;
+    --popover: 231 21% 15%;
+    --popover-foreground: 228 25% 93%;
+    --primary: 12 30% 65%;
+    --primary-foreground: 233 23% 9%;
+    --secondary: 231 18% 20%;
+    --secondary-foreground: 228 25% 93%;
+    --muted: 231 18% 20%;
+    --muted-foreground: 218 18% 64%;
+    --accent: 105 25% 57%;
+    --accent-foreground: 233 23% 9%;
+    --destructive: 0 91% 71%;
+    --destructive-foreground: 233 23% 9%;
+    --border: 231 18% 22%;
+    --input: 231 18% 22%;
+    --ring: 12 30% 65%;
+    --sidebar-background: 231 21% 15%;
+    --sidebar-foreground: 228 25% 93%;
+    --sidebar-primary: 12 30% 65%;
+    --sidebar-primary-foreground: 233 23% 9%;
+    --sidebar-accent: 231 18% 20%;
+    --sidebar-accent-foreground: 228 25% 93%;
+    --sidebar-border: 231 18% 22%;
+    --sidebar-ring: 12 30% 65%;
+
+    --study-bg: 17 18 27;           /* page background */
+    --study-card: 30 32 45;         /* cards, modals, inputs */
+    --study-brown: 190 150 142;     /* lightened for contrast on dark */
+    --study-green: 138 173 120;
+    --study-orange: 251 191 36;
+    --study-red: 248 113 113;
+    --study-dark: 232 234 242;      /* primary text — now near-white */
+    --study-gray: 148 158 178;      /* muted text, still AA on card */
+    --study-lightgray: 47 51 68;    /* borders and dividers */
+    --study-overlay: 8 9 14;        /* scrim stays dark in both themes */
+    /* Raised slate rather than near-black: it has to sit visibly above the dark
+       card behind it while still reading with white text on top. */
+    --study-inverse: 62 68 96;
   }
 
   * {
@@ -51,6 +119,17 @@
 
   .card-shadow-hover {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  /* On a dark surface a black drop shadow is invisible, so cards lose all
+     separation from the background. Deepen the shadow and add a hairline
+     highlight so the card edge still reads. */
+  .dark .card-shadow {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.04);
+  }
+
+  .dark .card-shadow-hover {
+    box-shadow: 0 6px 16px -4px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.07);
   }
 
   .pb-safe {

@@ -4,8 +4,6 @@ import type { StudentProfile } from '@/types/studytrack'
 interface AppState {
   activeTab: string
   setActiveTab: (tab: string, replace?: boolean) => void
-  isParentMode: boolean
-  setIsParentMode: (mode: boolean) => void
   isAuthenticated: boolean
   isAuthLoading: boolean
   user: StudentProfile | null
@@ -20,7 +18,6 @@ const AppContext = createContext<AppState | undefined>(undefined)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [activeTab, setActiveTabState] = useState('dashboard')
-  const [isParentMode, setIsParentMode] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [user, setUser] = useState<StudentProfile | null>(null)
@@ -114,7 +111,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await fetch('/api/auth/logout', { method: 'POST' })
     setIsAuthenticated(false)
     setUser(null)
-    setIsParentMode(false)
     setActiveTab('dashboard', true)
     setLoginError(null)
   }
@@ -138,8 +134,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         activeTab,
         setActiveTab,
-        isParentMode,
-        setIsParentMode,
         isAuthenticated,
         isAuthLoading,
         user,

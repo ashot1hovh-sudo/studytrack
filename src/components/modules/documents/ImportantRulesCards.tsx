@@ -34,9 +34,9 @@ const rules = [
 ]
 
 const colorMap = {
-  danger: { circle: 'bg-red-50', icon: 'text-red-500' },
+  danger: { circle: 'bg-red-50 dark:bg-red-500/10', icon: 'text-red-500' },
   warning: { circle: 'bg-study-orange/10', icon: 'text-study-orange' },
-  info:    { circle: 'bg-blue-50', icon: 'text-blue-500' },
+  info:    { circle: 'bg-blue-50 dark:bg-blue-500/10', icon: 'text-blue-500' },
 }
 
 export default function ImportantRulesCards() {
@@ -46,7 +46,7 @@ export default function ImportantRulesCards() {
         const { Icon } = r
         const c = colorMap[r.color]
         return (
-          <div key={i} className="bg-white border border-study-lightgray rounded-xl px-5 py-3.5 flex items-start gap-3">
+          <div key={i} className="bg-study-card border border-study-lightgray rounded-xl px-5 py-3.5 flex items-start gap-3">
             <div className={`w-9 h-9 rounded-full ${c.circle} flex items-center justify-center shrink-0`}>
               <Icon className={`w-4 h-4 ${c.icon}`} />
             </div>

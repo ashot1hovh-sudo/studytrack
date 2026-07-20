@@ -56,7 +56,7 @@ export default function ProgramComparisonTable() {
         </thead>
         <tbody>
           {fields.map((field, fi) => (
-            <tr key={field.key} className={fi % 2 === 0 ? 'bg-white' : 'bg-study-bg/50'}>
+            <tr key={field.key} className={fi % 2 === 0 ? 'bg-study-card' : 'bg-study-bg/50'}>
               <td className="p-2 text-xs font-semibold text-study-gray border-b border-study-lightgray align-middle leading-tight">
                 {field.label}
               </td>
@@ -66,7 +66,7 @@ export default function ProgramComparisonTable() {
                     <select
                       value={prog[field.key]}
                       onChange={(e) => update(pi, field.key as FieldKey, e.target.value)}
-                      className="w-full text-xs rounded-lg border border-study-lightgray bg-white text-study-dark px-2 py-1.5 focus:outline-none focus:border-study-brown"
+                      className="w-full text-xs rounded-lg border border-study-lightgray bg-study-card text-study-dark px-2 py-1.5 focus:outline-none focus:border-study-brown"
                     >
                       <option value="">—</option>
                       {field.options.map((opt) => (
@@ -79,7 +79,7 @@ export default function ProgramComparisonTable() {
                       value={prog[field.key]}
                       onChange={(e) => update(pi, field.key as FieldKey, e.target.value)}
                       placeholder="—"
-                      className="w-full text-xs rounded-lg border border-study-lightgray bg-white text-study-dark px-2 py-1.5 focus:outline-none focus:border-study-brown"
+                      className="w-full text-xs rounded-lg border border-study-lightgray bg-study-card text-study-dark px-2 py-1.5 focus:outline-none focus:border-study-brown"
                     />
                   )}
                 </td>

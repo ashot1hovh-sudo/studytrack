@@ -35,7 +35,7 @@ function List({ items }: { items: string[] }) {
 export default function TermsPage() {
   return (
     <main className="min-h-screen bg-study-bg py-10 px-4">
-      <div className="mx-auto max-w-2xl bg-white rounded-2xl card-shadow p-6 sm:p-10">
+      <div className="mx-auto max-w-2xl bg-study-card rounded-2xl card-shadow p-6 sm:p-10">
         <h1 className="text-2xl font-bold text-study-dark">
           Согласие на обработку персональных данных
         </h1>

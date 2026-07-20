@@ -28,7 +28,7 @@ const parts = [
 ]
 
 const colorMap = {
-  blue:   { circle: 'bg-blue-50 border-blue-200', icon: 'text-blue-500' },
+  blue:   { circle: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30', icon: 'text-blue-500' },
   orange: { circle: 'bg-study-orange/10 border-study-orange/20', icon: 'text-study-orange' },
   green:  { circle: 'bg-study-green/10 border-study-green/20', icon: 'text-study-green' },
 }

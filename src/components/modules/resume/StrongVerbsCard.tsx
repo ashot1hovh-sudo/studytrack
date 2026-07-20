@@ -14,7 +14,7 @@ const verbs = [
 export default function StrongVerbsCard() {
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 bg-study-bg border-b border-study-lightgray">
           <p className="text-sm font-semibold text-study-dark">Сильные глаголы для резюме</p>
           <p className="text-xs text-study-gray mt-0.5">Используйте активный залог и конкретные действия</p>

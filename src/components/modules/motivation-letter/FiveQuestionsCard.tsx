@@ -11,7 +11,7 @@ const questions = [
 export default function FiveQuestionsCard() {
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 bg-study-brown/10 border-b border-study-brown/20">
           <p className="text-sm font-semibold text-study-brown">5 вопросов, на которые отвечает хорошее письмо</p>
         </div>

@@ -48,15 +48,28 @@ module.exports = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Driven by CSS variables so the whole palette can be swapped for dark
+        // mode without touching the ~1700 colour utilities in the components.
+        // `<alpha-value>` keeps opacity modifiers (bg-study-brown/10) working.
         study: {
-          bg: "#F2F4F8",
-          brown: "#6B4F4B",
-          green: "#4A6741",
-          orange: "#F59E0B",
-          red: "#EF4444",
-          dark: "#2B2D42",
-          gray: "#8D99AE",
-          lightgray: "#E2E8F0",
+          bg: "rgb(var(--study-bg) / <alpha-value>)",
+          // The surface cards and modals sit on. Was a literal `bg-white`.
+          card: "rgb(var(--study-card) / <alpha-value>)",
+          brown: "rgb(var(--study-brown) / <alpha-value>)",
+          green: "rgb(var(--study-green) / <alpha-value>)",
+          orange: "rgb(var(--study-orange) / <alpha-value>)",
+          red: "rgb(var(--study-red) / <alpha-value>)",
+          // Primary text colour — inverts in dark mode.
+          dark: "rgb(var(--study-dark) / <alpha-value>)",
+          gray: "rgb(var(--study-gray) / <alpha-value>)",
+          lightgray: "rgb(var(--study-lightgray) / <alpha-value>)",
+          // Modal scrims. A separate token because they must stay dark in both
+          // themes — reusing `dark` here would make them light-on-dark once it
+          // inverts, and every modal backdrop would glow.
+          overlay: "rgb(var(--study-overlay) / <alpha-value>)",
+          // Solid surface for white text (tooltips, pyramid top tier). Unlike
+          // `dark`, it stays a dark surface in both themes.
+          inverse: "rgb(var(--study-inverse) / <alpha-value>)",
         }
       },
       borderRadius: {

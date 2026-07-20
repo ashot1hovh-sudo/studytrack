@@ -47,7 +47,7 @@ function getProfileLevel(data: Data): ProfileResult | null {
 const colorMap = {
   success: { bg: 'bg-study-green/10', border: 'border-study-green/20', icon: 'text-study-green', text: 'text-study-green' },
   warning: { bg: 'bg-study-orange/10', border: 'border-study-orange/20', icon: 'text-study-orange', text: 'text-study-orange' },
-  danger:  { bg: 'bg-red-50', border: 'border-red-200', icon: 'text-red-500', text: 'text-red-500' },
+  danger:  { bg: 'bg-red-50 dark:bg-red-500/10', border: 'border-red-200 dark:border-red-500/30', icon: 'text-red-500', text: 'text-red-500' },
 }
 
 export default function StudentProfileTable() {
@@ -71,7 +71,7 @@ export default function StudentProfileTable() {
         )
       })()}
 
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <table className="w-full" style={{ tableLayout: 'fixed' }}>
           <colgroup>
             <col style={{ width: '42%' }} />
@@ -85,7 +85,7 @@ export default function StudentProfileTable() {
           </thead>
           <tbody>
             {fields.map((field, i) => (
-              <tr key={field.key} className={i % 2 === 0 ? 'bg-white' : 'bg-study-bg/50'}>
+              <tr key={field.key} className={i % 2 === 0 ? 'bg-study-card' : 'bg-study-bg/50'}>
                 <td className="px-3 py-2 text-xs text-study-gray border-b border-study-lightgray align-middle">
                   {field.label}
                 </td>

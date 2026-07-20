@@ -6,7 +6,7 @@ const steps = [
     title: 'Рассказ о себе',
     note: '40–60 секунд: кто вы, откуда, почему эта программа и Китай',
     color: 'text-blue-600',
-    circle: 'bg-blue-100',
+    circle: 'bg-blue-100 dark:bg-blue-500/20',
   },
   {
     icon: MessageSquare,
@@ -41,7 +41,7 @@ const steps = [
 export default function InterviewPrepFlow() {
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 bg-study-bg border-b border-study-lightgray">
           <p className="text-sm font-semibold text-study-dark">5 шагов подготовки</p>
           <p className="text-xs text-study-gray mt-0.5">Пройдите все шаги перед днём интервью</p>

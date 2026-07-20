@@ -549,14 +549,14 @@ export default function AdminDashboard() {
           <div className="flex gap-2">
             <button
               onClick={loadDashboard}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg card-shadow text-sm font-semibold text-study-dark"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-study-card rounded-lg card-shadow text-sm font-semibold text-study-dark"
             >
               <RefreshCw className="w-4 h-4" />
               Обновить
             </button>
             <button
               onClick={logout}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg card-shadow text-sm font-semibold text-study-dark"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-study-card rounded-lg card-shadow text-sm font-semibold text-study-dark"
             >
               <LogOut className="w-4 h-4" />
               Выйти
@@ -564,12 +564,12 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {isLoading && <div className="bg-white rounded-xl card-shadow p-4 sm:p-6"><LoadingState heightClass="h-56" /></div>}
+        {isLoading && <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6"><LoadingState heightClass="h-56" /></div>}
         {!isLoading && error && <ErrorState title="Ошибка админ-панели" description={error} onAction={loadDashboard} />}
 
         {/* Tabs */}
         {!isLoading && !error && (
-          <div className="mb-5 p-1 bg-white rounded-xl card-shadow inline-flex">
+          <div className="mb-5 p-1 bg-study-card rounded-xl card-shadow inline-flex">
             <button
               onClick={() => { setAdminTab('premium'); setSelectedStudent(null) }}
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
@@ -597,7 +597,7 @@ export default function AdminDashboard() {
           <div className="grid lg:grid-cols-[1fr_460px] gap-5">
             <div className="space-y-5">
               {adminTab === 'premium' && (
-              <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+              <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-bold text-study-dark">Добавить студента</h2>
@@ -738,7 +738,7 @@ export default function AdminDashboard() {
               </div>
               )}
 
-              <div className="bg-white rounded-xl card-shadow p-4 sm:p-6">
+              <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-study-dark">
                   {adminTab === 'premium' ? 'Премиум клиенты' : 'DIY клиенты'}
@@ -866,7 +866,7 @@ export default function AdminDashboard() {
             </div>
 
             {adminTab === 'premium' && (
-            <div className="bg-white rounded-xl card-shadow p-4 sm:p-6 h-fit">
+            <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6 h-fit">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-study-dark">Новые загрузки</h2>
                 <span className="text-sm text-study-gray">{uploads.length}</span>
@@ -958,7 +958,7 @@ export default function AdminDashboard() {
         )}
 
         {!isLoading && !error && selectedStudent && adminTab === 'premium' && (
-          <div className="mt-5 bg-white rounded-xl card-shadow p-4 sm:p-6">
+          <div className="mt-5 bg-study-card rounded-xl card-shadow p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
               <div>
                 <h2 className="text-lg font-bold text-study-dark">{selectedStudent.fullName}</h2>

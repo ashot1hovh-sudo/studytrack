@@ -18,8 +18,8 @@ export default function VideoTechCard() {
         {requirements.map((r, i) => {
           const { Icon } = r
           return (
-            <div key={i} className="bg-white border border-study-lightgray rounded-xl flex flex-col items-center gap-2 px-3 py-3 text-center">
-              <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+            <div key={i} className="bg-study-card border border-study-lightgray rounded-xl flex flex-col items-center gap-2 px-3 py-3 text-center">
+              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
                 <Icon className="w-4 h-4 text-blue-500" />
               </div>
               <span className="text-xs text-study-dark leading-tight">{r.text}</span>

@@ -18,7 +18,7 @@ export default function OrderFlowDiagram() {
         return (
           <div key={i} className="flex gap-0">
             <div className="flex flex-col items-center w-11 shrink-0">
-              <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0 z-[1]">
+              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center shrink-0 z-[1]">
                 <Icon className="w-4 h-4 text-blue-500" />
               </div>
               {i < steps.length - 1 && (

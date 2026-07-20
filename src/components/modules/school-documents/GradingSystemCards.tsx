@@ -30,7 +30,7 @@ const systems = [
 const colorMap = {
   success: { header: 'bg-study-green/10', icon: 'text-study-green', border: 'border-study-green/20' },
   warning: { header: 'bg-study-orange/10', icon: 'text-study-orange', border: 'border-study-orange/20' },
-  info:    { header: 'bg-blue-50', icon: 'text-blue-500', border: 'border-blue-200' },
+  info:    { header: 'bg-blue-50 dark:bg-blue-500/10', icon: 'text-blue-500', border: 'border-blue-200 dark:border-blue-500/30' },
   neutral: { header: 'bg-study-bg', icon: 'text-study-gray', border: 'border-study-lightgray' },
 }
 
@@ -41,7 +41,7 @@ export default function GradingSystemCards() {
         const { Icon } = s
         const c = colorMap[s.color]
         return (
-          <div key={i} className={`bg-white border ${c.border} rounded-xl overflow-hidden`}>
+          <div key={i} className={`bg-study-card border ${c.border} rounded-xl overflow-hidden`}>
             <div className={`${c.header} px-4 py-2.5 flex items-center gap-2`}>
               <Icon className={`w-4 h-4 ${c.icon} shrink-0`} />
               <span className={`font-medium text-sm ${c.icon}`}>{s.title}</span>

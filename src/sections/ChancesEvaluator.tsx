@@ -75,7 +75,7 @@ export default function ChancesEvaluator() {
   )
 
   if (error) return (
-    <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center gap-3">
+    <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-2xl p-4 flex items-center gap-3">
       <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
       <p className="text-sm text-red-700">{error}</p>
     </div>
@@ -91,7 +91,7 @@ export default function ChancesEvaluator() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Поиск по университету или направлению..."
-          className="w-full rounded-xl border border-study-lightgray bg-white pl-10 pr-10 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
+          className="w-full rounded-xl border border-study-lightgray bg-study-card pl-10 pr-10 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
         />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -101,7 +101,7 @@ export default function ChancesEvaluator() {
       </div>
 
       {/* Numeric filters (collapsible) */}
-      <div className="bg-white rounded-xl border border-study-lightgray overflow-hidden">
+      <div className="bg-study-card rounded-xl border border-study-lightgray overflow-hidden">
         <button
           onClick={() => setShowNumFilters(v => !v)}
           className="w-full flex items-center justify-between px-4 py-3 text-sm"
@@ -163,7 +163,7 @@ export default function ChancesEvaluator() {
           Ничего не найдено — попробуйте изменить фильтры
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-study-lightgray bg-white">
+        <div className="overflow-x-auto rounded-xl border border-study-lightgray bg-study-card">
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="bg-study-bg border-b border-study-lightgray">
@@ -221,7 +221,7 @@ export default function ChancesEvaluator() {
                     className="group border-b border-study-lightgray last:border-0"
                   >
                     {/* University — sticky */}
-                    <td className="sticky left-0 z-10 bg-white group-hover:bg-study-bg/60 px-3 py-2.5 font-semibold text-study-dark transition-colors">
+                    <td className="sticky left-0 z-10 bg-study-card group-hover:bg-study-bg/60 px-3 py-2.5 font-semibold text-study-dark transition-colors">
                       <div className="max-w-[180px] leading-snug">{c.university}</div>
                     </td>
 

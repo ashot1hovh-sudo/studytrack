@@ -58,8 +58,8 @@ const doctors = [
 ]
 
 const colorMap = {
-  blue:  { circle: 'bg-blue-50 border-blue-200', icon: 'text-blue-500', tag: 'bg-blue-50 text-blue-500' },
-  red:   { circle: 'bg-red-50 border-red-200', icon: 'text-red-500', tag: 'bg-red-50 text-red-500' },
+  blue:  { circle: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30', icon: 'text-blue-500', tag: 'bg-blue-50 dark:bg-blue-500/10 text-blue-500' },
+  red:   { circle: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30', icon: 'text-red-500', tag: 'bg-red-50 dark:bg-red-500/10 text-red-500' },
   green: { circle: 'bg-study-green/10 border-study-green/20', icon: 'text-study-green', tag: 'bg-study-green/10 text-study-green' },
 }
 
@@ -70,7 +70,7 @@ export default function DoctorsTable() {
         const { Icon } = d
         const c = colorMap[d.color]
         return (
-          <div key={i} className="bg-white border border-study-lightgray rounded-xl flex items-start gap-3 px-4 py-3">
+          <div key={i} className="bg-study-card border border-study-lightgray rounded-xl flex items-start gap-3 px-4 py-3">
             <div className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${c.circle}`}>
               <Icon className={`w-4 h-4 ${c.icon}`} />
             </div>

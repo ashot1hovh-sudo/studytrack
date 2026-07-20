@@ -1,6 +1,7 @@
 import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap, Target } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { Switch } from '@/components/ui/switch'
+import Logo from '@/components/Logo'
+import ThemeSwitch from '@/components/ThemeSwitch'
 import { useState } from 'react'
 
 const baseMenuItems = [
@@ -9,11 +10,11 @@ const baseMenuItems = [
   { id: 'checklist', label: 'Чек-лист', icon: ClipboardList },
   { id: 'universities', label: 'Вузы', icon: School },
   { id: 'deadlines', label: 'Дедлайны', icon: CalendarDays },
-  { id: 'chances', label: 'Мои шансы', icon: Target },
+  { id: 'chances', label: 'Кейсы поступлений', icon: Target },
 ]
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab, isParentMode, setIsParentMode, user, logout } = useApp()
+  const { activeTab, setActiveTab, user, logout } = useApp()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const menuItems = [...baseMenuItems]
@@ -21,11 +22,10 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-[240px] min-h-screen bg-white flex-col card-shadow sticky top-0 z-50">
+      <aside className="hidden lg:flex w-[240px] min-h-screen bg-study-card flex-col card-shadow sticky top-0 z-50">
         {/* Logo */}
         <div className="p-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-[50px] w-auto" />
+          <Logo className="h-[50px] w-auto" />
         </div>
 
         {/* Navigation */}
@@ -55,28 +55,6 @@ export default function Sidebar() {
           </ul>
         </nav>
 
-        {/* Parent Mode Toggle */}
-        <div className="px-4 py-3 mx-3 mb-3 bg-study-bg rounded-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-study-dark">Режим родителя</span>
-            <Switch
-              checked={isParentMode}
-              onCheckedChange={setIsParentMode}
-            />
-          </div>
-          {isParentMode && (
-            <p className="text-[10px] text-study-gray mt-1">Упрощённый просмотр без загрузки файлов</p>
-          )}
-        </div>
-
-        {/* Consultant Contact */}
-        <div className="px-4 py-3 mx-3 mb-3 bg-study-green/10 rounded-lg">
-          <a href="https://t.me/ash_china" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-medium text-study-green w-full">
-            <MessageCircle className="w-4 h-4" />
-            <span>Написать консультанту</span>
-          </a>
-        </div>
-
         {/* User */}
         <div className="p-4 border-t border-study-lightgray">
           <div className="flex items-center gap-3">
@@ -85,8 +63,9 @@ export default function Sidebar() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-study-dark truncate">{user?.fullName ?? 'Студент'}</p>
-              <p className="text-xs text-study-gray">{isParentMode ? 'Родитель' : 'Студент'}</p>
+              <p className="text-xs text-study-gray">Студент</p>
             </div>
+            <ThemeSwitch />
             <button
               onClick={logout}
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-study-bg transition-colors"
@@ -98,17 +77,12 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white card-shadow z-40 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-study-card card-shadow z-40 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/kai-kitay-logo.png" alt="Кай Китай" className="h-8 w-auto" />
+          <Logo className="h-8 w-auto" />
         </div>
         <div className="flex items-center gap-2">
-          {isParentMode && (
-            <span className="text-[10px] px-2 py-1 bg-study-orange/10 text-study-orange rounded-full font-medium">
-              Родитель
-            </span>
-          )}
+          <ThemeSwitch />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-study-bg transition-colors"
@@ -120,7 +94,18 @@ export default function Sidebar() {
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 bg-white z-50 pt-14">
+        <div className="lg:hidden fixed inset-0 bg-study-card z-50 pt-14">
+          {/* The overlay is z-50 and the header z-40, so it covers the header's
+              own close button — without this the menu can only be dismissed by
+              picking a nav item. */}
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="absolute top-3 right-4 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-study-bg transition-colors"
+            title="Закрыть меню"
+            aria-label="Закрыть меню"
+          >
+            <X className="w-6 h-6 text-study-dark" />
+          </button>
           <div className="px-4 py-4 space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon
@@ -143,41 +128,31 @@ export default function Sidebar() {
             })}
           </div>
 
-          {/* Parent Mode in Mobile Menu */}
-          <div className="mx-4 mt-4 p-4 bg-study-bg rounded-xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-sm font-medium text-study-dark">Режим родителя</span>
-                <p className="text-xs text-study-gray mt-0.5">Упрощённый просмотр</p>
-              </div>
-              <Switch
-                checked={isParentMode}
-                onCheckedChange={(v) => { setIsParentMode(v); setMobileMenuOpen(false) }}
-              />
-            </div>
-          </div>
-
-          <div className="mx-4 mt-3 p-4 bg-study-green/10 rounded-xl">
-            <a href="https://t.me/ash_china" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm font-medium text-study-green">
-              <MessageCircle className="w-5 h-5" />
-              <span>Написать консультанту</span>
-            </a>
-          </div>
-
-          <div className="absolute bottom-8 left-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-study-brown/20 flex items-center justify-center">
+          {/* Full width with the actions on the right: logout had no mobile
+              entry point at all, and the theme toggle only lived in the header. */}
+          <div className="absolute bottom-8 left-4 right-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-study-brown/20 flex items-center justify-center shrink-0">
               <User className="w-5 h-5 text-study-brown" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-study-dark">{user?.fullName ?? 'Студент'}</p>
-              <p className="text-xs text-study-gray">{isParentMode ? 'Родитель' : 'Студент'}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-study-dark truncate">{user?.fullName ?? 'Студент'}</p>
+              <p className="text-xs text-study-gray">Студент</p>
             </div>
+            <ThemeSwitch />
+            <button
+              onClick={logout}
+              className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-study-bg transition-colors shrink-0"
+              title="Выйти"
+              aria-label="Выйти"
+            >
+              <LogOut className="w-5 h-5 text-study-gray" />
+            </button>
           </div>
         </div>
       )}
 
       {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white card-shadow z-40 border-t border-study-lightgray px-2 pb-safe">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-study-card card-shadow z-40 border-t border-study-lightgray px-2 pb-safe">
         <div className="flex items-center justify-around">
           {menuItems.map((item) => {
             const Icon = item.icon

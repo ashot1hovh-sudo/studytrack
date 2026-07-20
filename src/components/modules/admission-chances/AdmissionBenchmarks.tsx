@@ -37,7 +37,7 @@ export default function AdmissionBenchmarks() {
 
       <div>
         <p className="text-xs font-medium text-study-gray mb-2.5">CSCA — ориентиры по баллам</p>
-        <div className="bg-white border border-study-lightgray rounded-xl p-4 flex flex-col gap-3.5">
+        <div className="bg-study-card border border-study-lightgray rounded-xl p-4 flex flex-col gap-3.5">
           {cscaBenchmarks.map((b, i) => (
             <div key={i}>
               <div className="flex justify-between items-baseline mb-1.5">

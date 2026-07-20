@@ -20,7 +20,7 @@ export default function ScanChecklist() {
         {items.map((item, i) => {
           const { Icon } = item
           return (
-            <div key={i} className="flex items-center gap-2.5 bg-white border border-study-lightgray rounded-xl px-3.5 py-2.5">
+            <div key={i} className="flex items-center gap-2.5 bg-study-card border border-study-lightgray rounded-xl px-3.5 py-2.5">
               <div className="w-7 h-7 rounded-full bg-study-green/10 flex items-center justify-center shrink-0">
                 <Icon className="w-3.5 h-3.5 text-study-green" />
               </div>

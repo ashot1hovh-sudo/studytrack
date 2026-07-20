@@ -1,19 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useApp } from '@/context/AppContext'
 import { Info } from 'lucide-react'
 import type { NextAction } from '@/types/studytrack'
 
 export default function NextActionBanner() {
-  const { isParentMode } = useApp()
   const [action, setAction] = useState<NextAction | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (isParentMode) {
-      setIsLoading(false)
-      return
-    }
-
     setIsLoading(true)
 
     fetch('/api/next-action')
@@ -21,12 +14,12 @@ export default function NextActionBanner() {
       .then((data) => setAction(data.action))
       .catch(() => setAction(null))
       .finally(() => setIsLoading(false))
-  }, [isParentMode])
+  }, [])
 
-  if (isParentMode || isLoading || !action) return null
+  if (isLoading || !action) return null
 
   return (
-    <div className="bg-white rounded-xl card-shadow border-l-4 border-study-green p-4 sm:p-5">
+    <div className="bg-study-card rounded-xl card-shadow border-l-4 border-study-green p-4 sm:p-5">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <div className="flex items-center gap-3 sm:gap-4 flex-1">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-study-green/10 flex items-center justify-center shrink-0">

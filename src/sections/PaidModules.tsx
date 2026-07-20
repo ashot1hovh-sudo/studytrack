@@ -10,7 +10,7 @@ export default function PaidModules() {
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {modules.map((mod, i) => (
-        <div key={i} className="bg-white rounded-2xl card-shadow p-6 flex flex-col gap-4 border border-study-lightgray">
+        <div key={i} className="bg-study-card rounded-2xl card-shadow p-6 flex flex-col gap-4 border border-study-lightgray">
           <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center">
             <span className="text-study-brown font-bold text-lg">{i + 1}</span>
           </div>

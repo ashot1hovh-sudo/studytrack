@@ -1,5 +1,6 @@
 import { useApp } from '@/context/AppContext'
-import { MessageCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import ThemeSwitch from '@/components/ThemeSwitch'
 import NextActionBanner from '@/sections/NextActionBanner'
 import Roadmap from '@/sections/Roadmap'
 import Universities from '@/sections/Universities'
@@ -9,7 +10,7 @@ import LearningStart from '@/sections/LearningStart'
 import ChancesEvaluator from '@/sections/ChancesEvaluator'
 
 export default function Dashboard() {
-  const { activeTab, isParentMode, user } = useApp()
+  const { activeTab, user } = useApp()
   const isDashboard = activeTab === 'dashboard'
 
   const pageMeta = {
@@ -19,15 +20,11 @@ export default function Dashboard() {
     },
     dashboard: {
       title: `Добро пожаловать, ${user?.fullName?.split(' ')[0] ?? 'студент'}`,
-      subtitle: isParentMode
-        ? 'Вы просматриваете статус в режиме родителя'
-        : 'Ваш текущий прогресс поступления',
+      subtitle: 'Ваш текущий прогресс поступления',
     },
     checklist: {
       title: 'Чек-лист документов',
-      subtitle: isParentMode
-        ? 'Общий статус подготовки документов'
-        : 'Документы, дедлайны и загрузка файлов',
+      subtitle: 'Документы, дедлайны и загрузка файлов',
     },
     universities: {
       title: 'Вузы',
@@ -38,8 +35,8 @@ export default function Dashboard() {
       subtitle: 'Ближайшие даты и контекст по поступлению',
     },
     chances: {
-      title: '🎯 Мои шансы',
-      subtitle: 'Введи свои статы — найдём похожие реальные кейсы поступления',
+      title: '🎯 Кейсы поступлений',
+      subtitle: 'Реальные результаты поступлений — фильтруйте и сравнивайте со своими',
     },
   }[activeTab] ?? {
     title: 'StudyTrack',
@@ -58,20 +55,10 @@ export default function Dashboard() {
             {pageMeta.subtitle}
           </p>
         </div>
-        <a href="https://t.me/ash_china" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-study-dark bg-white rounded-lg card-shadow hover:card-shadow-hover transition-all">
-          <MessageCircle className="w-4 h-4" />
-          <span>Написать консультанту</span>
-        </a>
+        {/* Desktop only: on mobile the toggle already sits in the top bar and
+            the menu, and a third copy would just crowd the header. */}
+        <ThemeSwitch className="hidden lg:inline-flex shrink-0" />
       </div>
-
-      {isParentMode && (
-        <div className="mb-5 p-3 sm:p-4 bg-study-orange/10 rounded-xl border border-study-orange/20 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-study-orange shrink-0 mt-0.5" />
-          <p className="text-xs sm:text-sm text-study-dark">
-            Режим родителя: показаны только общий прогресс, статус вузов и дедлайны. Загрузка документов и внутренние заметки скрыты.
-          </p>
-        </div>
-      )}
 
       {user?.serviceType === 'diy' && (
         <div className={`mb-5 p-3 sm:p-4 rounded-xl border flex items-start gap-3 ${
@@ -149,7 +136,11 @@ export default function Dashboard() {
         </div>
       )}
 
-      {activeTab === 'deadlines' && <Deadlines />}
+      {activeTab === 'deadlines' && (
+        <div className="max-w-4xl">
+          <Deadlines variant="calendar" />
+        </div>
+      )}
 
 {activeTab === 'chances' && (
         <div className="max-w-4xl">

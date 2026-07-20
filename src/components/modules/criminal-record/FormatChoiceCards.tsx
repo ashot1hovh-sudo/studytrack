@@ -46,7 +46,7 @@ const formats = [
 const tagColorMap = {
   success: { bg: 'bg-study-green/10', text: 'text-study-green', note: 'bg-study-green/10 text-study-green' },
   warning: { bg: 'bg-study-orange/10', text: 'text-study-orange', note: 'bg-study-orange/10 text-study-orange' },
-  info:    { bg: 'bg-blue-50', text: 'text-blue-500', note: 'bg-blue-50 text-blue-500' },
+  info:    { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-500', note: 'bg-blue-50 dark:bg-blue-500/10 text-blue-500' },
 }
 
 export default function FormatChoiceCards() {
@@ -58,7 +58,7 @@ export default function FormatChoiceCards() {
         return (
           <div
             key={i}
-            className={`bg-white rounded-xl overflow-hidden flex flex-col ${
+            className={`bg-study-card rounded-xl overflow-hidden flex flex-col ${
               f.featured ? 'border-2 border-study-green' : 'border border-study-lightgray'
             }`}
           >

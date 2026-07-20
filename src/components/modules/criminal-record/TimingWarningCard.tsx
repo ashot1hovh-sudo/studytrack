@@ -25,15 +25,15 @@ const points = [
 
 const colorMap = {
   warning: { circle: 'bg-study-orange/10', icon: 'text-study-orange' },
-  danger:  { circle: 'bg-red-50', icon: 'text-red-500' },
+  danger:  { circle: 'bg-red-50 dark:bg-red-500/10', icon: 'text-red-500' },
   success: { circle: 'bg-study-green/10', icon: 'text-study-green' },
-  info:    { circle: 'bg-blue-50', icon: 'text-blue-500' },
+  info:    { circle: 'bg-blue-50 dark:bg-blue-500/10', icon: 'text-blue-500' },
 }
 
 export default function TimingWarningCard() {
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl px-5 py-4 flex flex-col gap-3">
+      <div className="bg-study-card border border-study-lightgray rounded-xl px-5 py-4 flex flex-col gap-3">
         {points.map((p, i) => {
           const { Icon } = p
           const c = colorMap[p.color]

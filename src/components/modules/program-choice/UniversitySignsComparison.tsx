@@ -28,7 +28,7 @@ export default function UniversitySignsComparison() {
           <CheckCircle className="w-5 h-5 text-study-green shrink-0" />
           <span className="font-semibold text-sm text-study-green">Хороший знак</span>
         </div>
-        <ul className="px-4 py-3 space-y-2 bg-white">
+        <ul className="px-4 py-3 space-y-2 bg-study-card">
           {goodSigns.map((sign, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-study-dark">
               <Check className="w-4 h-4 text-study-green mt-0.5 shrink-0" />
@@ -39,11 +39,11 @@ export default function UniversitySignsComparison() {
       </div>
 
       <div className="rounded-xl border border-study-lightgray overflow-hidden">
-        <div className="bg-red-50 px-4 py-3 flex items-center gap-2">
+        <div className="bg-red-50 dark:bg-red-500/10 px-4 py-3 flex items-center gap-2">
           <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
           <span className="font-semibold text-sm text-red-500">Плохой знак</span>
         </div>
-        <ul className="px-4 py-3 space-y-2 bg-white">
+        <ul className="px-4 py-3 space-y-2 bg-study-card">
           {badSigns.map((sign, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-study-dark">
               <X className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />

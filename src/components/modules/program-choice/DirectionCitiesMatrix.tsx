@@ -39,7 +39,7 @@ export default function DirectionCitiesMatrix() {
             <div
               key={i}
               onClick={() => setSelected(isSelected ? null : i)}
-              className={`bg-white rounded-xl p-4 cursor-pointer transition-all ${
+              className={`bg-study-card rounded-xl p-4 cursor-pointer transition-all ${
                 isSelected ? 'border-2 border-study-brown shadow-sm' : 'border border-study-lightgray'
               }`}
             >

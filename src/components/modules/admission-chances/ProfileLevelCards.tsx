@@ -47,7 +47,7 @@ const profiles = [
 const colorMap = {
   success: { header: 'bg-study-green/10', icon: 'text-study-green', text: 'text-study-green', dot: 'text-study-green' },
   warning: { header: 'bg-study-orange/10', icon: 'text-study-orange', text: 'text-study-orange', dot: 'text-study-orange' },
-  danger:  { header: 'bg-red-50', icon: 'text-red-500', text: 'text-red-500', dot: 'text-red-500' },
+  danger:  { header: 'bg-red-50 dark:bg-red-500/10', icon: 'text-red-500', text: 'text-red-500', dot: 'text-red-500' },
 }
 
 export default function ProfileLevelCards() {
@@ -57,7 +57,7 @@ export default function ProfileLevelCards() {
         const { Icon } = p
         const c = colorMap[p.color]
         return (
-          <div key={i} className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+          <div key={i} className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
             <div className={`${c.header} px-5 py-3 flex items-start gap-2.5`}>
               <Icon className={`w-5 h-5 ${c.icon} shrink-0 mt-0.5`} />
               <div>

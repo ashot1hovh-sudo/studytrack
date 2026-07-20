@@ -33,7 +33,7 @@ export default function RecommendationChecklist() {
 
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-study-lightgray flex items-center justify-between">
           <span className="text-sm font-semibold text-study-dark">Чек-лист: готовность рекомендации</span>
           <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${done === total ? 'bg-study-green/10 text-study-green' : 'bg-study-bg text-study-gray'}`}>

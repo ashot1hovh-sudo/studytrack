@@ -28,7 +28,7 @@ export function MediaModuleCard({
       whileHover="hover"
       initial="rest"
       animate="rest"
-      className="relative overflow-hidden rounded-2xl text-left w-full group border border-study-lightgray bg-white"
+      className="relative overflow-hidden rounded-2xl text-left w-full group border border-study-lightgray bg-study-card"
       style={{ minHeight: 160 }}
     >
       {/* Scrolling article background */}
@@ -56,7 +56,7 @@ export function MediaModuleCard({
 
           {/* Subtle dark tint so card text stays readable */}
           <motion.div
-            className="absolute inset-0 z-10 pointer-events-none bg-white/60"
+            className="absolute inset-0 z-10 pointer-events-none bg-study-card/60"
             variants={{ rest: { opacity: 0 }, hover: { opacity: 1 } }}
             transition={{ duration: 0.35 }}
           />

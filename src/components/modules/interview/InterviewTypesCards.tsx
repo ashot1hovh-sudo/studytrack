@@ -5,8 +5,8 @@ const types = [
     icon: Users,
     title: 'Приёмная комиссия',
     desc: 'Базовые вопросы о себе, мотивации и выборе университета',
-    color: 'bg-blue-50 text-blue-600',
-    circle: 'bg-blue-100',
+    color: 'bg-blue-50 dark:bg-blue-500/10 text-blue-600',
+    circle: 'bg-blue-100 dark:bg-blue-500/20',
   },
   {
     icon: GraduationCap,
@@ -34,7 +34,7 @@ const types = [
 export default function InterviewTypesCards() {
   return (
     <div className="py-3">
-      <div className="bg-white border border-study-lightgray rounded-xl overflow-hidden">
+      <div className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden">
         <div className="px-4 py-3 bg-study-bg border-b border-study-lightgray">
           <p className="text-sm font-semibold text-study-dark">Виды интервью</p>
           <p className="text-xs text-study-gray mt-0.5">Формат зависит от университета и программы</p>

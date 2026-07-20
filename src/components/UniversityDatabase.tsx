@@ -57,7 +57,7 @@ export default function UniversityDatabase({ onBack }: { onBack: () => void }) {
       <div className="flex items-center gap-3 mb-5">
         <button
           onClick={onBack}
-          className="w-9 h-9 flex items-center justify-center rounded-lg bg-white card-shadow hover:card-shadow-hover transition-all shrink-0"
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-study-card card-shadow hover:card-shadow-hover transition-all shrink-0"
         >
           <ArrowLeft className="w-4 h-4 text-study-dark" />
         </button>
@@ -75,7 +75,7 @@ export default function UniversityDatabase({ onBack }: { onBack: () => void }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Поиск по названию, городу..."
-            className="w-full pl-9 pr-8 py-2.5 text-sm bg-white rounded-lg card-shadow border-0 outline-none focus:ring-2 focus:ring-study-brown/20 text-study-dark placeholder-study-gray"
+            className="w-full pl-9 pr-8 py-2.5 text-sm bg-study-card rounded-lg card-shadow border-0 outline-none focus:ring-2 focus:ring-study-brown/20 text-study-dark placeholder-study-gray"
           />
           {search && (
             <button
@@ -98,7 +98,7 @@ export default function UniversityDatabase({ onBack }: { onBack: () => void }) {
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                 programFilter === f.value
                   ? 'bg-study-brown text-white'
-                  : 'bg-white card-shadow text-study-dark hover:card-shadow-hover'
+                  : 'bg-study-card card-shadow text-study-dark hover:card-shadow-hover'
               }`}
             >
               {f.label}
@@ -118,7 +118,7 @@ export default function UniversityDatabase({ onBack }: { onBack: () => void }) {
           return (
             <div
               key={u.id}
-              className="bg-white rounded-xl card-shadow overflow-hidden flex flex-col"
+              className="bg-study-card rounded-xl card-shadow overflow-hidden flex flex-col"
             >
               {/* Card header */}
               <div className="p-4 sm:p-5 flex-1">

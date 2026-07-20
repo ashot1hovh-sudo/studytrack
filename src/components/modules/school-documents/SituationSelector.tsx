@@ -53,7 +53,7 @@ const situations = [
 const colorMap = {
   success: { icon: 'text-study-green', label: 'text-study-green', active: 'border-study-green bg-study-green/10' },
   warning: { icon: 'text-study-orange', label: 'text-study-orange', active: 'border-study-orange bg-study-orange/10' },
-  info:    { icon: 'text-blue-500', label: 'text-blue-500', active: 'border-blue-400 bg-blue-50' },
+  info:    { icon: 'text-blue-500', label: 'text-blue-500', active: 'border-blue-400 bg-blue-50 dark:bg-blue-500/10' },
   neutral: { icon: 'text-study-gray', label: 'text-study-gray', active: 'border-study-gray bg-study-bg' },
 }
 
@@ -73,7 +73,7 @@ export default function SituationSelector() {
               key={s.id}
               onClick={() => setSelected(isActive ? null : s.id)}
               className={`flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-center transition-all ${
-                isActive ? c.active : 'border-study-lightgray bg-white'
+                isActive ? c.active : 'border-study-lightgray bg-study-card'
               }`}
             >
               <Icon className={`w-5 h-5 ${isActive ? c.icon : 'text-study-gray'}`} />
@@ -86,7 +86,7 @@ export default function SituationSelector() {
       </div>
 
       {active && (
-        <div className="bg-white border border-study-lightgray rounded-xl px-4 py-3 flex flex-col gap-2.5">
+        <div className="bg-study-card border border-study-lightgray rounded-xl px-4 py-3 flex flex-col gap-2.5">
           <p className="text-xs font-medium text-study-gray">Что подготовить:</p>
           <ul className="flex flex-col gap-1.5">
             {active.docs.map((doc, i) => {

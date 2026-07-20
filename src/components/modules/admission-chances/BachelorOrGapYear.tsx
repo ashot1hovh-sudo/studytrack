@@ -43,7 +43,7 @@ export default function BachelorOrGapYear() {
         const { Icon } = p
         const c = colorMap[p.color]
         return (
-          <div key={i} className="bg-white border border-study-lightgray rounded-xl overflow-hidden flex flex-col">
+          <div key={i} className="bg-study-card border border-study-lightgray rounded-xl overflow-hidden flex flex-col">
             <div className={`${c.header} px-5 py-3 flex items-center gap-2`}>
               <Icon className={`w-4 h-4 ${c.icon} shrink-0`} />
               <span className={`font-medium text-sm ${c.icon}`}>{p.title}</span>

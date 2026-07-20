@@ -231,7 +231,7 @@ export default function UniversityExplorer() {
       {/* Collapsed header */}
       <button
         onClick={() => setIsOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white card-shadow hover:card-shadow-hover transition-all text-left group"
+        className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-study-card card-shadow hover:card-shadow-hover transition-all text-left group"
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">🗺️</span>
@@ -247,7 +247,7 @@ export default function UniversityExplorer() {
       </button>
 
       {isOpen && (
-        <div className="mt-2 bg-white rounded-xl card-shadow p-4 sm:p-5 space-y-4">
+        <div className="mt-2 bg-study-card rounded-xl card-shadow p-4 sm:p-5 space-y-4">
 
           {/* Search */}
           <div className="relative">
@@ -487,15 +487,15 @@ export default function UniversityExplorer() {
       {/* Detail modal */}
       {selectedUni && (
         <div
-          className="fixed inset-0 bg-study-dark/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 bg-study-overlay/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setSelectedUni(null)}
         >
           <div
-            className="bg-white sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-10 sm:fade-in sm:zoom-in-95 duration-200"
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-10 sm:fade-in sm:zoom-in-95 duration-200"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal header */}
-            <div className="sticky top-0 bg-white sm:rounded-t-2xl rounded-t-2xl p-4 sm:p-5 border-b border-study-lightgray">
+            <div className="sticky top-0 bg-study-card sm:rounded-t-2xl rounded-t-2xl p-4 sm:p-5 border-b border-study-lightgray">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
                   {/* Logo — 44px in modal */}

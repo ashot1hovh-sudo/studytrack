@@ -187,9 +187,9 @@ const docs = [
 ]
 
 const tagColorMap = {
-  danger:  { bg: 'bg-red-50', text: 'text-red-500' },
+  danger:  { bg: 'bg-red-50 dark:bg-red-500/10', text: 'text-red-500' },
   warning: { bg: 'bg-study-orange/10', text: 'text-study-orange' },
-  info:    { bg: 'bg-blue-50', text: 'text-blue-500' },
+  info:    { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-500' },
 }
 
 export default function DocumentCards() {
@@ -206,7 +206,7 @@ export default function DocumentCards() {
             <div
               key={doc.id}
               onClick={() => setOpen(isOpen ? null : doc.id)}
-              className={`bg-white rounded-xl p-4 cursor-pointer transition-all ${
+              className={`bg-study-card rounded-xl p-4 cursor-pointer transition-all ${
                 isOpen ? 'border-2 border-study-brown shadow-sm' : 'border border-study-lightgray'
               }`}
             >

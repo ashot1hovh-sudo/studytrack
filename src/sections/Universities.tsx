@@ -103,7 +103,7 @@ function UniCard({ uni, query, activeFilter }: { uni: UniEntry; query: string; a
   const initials = getInitials(uni.name)
 
   return (
-    <div className="bg-white rounded-xl card-shadow p-4 sm:p-5 flex flex-col gap-3">
+    <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
           <div className="shrink-0 w-10 h-10 rounded-xl overflow-hidden bg-study-bg flex items-center justify-center">
@@ -226,7 +226,7 @@ export default function Universities({ compact = false }: { compact?: boolean })
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Поиск по университету или специальности..."
-                className="w-full rounded-xl border border-study-lightgray bg-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
+                className="w-full rounded-xl border border-study-lightgray bg-study-card pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-study-brown transition-colors"
               />
             </div>
 
@@ -238,7 +238,7 @@ export default function Universities({ compact = false }: { compact?: boolean })
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                     activeFilter === f
                       ? 'bg-study-brown text-white'
-                      : 'bg-white border border-study-lightgray text-study-gray hover:border-study-brown/50'
+                      : 'bg-study-card border border-study-lightgray text-study-gray hover:border-study-brown/50'
                   }`}
                 >
                   {f}
@@ -267,7 +267,7 @@ export default function Universities({ compact = false }: { compact?: boolean })
       {compact && (
         <button
           onClick={() => setActiveTab('universities')}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border border-study-lightgray bg-white px-4 py-3 text-sm font-semibold text-study-brown hover:border-study-brown/50 hover:bg-study-bg transition-colors"
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-study-lightgray bg-study-card px-4 py-3 text-sm font-semibold text-study-brown hover:border-study-brown/50 hover:bg-study-bg transition-colors"
         >
           Показать больше
           <ArrowRight className="w-4 h-4" />

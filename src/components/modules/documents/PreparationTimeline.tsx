@@ -45,7 +45,7 @@ const phases = [
 ]
 
 const colorMap = {
-  danger:  { circle: 'bg-red-50 border-red-200', icon: 'text-red-500' },
+  danger:  { circle: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30', icon: 'text-red-500' },
   warning: { circle: 'bg-study-orange/10 border-study-orange/20', icon: 'text-study-orange' },
   success: { circle: 'bg-study-green/10 border-study-green/20', icon: 'text-study-green' },
 }

@@ -39,7 +39,7 @@ const categories = [
 const config = {
   green:  { header: 'bg-study-green/10',  icon: 'text-study-green',  note: 'bg-study-green/10 text-study-green' },
   yellow: { header: 'bg-study-orange/10', icon: 'text-study-orange', note: 'bg-study-orange/10 text-study-orange' },
-  red:    { header: 'bg-red-50',          icon: 'text-red-500',      note: 'bg-red-50 text-red-600' },
+  red:    { header: 'bg-red-50 dark:bg-red-500/10',          icon: 'text-red-500',      note: 'bg-red-50 dark:bg-red-500/10 text-red-600' },
 }
 
 export default function ProgramCategorySignals() {
@@ -54,7 +54,7 @@ export default function ProgramCategorySignals() {
               <Icon className={`w-5 h-5 ${c.icon} shrink-0`} />
               <span className={`font-semibold text-sm ${c.icon}`}>{cat.label}</span>
             </div>
-            <div className="px-4 py-3 space-y-2.5 bg-white">
+            <div className="px-4 py-3 space-y-2.5 bg-study-card">
               {cat.programs.map((prog, pi) => (
                 <div key={pi} className="flex items-start gap-3 flex-wrap sm:flex-nowrap">
                   <span className="font-semibold text-sm text-study-dark shrink-0 min-w-[160px]">

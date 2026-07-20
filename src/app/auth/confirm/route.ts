@@ -17,39 +17,32 @@ import { getSupabaseConfig, hasSupabaseConfig } from '@/lib/supabase/config'
  * cookies on the redirect response, so `/` sees an authenticated user.
  */
 /**
- * Where to send the browser afterwards.
+ * Redirects with a *relative* Location, which RFC 7231 allows and every browser
+ * resolves against the address it actually requested.
  *
- * NEXT_PUBLIC_APP_URL is set by hand in a hosting panel, so it can easily be a
- * bare host with no scheme — which makes `new URL()` throw and turns every
- * confirmation into a 500. It is validated rather than trusted, and the request's
- * own origin is the fallback.
+ * Building an absolute URL here needs the app's public origin, and nothing in
+ * the container knows it: NEXT_PUBLIC_APP_URL is typed into a hosting panel by
+ * hand (this deploy's copy has no scheme, which threw and made every
+ * confirmation a 500), and `request.nextUrl.origin` behind Timeweb's proxy is
+ * the internal bind address — it sent real users to https://0.0.0.0:3000/ with
+ * a perfectly valid session cookie. Staying relative removes the question.
  */
-function resolveOrigin(request: NextRequest) {
-  const configured = process.env.NEXT_PUBLIC_APP_URL
-  if (configured) {
-    try {
-      return new URL(configured).origin
-    } catch {
-      // Fall through to the request origin.
-    }
-  }
-  return request.nextUrl.origin
+function redirectTo(path: string) {
+  return new NextResponse(null, { status: 307, headers: { Location: path } })
 }
 
 export async function GET(request: NextRequest) {
-  const origin = resolveOrigin(request)
   const tokenHash = request.nextUrl.searchParams.get('token_hash')
   const type = request.nextUrl.searchParams.get('type') as EmailOtpType | null
 
-  const failed = (reason: string) =>
-    NextResponse.redirect(new URL(`/?auth=${reason}`, origin))
+  const failed = (reason: string) => redirectTo(`/?auth=${reason}`)
 
   if (!hasSupabaseConfig()) return failed('setup')
   if (!tokenHash || !type) return failed('invalid')
 
   // The cookies verifyOtp writes have to land on *this* response, so the client
   // is bound to it directly rather than going through the shared server client.
-  const response = NextResponse.redirect(new URL('/', origin))
+  const response = redirectTo('/')
   const { url, key } = getSupabaseConfig()
 
   const supabase = createServerClient(url!, key!, {

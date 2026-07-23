@@ -97,12 +97,232 @@ const sharedLessons = [
 // RuTube private video embed (format: https://rutube.ru/play/embed/VIDEO_ID?p=ACCESS_TOKEN)
 const APPLICATION_VIDEO_URL = 'https://rutube.ru/play/embed/3b2a5c3e4e4cb1b45f90bae519cf9165?p=NIHx7IIPd-eSr53AWvMfAQ'
 
+// Hardcoded «Краткое резюме» per lesson, keyed by lessonKey. The reader shows a
+// «Краткое резюме» button whenever an entry exists; it fakes a loading→typing
+// pass (see startSummary) so it reads like a freshly generated summary.
+// Deliberately no entry for the two life-in-China lists or the shortest guides —
+// a summary of a shopping list adds nothing.
+const AI_SUMMARY: Record<string, string> = {
+  'b1': `Этот урок помогает объективно оценить ваши шансы на поступление в Китай — до того, как вы потратите время и деньги на документы.
+
+Ключевые факторы оценки:
+• Средний балл аттестата (GPA). Ниже 3.5 — вузы топ-уровня закрыты, но есть хорошие варианты в провинции.
+• Языковой уровень. HSK 4+ или IELTS 6.0+ открывают большинство программ. Без сертификата — только языковой год.
+• Специальность. Технические и медицинские направления требуют более сильного профиля, чем бизнес или гуманитарные.
+• Тип программы. Языковой год — самый доступный вход; бакалавриат — требует более полного пакета.
+
+Вывод: большинство студентов поступают при правильном выборе уровня вуза. Переоценка своих шансов — главная причина провала. Начните с реалистичного списка и расширяйте его по мере роста профиля.`,
+
+  'intro': `Вводная карта всего процесса поступления в Китай — чтобы понимать, что вас ждёт, ещё до первого шага.
+
+Что важно усвоить сразу:
+• Бакалавриат обычно 4 года (медицина — 6). Специалитета нет, обучение очное, посещаемость строгая.
+• Математика встречается почти на любой специальности, а к выпуску попросят сдать HSK — даже на англоязычной программе.
+• Учебный год стартует с августа по сентябрь, сессия бывает 2–3 раза в год и проходит через письменные работы и проекты.
+• Поступление — это не одна анкета, а цепочка из ~12 шагов: от оценки шансов до визы.
+
+Вывод: не начинайте с вопроса «какой вуз лучший». Сначала оцените свои шансы, выберите маршрут, язык и бюджет — остальное выстроится вокруг этого.`,
+
+  'b2': `Полный перечень документов для поступления и в каком порядке за них браться.
+
+Из чего состоит пакет:
+• Загранпаспорт — действителен на весь срок бакалавриата; заканчивается скоро — меняйте сразу.
+• Справка о несудимости и медобследование — делаются дольше и непредсказуемее всего, начинайте с них.
+• Аттестат и годовые оценки, фото по требованиям визы, банковская выписка.
+• Творческая часть: мотивационное письмо, рекомендательные письма, видео-визитка.
+
+Вывод: сначала запускайте самое медленное (несудимость, медосмотр) и следите за сроками действия справок — у многих из них всего 6 месяцев.`,
+
+  'b3': `Как собрать школьные документы — по-разному в зависимости от того, окончили вы школу или ещё учитесь.
+
+Главное:
+• Окончили 11 класс — нужен аттестат; ещё учитесь — справка о зачислении и годовые оценки за 10–11 класс.
+• Годовые выписки заказывайте заранее: учителя и школа могут делать их долго.
+• Если школа не даёт оценки в нужном виде — есть обходные варианты; для колледжа своя логика.
+• Всё оформляется по правилам: печати, подписи, иногда перевод.
+
+Вывод: узкое место здесь — школа, а не вы. Закажите выписки за месяц-полтора, чтобы не упереться в дедлайн.`,
+
+  'b4': `Справка о несудимости — самый непредсказуемый по срокам документ, поэтому им занимаются одним из первых.
+
+Что знать:
+• Заказать можно через Госуслуги или МВД; сроки разнятся — от пары дней до 30 дней официально.
+• Формат: обычно нужен апостиль — уточните заранее, он добавляет времени.
+• Срок действия — 6 месяцев, поэтому слишком рано брать тоже не стоит.
+• Живёте не в России — порядок отличается, смотрите отдельный раздел.
+
+Вывод: закладывайте запас (ориентир — за 2 месяца до дедлайна), но так, чтобы справка не истекла к подаче.`,
+
+  'b5': `Как пройти медобследование для китайского вуза и не переделывать его.
+
+Ключевое:
+• Нужна специальная форма — Foreigner Physical Examination Form. Российская 086/у не подойдёт.
+• Пройти можно в госполиклинике или частном центре; проверьте, что там знают именно эту форму.
+• Обойти нужно набор врачей + анализы (ВИЧ, сифилис, гепатит), приклеить фото, поставить печати.
+• Срок действия — 6 месяцев; справки не подделывайте — по приезде проверяют повторно.
+
+Вывод: проверяют серьёзные, прежде всего инфекционные, заболевания. Небольшие отклонения (зрение, сколиоз) поступлению обычно не мешают.`,
+
+  'b6': `Как написать мотивационное письмо, которое читается как живая история, а не список достижений.
+
+Как устроено сильное письмо:
+• Формула: прошлый опыт → интерес к специальности → план на будущее.
+• Сначала честно определите свой профиль, потом выберите один главный сюжет письма.
+• В уроке восемь готовых сюжетов — от «трудность привела меня к цели» до «сильный академический профиль».
+• Один искренний сюжет, раскрытый до конца, сильнее, чем попытка впихнуть всё сразу.
+
+Вывод: комиссия покупает не идеальность, а логику и мотивацию. Выберите свой сюжет и раскройте именно его.`,
+
+  'b7': `Как получить рекомендательные письма, которые действительно усиливают заявку.
+
+Главное:
+• Просите у профильных преподавателей — тех, кто может сказать о вас конкретно, а не «хороший ученик».
+• В письме важны примеры: результаты, работа на уроке, самоорганизация, интерес к предмету вне программы.
+• Два формата: преподаватель пишет сам или вы готовите черновик, а он проверяет и подписывает.
+• Оформление — по правилам вуза: подпись, контакты, иногда бланк учреждения.
+
+Вывод: конкретика и живые детали работают лучше общих похвал. Помогите преподавателю такими примерами.`,
+
+  'b8': `Как записать видео-визитку, которая покажет вас с лучшей стороны.
+
+Что учесть:
+• Язык — по требованиям программы; чаще английский или китайский.
+• Есть готовый сценарий: кто вы, почему эта специальность и этот вуз, чем интересны.
+• Технические требования: формат, монтаж, субтитры — их лучше добавить.
+• Сценарий можно набросать с помощью нейросети по готовому промпту из урока.
+
+Вывод: короткое, структурированное и уверенное видео важнее «продакшена». Держитесь сценария и говорите по делу.`,
+
+  'b9': `Как составить резюме для поступления — компактно и по делу.
+
+Что включить:
+• Личная информация, образование, академический потенциал.
+• Итоговый проект или исследовательская работа, проекты и внеклассная активность.
+• Профессиональный опыт, спорт, творчество, soft skills и языки.
+• Формат — чистый и читаемый, без воды.
+
+Вывод: резюме должно за минуту показать ваш профиль. Берите то, что реально усиливает заявку, и не растягивайте.`,
+
+  'b10': `Как собрать финансовые документы, подтверждающие, что учёбу есть чем оплатить.
+
+Главное:
+• Обычно нужны Financial Guarantee и Bank Statement.
+• Есть требования к сумме на счёте — как правило, хватает на год обучения и проживания.
+• Справка чаще на английском; уточняйте формат под конкретный вуз.
+• Формат и свежесть справки имеют значение — не берите её слишком заранее.
+
+Вывод: заранее уточните требуемую сумму и язык справки у вуза, чтобы не переделывать в последний момент.`,
+
+  'b11': `Как подготовиться к интервью с приёмной комиссией и не растеряться.
+
+Что знать:
+• Интервью бывают разные: с комиссией, с профессорами кафедры, смешанные и даже с ИИ.
+• Язык — по программе; чаще английский или китайский.
+• Спрашивают базовое (о себе), про школу и учёбу, про выбор специальности и академические темы.
+• Формат обычно короткий; важнее уверенность и внятная логика ответов, чем заученный текст.
+
+Вывод: заранее продумайте ответы на «почему эта специальность» и «почему этот вуз» — это спрашивают почти всегда.`,
+
+  'b12': `Пошаговый разбор анкеты на портале университета — по всем разделам сразу.
+
+Из чего состоит анкета:
+• Личные и паспортные данные, программа обучения, языковая подготовка.
+• Рекомендатель, образование, перерывы в учёбе и опыт работы.
+• Сведения о семье, экстренный контакт, финансовый спонсор и контактное лицо в Китае.
+• Отдельный раздел про судимость.
+
+Вывод: заполняйте внимательно и следите, чтобы данные совпадали с документами — расхождения тормозят заявку.`,
+
+  'apply-guide': `Текстовый конспект видео о том, как заполнить онлайн-заявку в китайский вуз.
+
+Пошагово:
+• Личные данные и Study Plan (план обучения).
+• Education and Employment — образование и опыт.
+• Дополнительная информация, адрес и контакты.
+• Загрузка документов, отправка и частые ошибки, которых стоит избегать.
+
+Вывод: заявка несложная, если идти по шагам и не торопиться. Сверяйтесь с конспектом, чтобы не пропустить обязательные поля.`,
+
+  'scholarships': `Какие стипендии бывают на бакалавриат в Китае и как к ним относиться.
+
+Основные виды:
+• CSC — стипендия правительства КНР: Type A (через направляющий орган) и Type B (через вуз).
+• Провинциальные и городские — Шанхай, Пекин, Чжэцзян, Гуандун и другие.
+• Стипендии для изучающих китайский язык и собственные университетские программы.
+• Отдельно — финансирование языкового года.
+
+Вывод: стипендия — это конкурс, а не автоматическая скидка. Подавайтесь на несколько вариантов и не рассчитывайте на грант как на данность.`,
+
+  'how-to-choose': `Как выбрать не просто специальность, а конкретную программу — и не ошибиться.
+
+О чём подумать:
+• Китай силён в экономике, торговле, инженерии, IT и языке — там больше возможностей для практики.
+• Локация имеет значение: город стоит подбирать под специальность.
+• К некоторым направлениям (международные отношения, творческие) отнеситесь осторожно.
+• Одна и та же специальность в разных вузах — это разные программы; смотрите учебный план, а не название.
+
+Вывод: выбирайте по содержанию программы и сильным сторонам Китая. И проверьте, умеет ли вуз работать с иностранцами.`,
+
+  'cities': `Обзор десяти городов Китая — какой под какой запрос подходит.
+
+Коротко по профилям:
+• Пекин — академический престиж; Шанхай — международная карьера.
+• Ханчжоу — IT, бизнес и дизайн; Гуанчжоу — торговля и логистика.
+• Нанкин и Сиань — качество и академическая атмосфера спокойнее и дешевле.
+• Чэнду, Тяньцзинь, Циндао, Сямэнь — баланс цены, климата и темпа жизни.
+
+Вывод: выбирайте город под специальность и бюджет, а не только по «громкости» названия.`,
+
+  'ielts': `Что нужно знать про IELTS для поступления в Китай.
+
+Главное:
+• Нужен модуль Academic, а не General Training — это разные экзамены.
+• Ориентиры для китайских вузов: 6.0 — минимум, 6.5 — типично, 7.0+ — топовые программы.
+• Часто смотрят не только общий балл, но и минимум по каждой секции.
+• Действует 2 года; в СНГ компьютерный формат в крупных центрах проводят почти ежедневно.
+
+Вывод: сверяйте требования конкретной программы и записывайтесь заранее — балл нужен до дедлайна, а не в день подачи.`,
+
+  'toefl': `Что нужно знать про TOEFL для поступления в Китай.
+
+Главное:
+• TOEFL iBT в тест-центре принимают везде; Home Edition — не все вузы.
+• Ориентиры: 70–80 — минимум, 85–95 — типично, 100+ — топовые программы.
+• Общий балл из 120, часто есть минимум по секциям; действует 2 года.
+• Расписание скользящее, дат много, но удобные места в центрах разбирают заранее.
+
+Вывод: если не уверены, что вуз примет Home Edition — сдавайте в центре. Так вы не потеряете время на пересдачу.`,
+
+  'csca': `Что такое CSCA — новый единый вступительный экзамен для иностранных абитуриентов.
+
+Ключевое:
+• Это предметный экзамен, а не языковой: он не заменяет IELTS/TOEFL.
+• Математика обязательна для всех; Professional Chinese, физика и химия — по программе. По 100 баллов за предмет.
+• Проводится 5 раз в год; уже требуется для набора 2026 (например, Университет Фудань).
+• Сдаётся в основном онлайн, регистрация и даты — на csca.cn.
+
+Вывод: если ваша программа требует CSCA — планируйте заранее: сессий всего пять в году, и пропущенная может оказаться после дедлайна.`,
+}
+
 const languageYearLessons = sharedLessons.filter((l) => l.lessonId !== 'b7' && l.lessonId !== 'b11')
 
-const moduleBoxesByModuleId: Record<string, typeof sharedLessons> = {
+// Standalone paid module: life in China. Two lessons, like the tutorial tracks.
+const lifeChinaModule = {
+  id: 'life-china',
+  title: 'Жизнь в Китае',
+  description: 'Приложения и первые покупки в общежитие',
+}
+
+const lifeChinaLessons = [
+  { id: 1, lessonId: 'life-apps', title: 'Полезные приложения для жизни в Китае', description: 'Что скачать до вылета' },
+  { id: 2, lessonId: 'life-dorm', title: 'Что купить в общежитие в первые дни', description: 'Базовый список с ссылками' },
+]
+
+const moduleBoxesByModuleId: Record<string, typeof sharedLessons | typeof lifeChinaLessons> = {
   'language-year': languageYearLessons,
   'prevuz': sharedLessons,
   'bachelor': sharedLessons,
+  'life-china': lifeChinaLessons,
 }
 
 /**
@@ -161,6 +381,7 @@ const SOCIALS = [
     handle: '@kaykitay',
     href: 'https://t.me/kaykitay',
     icon: Send,
+    mark: null,
     color: '#229ED9',
   },
   {
@@ -168,6 +389,7 @@ const SOCIALS = [
     handle: '@kaykitay',
     href: 'https://www.instagram.com/kaykitay/',
     icon: Instagram,
+    mark: null,
     color: '#C13584',
   },
   {
@@ -175,13 +397,24 @@ const SOCIALS = [
     handle: '@kaykitay',
     href: 'https://www.youtube.com/@kaykitay',
     icon: Youtube,
+    mark: null,
     color: '#FF0000',
+  },
+  {
+    // lucide has no VK glyph, so this one is a lettermark.
+    label: 'VK',
+    handle: '@ianadved',
+    href: 'https://vk.ru/ianadved',
+    icon: null,
+    mark: 'VK',
+    color: '#0077FF',
   },
   {
     label: 'Ашот — личный Telegram',
     handle: '@ash_china',
     href: 'https://t.me/ash_china',
     icon: Send,
+    mark: null,
     color: '#6B4F4B',
   },
   {
@@ -189,6 +422,7 @@ const SOCIALS = [
     handle: '@ianamedvedeva',
     href: 'https://t.me/ianamedvedeva',
     icon: Send,
+    mark: null,
     color: '#6B4F4B',
   },
 ] as const
@@ -518,6 +752,32 @@ export default function LearningStart() {
         ))}
       </div>
 
+      {/* Wide paid module: life in China. Opens the two-lesson list, like the
+          tutorial tracks (setActiveModule), rather than a single lesson. */}
+      <button
+        onClick={() => { window.history.pushState({ tab: 'learning-start', module: lifeChinaModule.id }, '', '#learning-start'); setActiveModule(lifeChinaModule) }}
+        className="relative w-full text-left bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all overflow-hidden"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
+              <Home className="w-6 h-6 text-study-brown" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-study-dark">Жизнь в Китае: приложения и первые покупки</h3>
+              <p className="text-sm text-study-gray mt-1">
+                Платный модуль · {moduleBoxesByModuleId['life-china'].length} урока — приложения и покупки в общежитие
+              </p>
+            </div>
+          </div>
+          {!isSubscribed && (
+            <div className="w-10 h-10 rounded-full bg-study-dark/10 flex items-center justify-center shrink-0">
+              <Lock className="w-5 h-5 text-study-dark" />
+            </div>
+          )}
+        </div>
+      </button>
+
       {/* Free info cards */}
       <div className="grid sm:grid-cols-2 gap-4">
         <button
@@ -606,6 +866,34 @@ export default function LearningStart() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-2.5">
+          {/* Т—Ж article: spans the full row, because it is the strongest proof
+              on this page that the people behind the product know the subject. */}
+          <a
+            href="https://t-j.ru/enter-chinese-uni/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sm:col-span-2 flex items-center gap-3.5 p-3.5 rounded-xl border border-study-lightgray hover:bg-study-bg hover:card-shadow transition-all"
+          >
+            <span
+              className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 font-extrabold text-[15px] tracking-tight"
+              style={{ backgroundColor: '#FFDD2D', color: '#0A0A0A' }}
+            >
+              Т—Ж
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-bold uppercase tracking-wide text-study-green">
+                Статья в Т—Ж
+              </span>
+              <span className="block text-sm font-semibold text-study-dark mt-0.5">
+                Как поступить в китайский университет: пошаговая инструкция
+              </span>
+              <span className="block text-xs text-study-gray mt-0.5">
+                Яна Медведева — для Тинькофф Журнала
+              </span>
+            </span>
+            <ChevronRight className="w-5 h-5 text-study-gray shrink-0" />
+          </a>
+
           {SOCIALS.map((social) => (
             <a
               key={social.href}
@@ -615,10 +903,10 @@ export default function LearningStart() {
               className="flex items-center gap-3 p-3 rounded-xl border border-study-lightgray hover:bg-study-bg hover:card-shadow transition-all"
             >
               <span
-                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white"
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white font-bold text-xs"
                 style={{ backgroundColor: social.color }}
               >
-                <social.icon className="w-4 h-4" />
+                {social.icon ? <social.icon className="w-4 h-4" /> : social.mark}
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-study-dark truncate">{social.label}</span>
@@ -627,6 +915,15 @@ export default function LearningStart() {
             </a>
           ))}
         </div>
+
+        {/*  */}
+        <p className="text-[11px] leading-relaxed text-study-gray mt-3">
+          Instagram принадлежит компании Meta Platforms Inc., признанной экстремистской
+          организацией, её деятельность запрещена на территории Российской Федерации.
+        </p>
+        <p className="text-[11px] leading-relaxed text-study-gray mt-1">
+        Telegram и YouTube признаны нежелательными организациями на территории РФ.
+        </p>
       </div>
 
       {/* Exams picker — free module */}
@@ -752,12 +1049,28 @@ type MarkdownBlock =
   | { type: 'pdf'; src: string }
   | { type: 'rule' }
 
+/**
+ * For text rendered as a plain string — headings, which are styled by their
+ * level and take no inline markup.
+ */
 function cleanMarkdownText(value: string) {
   return value
     .replace(/\\\./g, '.')
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
     .trim()
+}
+
+/**
+ * For table cells, which ARE passed through renderInline.
+ *
+ * Only unescapes; bold and links survive to be rendered as markup. Running the
+ * full clean here silently flattened both — the by-country booking links in the
+ * IELTS guide were printed as plain text with the URL discarded, and no amount
+ * of fixing the renderer helped, because the markup was already gone by then.
+ */
+function cleanTableCell(value: string) {
+  return value.replace(/\\\./g, '.').trim()
 }
 
 function parseMarkdown(markdown: string): MarkdownBlock[] {
@@ -823,7 +1136,7 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
       const cells = line
         .slice(1, -1)
         .split('|')
-        .map((cell) => cleanMarkdownText(cell))
+        .map((cell) => cleanTableCell(cell))
       if (!cells.every((cell) => /^-+$/.test(cell))) table.push(cells)
       continue
     }
@@ -1056,18 +1369,6 @@ function ProtectedLesson({
   const [activeId, setActiveId] = useState<string | null>(null)
   const tocListRef = useRef<HTMLDivElement | null>(null)
 
-  // AI Summary (b1 pilot)
-  const AI_SUMMARY: Record<string, string> = {
-    'b1': `Этот урок помогает объективно оценить ваши шансы на поступление в Китай — до того, как вы потратите время и деньги на документы.
-
-Ключевые факторы оценки:
-• Средний балл аттестата (GPA). Ниже 3.5 — вузы топ-уровня закрыты, но есть хорошие варианты в провинции.
-• Языковой уровень. HSK 4+ или IELTS 6.0+ открывают большинство программ. Без сертификата — только языковой год.
-• Специальность. Технические и медицинские направления требуют более сильного профиля, чем бизнес или гуманитарные.
-• Тип программы. Языковой год — самый доступный вход; бакалавриат — требует более полного пакета.
-
-Вывод: большинство студентов поступают при правильном выборе уровня вуза. Переоценка своих шансов — главная причина провала. Начните с реалистичного списка, и расширяйте его по мере роста профиля.`,
-  }
   const summaryText = AI_SUMMARY[lessonKey] ?? null
   const [summaryPhase, setSummaryPhase] = useState<'idle' | 'loading' | 'typing'>('idle')
   const [displayedSummary, setDisplayedSummary] = useState('')
@@ -1095,9 +1396,27 @@ function ProtectedLesson({
     .filter((block): block is { type: 'heading'; level: number; text: string; id: string } => Boolean(block))
 
   const scrollToHeading = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setActiveId(id)
-    setIsTocOpen(false) // close the mobile panel after picking; desktop list stays (lg:block)
+    // Close the mobile panel FIRST. It sits above the article in the flow, so
+    // collapsing it shifts every heading up by the panel's height — do that
+    // before measuring, or the scroll targets a position that no longer exists
+    // and the heading ends up above the viewport. Desktop list stays (lg:block).
+    setIsTocOpen(false)
+
+    // Two frames: one for React to commit the collapse, one for the browser to
+    // relayout, so getBoundingClientRect reads the settled position.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const el = document.getElementById(id)
+        if (!el) return
+        // Clear whatever overlays the top: mobile has the fixed app header plus
+        // the sticky TOC bar (~112px); desktop has the TOC in a side column and
+        // nothing above the content, so only breathing room.
+        const offset = window.matchMedia('(min-width: 1024px)').matches ? 24 : 120
+        const top = el.getBoundingClientRect().top + window.scrollY - offset
+        window.scrollTo({ top, behavior: 'smooth' })
+      })
+    )
   }
 
   const headingIds = headings.map((heading) => heading.id).join('|')
@@ -1175,10 +1494,16 @@ function ProtectedLesson({
     if (currentSectionNumber === 3 && currentStepNumber == null && block.type === 'list' && stats.lists === 2 && !insertedHowToChoose.has('ProgramCategorySignals')) {
       insertedHowToChoose.add('ProgramCategorySignals'); return 'ProgramCategorySignals'
     }
-    if (currentSectionNumber === 8 && block.type === 'list' && stats.lists === 2 && !insertedHowToChoose.has('UniversitySignsComparison')) {
+    // Was keyed on the second list in section 8 — those lists were the same
+    // content as the cards, printed twice, and have been removed. Anchored
+    // to the opening paragraph instead.
+    if (currentSectionNumber === 8 && block.type === 'paragraph' && stats.paragraphs === 1 && !insertedHowToChoose.has('UniversitySignsComparison')) {
       insertedHowToChoose.add('UniversitySignsComparison'); return 'UniversitySignsComparison'
     }
-    if (currentSectionNumber === 10 && currentStepNumber === 4 && block.type === 'table' && stats.tables === 1 && !insertedHowToChoose.has('ProgramComparisonTable')) {
+    // Was keyed on the static comparison table under Шаг 4 — that table was a
+    // dead duplicate of this interactive component and has been removed. Anchored
+    // to the intro paragraph that replaced it.
+    if (currentSectionNumber === 10 && currentStepNumber === 4 && block.type === 'paragraph' && stats.paragraphs === 1 && !insertedHowToChoose.has('ProgramComparisonTable')) {
       insertedHowToChoose.add('ProgramComparisonTable'); return 'ProgramComparisonTable'
     }
     return null
@@ -1205,7 +1530,11 @@ function ProtectedLesson({
     if (b1SectionNumber === 1 && b1SubsectionCode === '1.3' && block.type === 'list' && stats.lists === 1 && !insertedB1.has('AdmissionBenchmarks')) {
       insertedB1.add('AdmissionBenchmarks'); return 'AdmissionBenchmarks'
     }
-    if (b1SectionNumber === 2 && b1SubsectionCode === '2.1' && block.type === 'paragraph' && stats.paragraphs === 1 && !insertedB1.has('StudentProfileTable')) {
+    // Anchored on the paragraph text, not the b1 section numbering: this lesson's
+    // headings have no numbers, so b1SectionNumber/Code never get set and the old
+    // condition never fired — the interactive table never rendered, only the
+    // static markdown one (now removed).
+    if (block.type === 'paragraph' && block.text.startsWith('Перед выбором университетов') && !insertedB1.has('StudentProfileTable')) {
       insertedB1.add('StudentProfileTable'); return 'StudentProfileTable'
     }
     if (b1SectionNumber === 2 && b1SubsectionCode === '2.2' && block.type === 'paragraph' && stats.paragraphs === 3 && !insertedB1.has('ProfileLevelCards')) {
@@ -1537,7 +1866,8 @@ function ProtectedLesson({
     if (insertedInfographics.has(blockNumber)) return false
 
     const shouldInsert =
-      (blockNumber === 2 && block.type === 'table' && stats.tables === 1) ||
+      // Block 2's «Россия и Китай» infographic was removed: it repeated the
+      // table right above it almost verbatim, and the table reads more clearly.
       (blockNumber === 3 && block.type === 'table' && stats.tables === 1) ||
       (blockNumber === 4 && block.type === 'list' && stats.lists === 1) ||
       (blockNumber === 5 && block.type === 'list' && stats.lists === 1) ||
@@ -1556,7 +1886,11 @@ function ProtectedLesson({
   return (
     <div className={headings.length > 0 ? 'lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start' : ''}>
       {headings.length > 0 && (
-        <aside className="sticky top-3 z-20 mb-4 self-start lg:top-5 lg:mb-0">
+        // Sticky so the TOC stays reachable deep in a long lesson. On mobile it
+        // pins below the fixed app header (~56px, z-40): top-[68px] clears it,
+        // z-30 keeps it under the header but above the article. Desktop has no
+        // fixed header, so it pins near the top.
+        <aside className="sticky top-[68px] z-30 mb-4 self-start lg:top-5 lg:mb-0">
           <nav className="overflow-hidden rounded-xl border border-study-lightgray bg-study-bg/85 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-study-bg/70">
             <button
               type="button"
@@ -1804,8 +2138,12 @@ function ProtectedLesson({
                     b11SubsectionIndex += 1
                   }
                 }
+                // scroll-margin so a TOC jump lands the heading below the
+                // overlays, not behind them. Mobile: fixed header (~56px) + the
+                // sticky TOC bar pinned under it. Desktop: the TOC is in the side
+                // column and covers nothing, so just breathing room.
                 return (
-                  <h2 key={index} id={`lesson-heading-${index}`} className={`${size} scroll-mt-6 font-bold text-study-dark`}>
+                  <h2 key={index} id={`lesson-heading-${index}`} className={`${size} scroll-mt-[128px] lg:scroll-mt-8 font-bold text-study-dark`}>
                     {block.text}
                   </h2>
                 )
@@ -1904,6 +2242,23 @@ function ProtectedLesson({
               }
 
               if (block.type === 'paragraph') {
+                // A paragraph opening with «Важно:» / «Примечание:» etc. becomes
+                // a bordered callout so it stops blending into body text. Still a
+                // paragraph block — only the rendering changes — so the
+                // paragraph-counting that positions infographics is untouched.
+                const callout = block.text.match(/^\*{0,2}(Важно|Внимание|Примечание|Совет|Помните|Обратите внимание)\*{0,2}:\s*/)
+                if (callout) {
+                  const body = block.text.slice(callout[0].length)
+                  return renderWithInfographic(
+                    <div className="my-1 flex gap-3 rounded-xl border border-study-orange/30 bg-study-orange/10 p-3.5 sm:p-4">
+                      <AlertTriangle className="w-5 h-5 text-study-orange shrink-0 mt-0.5" />
+                      <p className="text-sm sm:text-base leading-7 text-study-dark">
+                        <span className="font-bold text-study-orange">{callout[1]}. </span>
+                        {renderInline(body)}
+                      </p>
+                    </div>
+                  )
+                }
                 return renderWithInfographic(<p className="text-sm sm:text-base leading-7 text-study-dark">{renderInline(block.text)}</p>)
               }
 

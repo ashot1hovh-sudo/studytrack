@@ -18,6 +18,8 @@ const LESSON_FILES: Record<string, { file: string; title: string }> = {
   'b12': { file: 'module-b13_new.md', title: 'Как заполнить анкету на сайте вуза' },
   'apply-guide': { file: 'module-apply-guide.md', title: 'Как заполнить заявку в китайский университет' },
   'scholarships': { file: 'module-scholarships.md', title: 'Введение в стипендии' },
+  'life-apps': { file: 'module-life-apps.md', title: 'Полезные приложения для жизни в Китае' },
+  'life-dorm': { file: 'module-life-dorm.md', title: 'Что купить в общежитие в первые дни в Китае' },
 }
 
 export async function GET(

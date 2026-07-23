@@ -27,6 +27,41 @@ const OUTCOME_CFG: Record<OutcomeKey, {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
+/** Admissions, then pre-admissions, then rejections. */
+function outcomeRank(c: StudentCase) {
+  const k = outcomeKey(c.result)
+  return k === 'admitted' ? 0 : k === 'pre' ? 1 : 2
+}
+
+/** How many of the reported fields a case actually carries — used to rank rows. */
+function completeness(c: StudentCase) {
+  return [
+    c.gpa, c.ielts, c.toefl, c.duolingo, c.sat,
+    c.hskLevel, c.csca_math, c.csca_physics, c.csca_chinese,
+    c.direction || null, c.activities || null,
+  ].filter(v => v != null && v !== '').length
+}
+
+/**
+ * The bits that no longer have their own column, as one readable line.
+ *
+ * Направление, SAT and HSK were dropped from the table — each was filled in
+ * under 20% of cases, so they were mostly dashes — but the handful of cases
+ * that do report them are exactly the interesting ones. They live here instead
+ * of being lost.
+ */
+function caseDetail(c: StudentCase) {
+  const bits: string[] = []
+  if (c.direction) bits.push(c.direction)
+  if (c.sat != null) bits.push(`SAT ${c.sat}`)
+  if (c.hskLevel != null) bits.push(`HSK ${c.hskLevel}${c.hskScore != null ? ` (${c.hskScore})` : ''}`)
+  if (c.csca_chinese != null) bits.push(`CSCA Chinese ${c.csca_chinese}`)
+  if (c.csca_chemistry != null) bits.push(`CSCA Chemistry ${c.csca_chemistry}`)
+  if (c.activities) bits.push(c.activities)
+  if (c.note) bits.push(c.note)
+  return bits.join(' · ')
+}
+
 export default function ChancesEvaluator() {
   const [cases, setCases]       = useState<StudentCase[]>([])
   const [loading, setLoading]   = useState(true)
@@ -51,13 +86,21 @@ export default function ChancesEvaluator() {
     const iMin = ieltsMin ? parseFloat(ieltsMin) : null
     const cMin = cscaMin  ? parseFloat(cscaMin)  : null
 
-    return cases.filter(c => {
-      if (q.length >= 2 && !c.university.toLowerCase().includes(q) && !(c.direction ?? '').toLowerCase().includes(q)) return false
-      if (gMin != null && (c.gpa == null || c.gpa < gMin)) return false
-      if (iMin != null && (c.ielts == null || c.ielts < iMin)) return false
-      if (cMin != null && (c.csca_math == null || c.csca_math < cMin)) return false
-      return true
-    })
+    return cases
+      .filter(c => {
+        if (q.length >= 2 && !c.university.toLowerCase().includes(q) && !(c.direction ?? '').toLowerCase().includes(q)) return false
+        if (gMin != null && (c.gpa == null || c.gpa < gMin)) return false
+        if (iMin != null && (c.ielts == null || c.ielts < iMin)) return false
+        if (cMin != null && (c.csca_math == null || c.csca_math < cMin)) return false
+        return true
+      })
+      // Admissions first, rejections last; best-documented first within each
+      // group. Two things drove this: in source order the table opened on a
+      // case with zero reported fields and read as broken, and sorting purely
+      // by completeness floated rejections to the top — an accurate but
+      // needlessly discouraging first screen. Rejections stay in the table:
+      // a base that only shows wins is not a useful benchmark.
+      .sort((a, b) => outcomeRank(a) - outcomeRank(b) || completeness(b) - completeness(a))
   }, [cases, search, gpaMin, ieltsMin, cscaMin])
 
   const hasFilters     = search.length >= 2 || !!gpaMin || !!ieltsMin || !!cscaMin
@@ -170,9 +213,6 @@ export default function ChancesEvaluator() {
                 <th className="sticky left-0 z-10 bg-study-bg px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap min-w-[160px]">
                   Университет
                 </th>
-                <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap min-w-[120px]">
-                  Направление
-                </th>
                 <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
                   Итог
                 </th>
@@ -187,12 +227,6 @@ export default function ChancesEvaluator() {
                 </th>
                 <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
                   CSCA Phys
-                </th>
-                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
-                  HSK
-                </th>
-                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap">
-                  SAT
                 </th>
                 <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-study-gray uppercase tracking-wide whitespace-nowrap min-w-[120px]">
                   Грант
@@ -215,7 +249,7 @@ export default function ChancesEvaluator() {
                   ? (Math.round(c.gpa * 100) / 100).toFixed(2)
                   : null
 
-                return (
+                const row = (
                   <tr
                     key={i}
                     className="group border-b border-study-lightgray last:border-0"
@@ -223,11 +257,6 @@ export default function ChancesEvaluator() {
                     {/* University — sticky */}
                     <td className="sticky left-0 z-10 bg-study-card group-hover:bg-study-bg/60 px-3 py-2.5 font-semibold text-study-dark transition-colors">
                       <div className="max-w-[180px] leading-snug">{c.university}</div>
-                    </td>
-
-                    {/* Direction */}
-                    <td className="px-3 py-2.5 text-study-gray group-hover:bg-study-bg/60 transition-colors">
-                      <div className="max-w-[150px] leading-snug">{c.direction || '—'}</div>
                     </td>
 
                     {/* Outcome badge */}
@@ -261,18 +290,6 @@ export default function ChancesEvaluator() {
                       {c.csca_physics ?? <span className="text-study-gray/40">—</span>}
                     </td>
 
-                    {/* HSK */}
-                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
-                      {c.hskLevel != null
-                        ? `L${c.hskLevel}${c.hskScore != null ? ` (${c.hskScore})` : ''}`
-                        : <span className="text-study-gray/40">—</span>}
-                    </td>
-
-                    {/* SAT */}
-                    <td className="px-3 py-2.5 text-center text-study-dark group-hover:bg-study-bg/60 transition-colors whitespace-nowrap">
-                      {c.sat ?? <span className="text-study-gray/40">—</span>}
-                    </td>
-
                     {/* Grant */}
                     <td className="px-3 py-2.5 text-study-gray group-hover:bg-study-bg/60 transition-colors">
                       <div className="max-w-[160px] leading-snug">
@@ -281,18 +298,49 @@ export default function ChancesEvaluator() {
                     </td>
                   </tr>
                 )
+
+                // Everything the columns don't carry, as a sentence. Rendered
+                // as its own row so it can use the full width instead of being
+                // squeezed into a cell — and skipped entirely when empty, so it
+                // never adds a blank line.
+                const detail = caseDetail(c)
+
+                return detail
+                  ? [
+                      row,
+                      <tr key={`${i}-detail`} className="border-b border-study-lightgray last:border-0">
+                        <td colSpan={7} className="px-3 pb-2.5 -mt-1">
+                          <p className="text-[11px] leading-snug text-study-gray">{detail}</p>
+                        </td>
+                      </tr>,
+                    ]
+                  : row
               })}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* Footer */}
+      {/* Footer — provenance. The previous wording ("реальные кейсы") read as
+          if these were our own students, which they are not. */}
       <div className="bg-study-bg rounded-xl p-3.5 flex items-start gap-2.5">
         <span className="text-base shrink-0">ℹ️</span>
-        <p className="text-[11px] text-study-gray leading-relaxed">
-          База содержит реальные кейсы поступления 2025–2026 года. Данные обновляются по мере поступления новых кейсов.
-        </p>
+        <div className="text-[11px] text-study-gray leading-relaxed space-y-1.5">
+          <p>
+            <span className="font-semibold text-study-dark">Это не кейсы наших студентов.</span>{' '}
+            Мы собрали их из открытых источников: форумы, telegram-чаты абитуриентов, публичные
+            отзывы и объявления вузов о результатах приёма за 2025–2026 годы.
+          </p>
+          <p>
+            Данные приводятся <span className="font-semibold text-study-dark">только для ориентира</span> —
+            мы не можем проверить каждую цифру и не гарантируем их точность. Требования вузов
+            меняются каждый год, поэтому решение принимайте по официальной странице приёма.
+          </p>
+          <p>
+            Результаты наших студентов мы не публикуем — ни здесь, ни где-либо ещё — без
+            письменного согласия самого студента и его родителей.
+          </p>
+        </div>
       </div>
     </div>
   )

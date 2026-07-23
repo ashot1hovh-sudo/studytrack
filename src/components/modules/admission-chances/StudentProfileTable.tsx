@@ -1,9 +1,9 @@
 'use client'
-import { useState } from 'react'
-import { CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CheckCircle, AlertTriangle, AlertCircle, Download, Eraser } from 'lucide-react'
 
 const fields = [
-  { key: 'gpa',             label: 'Средний балл',            placeholder: 'напр. 4.3 / 5' },
+  { key: 'gpa',             label: 'Средний балл (10 + 11 класс)', placeholder: 'напр. 4.3 / 5' },
   { key: 'grade10',         label: 'Оценки за 10 класс',      placeholder: 'напр. хорошие / отличные' },
   { key: 'grade11',         label: 'Оценки за 11 класс',      placeholder: 'напр. хорошие / отличные' },
   { key: 'profile_subjects',label: 'Профильные предметы',     placeholder: 'напр. математика 5, физика 4' },
@@ -21,6 +21,14 @@ const fields = [
 
 type FieldKey = typeof fields[number]['key']
 type Data = Partial<Record<FieldKey, string>>
+
+// Bumped if the field set changes, so an old saved shape can't half-populate.
+const STORAGE_KEY = 'st_student_profile_v1'
+
+/** Wrap a value for CSV: quote, and double any inner quotes. */
+function csvCell(value: string) {
+  return `"${value.replace(/"/g, '""')}"`
+}
 
 type ProfileResult = {
   level: string
@@ -52,11 +60,85 @@ const colorMap = {
 
 export default function StudentProfileTable() {
   const [data, setData] = useState<Data>({})
+  const [confirmClear, setConfirmClear] = useState(false)
+  // Gates the save effect so the initial empty state can't overwrite saved work
+  // before the load has run.
+  const [loaded, setLoaded] = useState(false)
+
+  // Filled in over time as the student gathers results, so it has to survive
+  // leaving the lesson. Per-device localStorage — the student's own notes.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) setData(JSON.parse(raw) as Data)
+    } catch {
+      // Corrupt or blocked storage: start empty.
+    }
+    setLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (!loaded) return
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // Private mode / quota: still works this session, just isn't saved.
+    }
+  }, [data, loaded])
+
   const update = (key: FieldKey, val: string) => setData((prev) => ({ ...prev, [key]: val }))
   const profile = getProfileLevel(data)
 
+  const clearAll = () => {
+    setData({})
+    setConfirmClear(false)
+  }
+
+  const download = () => {
+    const header = ['Критерий', 'Ваш результат'].map(csvCell).join(',')
+    const rows = fields.map((f) => [f.label, data[f.key] ?? ''].map(csvCell).join(','))
+    // ﻿ (BOM) so Excel opens the Cyrillic as UTF-8 rather than mojibake.
+    const csv = '﻿' + [header, ...rows].join('\r\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'moy-profil.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="py-3">
+      <p className="text-sm text-study-dark mb-3">
+        Заполните таблицу по себе — так вы увидите свой профиль целиком и вернётесь к нему
+        позже. Всё сохраняется на этом устройстве, таблицу можно скачать.
+      </p>
+
+      <div className="flex items-center justify-end gap-2 mb-2">
+        <button
+          onClick={download}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-study-brown px-2.5 py-1.5 rounded-lg hover:bg-study-brown/10 transition-colors"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Скачать таблицу
+        </button>
+        {confirmClear ? (
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <span className="text-study-gray">Очистить всё?</span>
+            <button onClick={clearAll} className="font-semibold text-study-red hover:underline">Да</button>
+            <button onClick={() => setConfirmClear(false)} className="text-study-gray hover:underline">Нет</button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setConfirmClear(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-study-gray px-2.5 py-1.5 rounded-lg hover:bg-study-bg transition-colors"
+          >
+            <Eraser className="w-3.5 h-3.5" />
+            Очистить
+          </button>
+        )}
+      </div>
+
       {profile && (() => {
         const c = colorMap[profile.color]
         const { Icon } = profile
@@ -103,9 +185,18 @@ export default function StudentProfileTable() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-study-gray mt-2.5">
-        Заполните средний балл — и мы покажем примерный уровень вашего профиля
-      </p>
+
+      <div className="text-xs text-study-gray mt-2.5 space-y-1.5">
+        <p>Заполните средний балл — и мы покажем примерный уровень вашего профиля.</p>
+        <p>
+          <span className="font-semibold text-study-dark">Средний балл</span> считается за два
+          года — 10 и 11 класс вместе, а не только за выпускной.
+        </p>
+        <p>
+          Некоторые вузы смотрят не только на итоговый балл, но и на оценки за 10 класс и их
+          динамику: стабильно высокие или растущие оценки работают в плюс.
+        </p>
+      </div>
     </div>
   )
 }

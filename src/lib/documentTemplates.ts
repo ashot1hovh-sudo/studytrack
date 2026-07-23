@@ -59,9 +59,12 @@ export const DOCUMENT_TEMPLATES: DocumentTemplate[] = [
   {
     key: 'no_criminal_record',
     name: 'Справка о несудимости',
-    leadTimeDays: 45,
+    // 2 months of buffer: official issuance is up to 30 days, but the real
+    // problem is unpredictability (Госуслуги can be days, other routes weeks),
+    // so the checklist plans for the slow case.
+    leadTimeDays: 60,
     scope: 'shared',
-    hint: 'Заказать минимум за 1.5 месяца — самый долгий документ в списке',
+    hint: 'Сроки разнятся: через Госуслуги бывает за пару дней, официально — до 30 дней. Закажите с запасом, ориентир — за 2 месяца до дедлайна',
   },
   {
     key: 'medical_exam',

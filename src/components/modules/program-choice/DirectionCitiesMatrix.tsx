@@ -1,5 +1,3 @@
-'use client'
-import { useState } from 'react'
 import { Briefcase, Cpu, Settings, Languages, Truck, Palette } from 'lucide-react'
 
 const data = [
@@ -26,22 +24,24 @@ const cityColors: Record<string, string> = {
   'Циндао':    '#48CAE4',
 }
 
+/**
+ * Read-only reference: which Chinese cities are strongest for which field.
+ *
+ * The cards used to be clickable and drew a border on the selected one, but
+ * selecting did nothing at all — the caption told you to highlight a card and
+ * the highlight led nowhere. A control that looks interactive and isn't reads
+ * as broken, so this is now plainly a table of information.
+ */
 export default function DirectionCitiesMatrix() {
-  const [selected, setSelected] = useState<number | null>(null)
-
   return (
     <div className="py-2">
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {data.map((item, i) => {
           const { Icon } = item
-          const isSelected = selected === i
           return (
             <div
               key={i}
-              onClick={() => setSelected(isSelected ? null : i)}
-              className={`bg-study-card rounded-xl p-4 cursor-pointer transition-all ${
-                isSelected ? 'border-2 border-study-brown shadow-sm' : 'border border-study-lightgray'
-              }`}
+              className="bg-study-card rounded-xl p-4 border border-study-lightgray"
             >
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="w-4 h-4 text-study-gray shrink-0" />
@@ -66,7 +66,10 @@ export default function DirectionCitiesMatrix() {
           )
         })}
       </div>
-      <p className="text-xs text-study-gray mt-3">Нажмите на карточку, чтобы выделить направление</p>
+      <p className="text-xs text-study-gray mt-3">
+        Города, где направление представлено сильнее всего: больше профильных вузов,
+        стажировок и работодателей рядом.
+      </p>
     </div>
   )
 }

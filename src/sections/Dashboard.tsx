@@ -36,7 +36,9 @@ export default function Dashboard() {
     },
     chances: {
       title: '🎯 Кейсы поступлений',
-      subtitle: 'Реальные результаты поступлений — фильтруйте и сравнивайте со своими',
+      // Says whose cases these are up front — the page header is what people
+      // read before the table, and "реальные результаты" implied they were ours.
+      subtitle: 'Кейсы из открытых источников — для ориентира, не наши студенты',
     },
   }[activeTab] ?? {
     title: 'StudyTrack',

@@ -59,7 +59,7 @@ const navSteps: { id: string; title: string; description: string }[] = [
   { id: 'checklist', title: 'Чек-лист', description: 'Все документы и задачи в одном списке. Ничего не забудете.' },
   { id: 'universities', title: 'Вузы', description: 'Подберите вузы и программы и ведите список своих заявок.' },
   { id: 'deadlines', title: 'Дедлайны', description: 'Держите сроки подачи под контролем — без пропущенных дат.' },
-  { id: 'chances', title: 'Кейсы поступлений', description: 'Реальные результаты поступлений — оцените свои шансы честно.' },
+  { id: 'chances', title: 'Кейсы поступлений', description: 'Кейсы поступлений из открытых источников — ориентир, с чем реально проходят.' },
 ]
 
 export default function OnboardingTour() {

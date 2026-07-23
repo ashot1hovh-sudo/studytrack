@@ -110,6 +110,29 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  /* Form controls. Most inputs/selects/textareas in the app set no background,
+     so they rendered browser-default white — a glaring white box with an
+     unreadable light placeholder on a dark modal. This themes text and
+     placeholder in both modes and gives fields a recessed dark background in
+     night mode. :where() keeps specificity at zero, so any explicit bg-* /
+     text-* utility on the element still overrides these, and light mode (no
+     background rule) is left exactly as it was. */
+  :where(input, select, textarea) {
+    color: rgb(var(--study-dark));
+  }
+  :where(input, textarea)::placeholder {
+    color: rgb(var(--study-gray));
+  }
+  .dark :where(input, select, textarea) {
+    background-color: rgb(var(--study-bg));
+  }
+  /* The native option list is OS-drawn; theme it so the open dropdown isn't
+     white-on-white in dark mode. */
+  .dark option {
+    background-color: rgb(var(--study-card));
+    color: rgb(var(--study-dark));
+  }
 }
 
 @layer components {
@@ -293,15 +316,27 @@
   flex-direction: column;
   align-items: flex-end;
   text-decoration: none;
-  pointer-events: auto; /* always tappable */
+  /* The container is as wide as the (invisible, opacity:0) label pill — ~180px
+     of nowrap text extending left of the figure. Capturing here made that whole
+     strip a hit target, so a mobile tap well away from Iana still opened
+     Telegram. The container no longer captures; only the figure does. */
+  pointer-events: none;
 }
 /* Only the IMAGE slides toward/off the border, so the label always stays fully
    on-screen (sliding the whole container clipped the pill off the right edge). */
 .st-consultant img {
-  width: 250px;
+  /* consultant.png was cropped to the figure (was 540² with ~44% filled).
+     Width scaled by 237/540 so Iana renders at the same on-screen size, and the
+     translate values dropped by the removed right padding (~70px at this scale)
+     so she still peeks from the border by the same amount instead of vanishing. */
+  width: 110px;
   height: auto;
   display: block;
-  translate: 120px 0; /* resting: partially peeking from the border */
+  /* Only the figure is tappable, and its hit area follows the translate, so it
+     tracks exactly where Iana is drawn — no far-away misclicks. */
+  pointer-events: auto;
+  cursor: pointer;
+  translate: 50px 0; /* resting: partially peeking from the border */
   opacity: 0.5; /* half-transparent at rest */
   rotate: -22deg; /* leaning strongly to the left */
   scale: 1;
@@ -313,7 +348,7 @@
 .st-consultant.is-shown img,
 .st-consultant:hover img,
 .st-consultant:focus-visible img {
-  translate: 84px 0; /* peek further out */
+  translate: 14px 0; /* peek further out */
   opacity: 1;
   rotate: -16deg;
   scale: 1.04;
@@ -351,11 +386,11 @@
 @media (max-width: 1023px) {
   .st-consultant { bottom: 92px; }
   .st-consultant img {
-    width: 180px;
-    translate: 100px 0; /* resting */
+    width: 79px;
+    translate: 50px 0; /* resting */
   }
   .st-consultant.is-shown img,
   .st-consultant:hover img,
-  .st-consultant:focus-visible img { translate: 64px 0; } /* peek */
+  .st-consultant:focus-visible img { translate: 14px 0; } /* peek */
 }
 

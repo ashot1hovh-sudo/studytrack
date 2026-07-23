@@ -40,6 +40,9 @@ export default function Checklist() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   // Deletion is confirmed in a dialog rather than done on the click: the row is
   // small, sits next to the status toggle, and the delete is not undoable.
+  // Names are truncated in the row. Tapping the text (not the status tick) opens
+  // this — the full name and details — so a long document name is always readable.
+  const [infoDoc, setInfoDoc] = useState<StudentDocument | null>(null)
   const [docToDelete, setDocToDelete] = useState<StudentDocument | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeletingDoc, setIsDeletingDoc] = useState(false)
@@ -344,32 +347,41 @@ export default function Checklist() {
               key={doc.id}
               className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-study-bg transition-colors group"
             >
+              {/* The status tick is its own button now: it toggles / opens
+                  upload. Tapping the text opens the info card instead, so the
+                  two actions no longer share one click target. */}
               <button
                 onClick={() => isPremium ? openUploadModal(doc) : toggleDocument(doc)}
-                className="flex items-center gap-3 flex-1 min-w-0 text-left active:opacity-70"
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 active:opacity-70 ${status.color}`}
+                title={isPremium ? 'Загрузить файл' : isDone ? 'Отметить как не готово' : 'Отметить как готово'}
+                aria-label={status.label}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${status.color}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium truncate ${isDone ? 'text-study-gray line-through' : 'text-study-dark'}`}>
-                    {doc.name}
-                  </p>
-                  {doc.hint && !isDone && (
-                    <p className="text-xs text-study-orange/90 mt-0.5">{doc.hint}</p>
-                  )}
-                  {doc.deadline && (
-                    <p className="text-xs text-study-gray">
-                      {/* Lead-time documents are ordered, not submitted, so the
-                          date means "start by", not "hand in by". */}
-                      {doc.leadTimeDays ? 'Заказать до' : 'Дедлайн'}: {doc.deadline}
-                      {doc.deadlineManual && ' · вручную'}
-                    </p>
-                  )}
+                <Icon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setInfoDoc(doc)}
+                // title = native hover tooltip on desktop; the tap opens the full
+                // card on mobile. Either way the full name is reachable.
+                title={doc.name}
+                className="flex-1 min-w-0 text-left active:opacity-70"
+              >
+                <p className={`text-sm font-medium truncate ${isDone ? 'text-study-gray line-through' : 'text-study-dark'}`}>
+                  {doc.name}
+                </p>
+                {doc.hint && !isDone && (
+                  <p className="text-xs text-study-orange/90 mt-0.5 truncate">{doc.hint}</p>
+                )}
+                {doc.deadline && (
                   <p className="text-xs text-study-gray">
-                    Вуз: {doc.targetUniversityName ?? 'Все'}
+                    {/* Lead-time documents are ordered, not submitted, so the
+                        date means "start by", not "hand in by". */}
+                    {doc.leadTimeDays ? 'Заказать до' : 'Дедлайн'}: {doc.deadline}
+                    {doc.deadlineManual && ' · вручную'}
                   </p>
-                </div>
+                )}
+                <p className="text-xs text-study-gray truncate">
+                  Вуз: {doc.targetUniversityName ?? 'Все'}
+                </p>
               </button>
               <span className={`text-xs font-medium shrink-0 ${status.color.split(' ')[0]}`}>
                 {status.label}
@@ -386,6 +398,48 @@ export default function Checklist() {
           )
         })}
       </div>}
+
+      {/* Document info — the full name and details, for when the row truncates */}
+      {infoDoc && (
+        <div
+          className="fixed inset-0 bg-study-overlay/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setInfoDoc(null)}
+        >
+          <div
+            className="bg-study-card sm:rounded-2xl rounded-t-2xl card-shadow-hover w-full sm:max-w-md p-5 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <h3 className="text-base font-bold text-study-dark leading-snug">{infoDoc.name}</h3>
+              <button
+                onClick={() => setInfoDoc(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-study-bg shrink-0"
+                aria-label="Закрыть"
+              >
+                <X className="w-5 h-5 text-study-gray" />
+              </button>
+            </div>
+
+            {infoDoc.hint && (
+              <p className="text-sm text-study-orange/90 mb-3 leading-relaxed">{infoDoc.hint}</p>
+            )}
+
+            <div className="space-y-1.5 text-sm">
+              {infoDoc.deadline && (
+                <p className="text-study-dark">
+                  {infoDoc.leadTimeDays ? 'Заказать до' : 'Дедлайн'}:{' '}
+                  <span className="font-medium">{infoDoc.deadline}</span>
+                  {infoDoc.deadlineManual && <span className="text-study-gray"> · вручную</span>}
+                </p>
+              )}
+              <p className="text-study-dark">Вуз: <span className="font-medium">{infoDoc.targetUniversityName ?? 'Все'}</span></p>
+              <p className="text-study-gray">
+                Статус: {infoDoc.status === 'completed' ? 'Готово' : 'Не готово'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation */}
       {docToDelete && (

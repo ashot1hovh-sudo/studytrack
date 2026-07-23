@@ -137,8 +137,13 @@ function UniCard({ uni, query, activeFilter }: { uni: UniEntry; query: string; a
       </div>
 
       {uni.programs.length === 0 ? (
-        <span className="text-xs text-study-gray bg-study-bg rounded-lg px-2.5 py-1.5 self-start">
-          Программы не указаны
+        // 67 of the 182 universities land here. "Программы не указаны" read as
+        // missing data; the useful reading is that the university has no
+        // English-taught bachelor programmes in our base — you would be
+        // studying in Chinese.
+        <span className="text-xs text-study-gray bg-study-bg rounded-lg px-2.5 py-2 self-start leading-snug">
+          Англоязычных программ бакалавриата нет — обучение на китайском.
+          Требования уточняйте на сайте вуза.
         </span>
       ) : (
         <div className="flex flex-col gap-1.5">
@@ -210,11 +215,16 @@ export default function Universities({ compact = false }: { compact?: boolean })
       {/* Browse full university / program database */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-study-dark">База вузов и программ</h2>
+          {/* The list under each university is its English-taught programmes —
+              not a "best of" selection. Saying so here, because the bullets
+              read as a shortlist otherwise. */}
+          <h2 className="text-base sm:text-lg font-bold text-study-dark">
+            База вузов и программ на английском
+          </h2>
           <p className="text-xs text-study-gray mt-0.5">
             {compact
               ? 'Популярные вузы — вся база из 182 университетов на странице «Вузы»'
-              : 'Найдите вуз по специальности и добавьте его в свою воронку выше'}
+              : 'Под каждым вузом — все его программы бакалавриата на английском языке. Найдите подходящую и добавьте вуз в свою воронку выше'}
           </p>
         </div>
 

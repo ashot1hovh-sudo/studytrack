@@ -6,7 +6,6 @@ import { MediaModuleCard } from '@/components/ui/media-button'
 import {
   AlertTriangle,
   ArrowLeft,
-  BookOpen,
   Briefcase,
   Building2,
   CalendarDays,
@@ -96,6 +95,9 @@ const sharedLessons = [
 
 // RuTube private video embed (format: https://rutube.ru/play/embed/VIDEO_ID?p=ACCESS_TOKEN)
 const APPLICATION_VIDEO_URL = 'https://rutube.ru/play/embed/3b2a5c3e4e4cb1b45f90bae519cf9165?p=NIHx7IIPd-eSr53AWvMfAQ'
+// «Как пользоваться платформой?» walkthrough. From the private share link
+// https://rutube.ru/video/private/217b20597ebb4105c946b5d95fa2e6af/?p=qbH7ZQDA-Pj8nQeLjvT7Bg
+const PLATFORM_GUIDE_VIDEO_URL = 'https://rutube.ru/play/embed/217b20597ebb4105c946b5d95fa2e6af?p=qbH7ZQDA-Pj8nQeLjvT7Bg'
 
 // Hardcoded «Краткое резюме» per lesson, keyed by lessonKey. The reader shows a
 // «Краткое резюме» button whenever an entry exists; it fakes a loading→typing
@@ -439,6 +441,7 @@ export default function LearningStart() {
   const [isVerifyingPin, setIsVerifyingPin] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
   const [examsOpen, setExamsOpen] = useState(false)
+  const [platformVideoOpen, setPlatformVideoOpen] = useState(false)
   const [activeLessonKey, setActiveLessonKey] = useState<string | null>(null)
   const [lesson, setLesson] = useState<{ title: string; content: string; userEmail?: string } | null>(null)
   const [isLessonLoading, setIsLessonLoading] = useState(false)
@@ -703,15 +706,18 @@ export default function LearningStart() {
           <p className="text-sm text-study-gray mt-2">Первый блок для старта работы с платформой.</p>
         </button>
 
-        <button className="text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all">
+        <button
+          onClick={() => setPlatformVideoOpen(true)}
+          className="text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 min-h-[180px] hover:card-shadow-hover transition-all"
+        >
           <div className="flex items-start justify-between gap-3 mb-5">
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
-              <BookOpen className="w-6 h-6 text-study-brown" />
+              <PlayCircle className="w-6 h-6 text-study-brown" />
             </div>
             <span className="text-xs font-bold text-study-green bg-study-green/10 rounded-full px-2.5 py-1">Бесплатно</span>
           </div>
           <h2 className="text-xl font-bold text-study-dark">Как пользоваться платформой?</h2>
-          <p className="text-sm text-study-gray mt-2">Короткое объяснение навигации, документов и дедлайнов.</p>
+          <p className="text-sm text-study-gray mt-2">Короткое видео: навигация, документы и дедлайны.</p>
         </button>
 
         <button
@@ -987,6 +993,60 @@ export default function LearningStart() {
                   <ChevronRight className="w-5 h-5 text-study-gray shrink-0" />
                 </button>
               ))}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* «Как пользоваться платформой?» video */}
+      {platformVideoOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[70] bg-study-overlay/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setPlatformVideoOpen(false)}
+        >
+          <div
+            className="bg-study-card w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl card-shadow-hover overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 p-4 sm:p-5 border-b border-study-lightgray">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-study-green">Бесплатно</p>
+                <p className="text-lg font-bold text-study-dark mt-0.5">Как пользоваться платформой?</p>
+              </div>
+              <button
+                onClick={() => setPlatformVideoOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-study-bg flex items-center justify-center shrink-0"
+                aria-label="Закрыть"
+              >
+                <X className="w-5 h-5 text-study-gray" />
+              </button>
+            </div>
+            <div className="p-4 sm:p-5">
+              <p className="mb-3 flex items-start gap-2 rounded-xl bg-study-orange/10 border border-study-orange/20 px-4 py-3 text-sm text-study-dark">
+                <AlertTriangle className="w-4 h-4 text-study-orange shrink-0 mt-0.5" />
+                <span>Если видео не загружается — отключите VPN. Видео размещено на RuTube и открывается без VPN.</span>
+              </p>
+              <div className="relative w-full rounded-xl overflow-hidden bg-study-inverse" style={{ paddingTop: '56.25%' }}>
+                <iframe
+                  src={PLATFORM_GUIDE_VIDEO_URL}
+                  title="Как пользоваться платформой"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <p className="text-xs text-study-gray mt-3 leading-relaxed">
+                Если видео не загружается — откройте его напрямую на RuTube:{' '}
+                <a
+                  href="https://rutube.ru/video/private/217b20597ebb4105c946b5d95fa2e6af/?p=qbH7ZQDA-Pj8nQeLjvT7Bg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-study-brown font-semibold underline break-all"
+                >
+                  открыть на RuTube
+                </a>
+              </p>
             </div>
           </div>
         </div>,

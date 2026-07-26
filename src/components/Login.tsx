@@ -359,6 +359,15 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {isRegister && (
+              <div className="rounded-xl bg-study-orange/10 border border-study-orange/20 px-4 py-3">
+                <p className="text-sm text-study-dark leading-relaxed">
+                  Пожалуйста, не используйте почту <span className="font-semibold">@mail.ru</span> — письмо
+                  с кодом подтверждения на неё сейчас не доходит. Лучше зарегистрироваться через
+                  <span className="font-semibold"> Яндекс</span> или <span className="font-semibold">Google&nbsp;(Gmail)</span>.
+                </p>
+              </div>
+            )}
+            {isRegister && (
               <div>
                 <label className="block text-sm font-medium text-study-dark mb-1.5">
                   Имя
@@ -551,10 +560,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-study-gray mt-6">
-          StudyTrack — ваш прогресс поступления всегда под рукой
-        </p>
       </div>
 
       {/* Shake animation */}

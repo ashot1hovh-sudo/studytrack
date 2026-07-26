@@ -15,9 +15,9 @@ Launching into the **Russian market** — this drives the infrastructure migrati
 - **Next.js 14** App Router, TypeScript, Tailwind CSS
 - **Supabase, self-hosted** — auth + Postgres 17 + Storage, running on a Timeweb VM at **`https://db.kaykitay.ru`** (`104.171.138.217`, Moscow). Same `supabase-js` API as hosted Supabase.
 - **Vercel** — original production deploy. ⚠️ Still points at **supabase.com**, so it and Timeweb now read different databases. Decommission or repoint it.
-- **Timeweb Cloud — Docker app, Moscow** — Russian-market deploy, **LIVE**: `https://ashot1hovh-sudo-studytrack-9bc8.twc1.net`, talking to the self-hosted Supabase above.
-- **Timeweb mail** — `noreply@kaykitay.ru` via `smtp.timeweb.ru:587`, SPF/DKIM/DMARC configured. Sends all auth email.
-- **Domain** — `kaykitay.ru` (registered at Timeweb 2026-07-18)
+- **Timeweb Cloud — Docker app, Moscow** — Russian-market deploy, **LIVE at its own domain `https://app.kaykitay.ru`** (custom domain bound in the Timeweb app panel, valid Let's Encrypt TLS). The internal host `ashot1hovh-sudo-studytrack-9bc8.twc1.net` (the `-9bc8` app) still serves the same deploy. Talks to the self-hosted Supabase above. ⚠️ A **dead `-51d7` app** also exists in the account (leftover, serves 404) — delete it.
+- **Timeweb mail** — `noreply@kaykitay.ru` via `smtp.timeweb.ru:587`, SPF/DKIM/DMARC configured. Sends all auth email. ⚠️ **mail.ru addresses don't receive it** (Gmail/Yandex fine) — see the launch session log.
+- **Domain** — `kaykitay.ru` (registered at Timeweb 2026-07-18). `app.` → the Timeweb app; `db.` → the Supabase VM. Bind subdomains via the app panel's «Внешний домен», not by hand-pointing DNS at the VM IP.
 - **Driver.js** — first-login onboarding tour
 - **Repo:** `https://github.com/ashot1hovh-sudo/studytrack.git`
 - **Branch:** `diy-product` (active branch — both Vercel and Timeweb deploy from here)
@@ -25,9 +25,9 @@ Launching into the **Russian market** — this drives the infrastructure migrati
 
 ---
 
-## Current State (as of commit `2f71922`)
+## Current State (as of commit `097a003`)
 
-App is deployed and functional on **both Vercel and Timeweb (Moscow)**. Six main pages (sidebar / mobile nav): **Начало обучения, Главная, Чек-лист, Вузы, Дедлайны, Мои шансы** (+ consultant Admin dashboard).
+**The platform is LIVE at `https://app.kaykitay.ru`.** Six main pages (sidebar / mobile nav): **Начало обучения, Главная, Чек-лист, Вузы, Дедлайны, Кейсы поступлений** (renamed from «Мои шансы») + consultant Admin dashboard. Light/dark theme toggle. Parent mode was removed entirely.
 
 Full functional breakdown lives in **`PRODUCT_OVERVIEW.md`** (repo root; a copy is also at `~/Downloads/StudyTrack_Product_Overview.md`) — written in the 2026-07-05/06 session for a VC stress-test. Read that for the complete page-by-page tour.
 
@@ -228,6 +228,56 @@ v2 art and the tour sizing retuned by hand.
 
 ---
 
+## Session log — 2026-07-20/24 (features, dark mode, content, LAUNCH)
+
+Long session. Commits `0866ae6` → `097a003` on `diy-product`. Ends with the app **launched at `app.kaykitay.ru`**.
+
+### Auth / registration fixes (shipped first — they were blocking real users)
+1. **Magic link now signs you in.** GoTrue's `/auth/v1/verify` finishes by redirecting to `SITE_URL#access_token=…` — a URL *fragment*, which never reaches the server, and this app reads sessions from server-set cookies. So the link authenticated the user and threw the session away, landing them back on login. New route **`/auth/confirm`** (`src/app/auth/confirm/route.ts`) redeems the token hash server-side via `verifyOtp` and writes the cookies onto a **relative** redirect (no dependence on `NEXT_PUBLIC_APP_URL`, which was malformed and would `throw` in `new URL()`, and no dependence on `request.nextUrl.origin`, which is the container's internal bind address behind Timeweb's proxy — that sent users to `https://0.0.0.0:3000/`). The email templates on the VM were repointed from GoTrue's verify endpoint to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=…`. `recovery.html` still uses the old link but there is no password-reset flow, so it leads nowhere anyway. (`0866ae6`)
+2. **Registration was blocked for EVERY new user since 7f8c16e (the consent checkboxes).** `handleSubmit` is a `useCallback` whose deps omitted `acceptedTerms`/`marketingConsent`, so it closed over the initial `false` and always posted `acceptedTerms:false` — the server rejected every signup with "Необходимо принять пользовательское соглашение", the one box the user had already ticked. The three pre-existing accounts predate the checkboxes, which is why nobody noticed. (`85249d2`, build-repair `05dfb4f`.)
+
+### Document checklist with lead times, deadline calendar, deletes (`e72ebef` + migrations)
+- Adding a university **seeds the standard document set** and dates each item as *(earliest university deadline − time to obtain it)* — «Заказать до», not «Дедлайн», because these are ordered not submitted. Catalogue in `src/lib/documentTemplates.ts`; seed/reschedule logic in `src/lib/studentDocuments.ts`. Shared docs seed once; only мотивационное письмо is per-university. Manually-edited dates are marked `deadline_manual` and never auto-move.
+- **Deletes** on documents and universities. Standard docs are **soft-deleted** (`deleted_at`) so the next reseed doesn't resurrect them; hand-added ones are removed for real.
+- **Deadlines tab** is now a month calendar (`src/components/DeadlineCalendar.tsx`), merging document + university dates + student-added собеседования/экзамены. **Overdue items are shown, not hidden** — the old `isUpcoming` filter made a behind-schedule student see an empty calendar.
+- Fixes found along the way: a PostgREST many-to-one embed is an **object, not an array**, so documents tied to a university displayed as «все»; and **deletes had no RLS policy**, so they matched zero rows — which PostgREST reports as success. Four migrations run against prod (all captured as `.sql` files + folded into `supabase-schema.sql`): `supabase-document-templates.sql`, `supabase-delete-policies.sql`, `supabase-document-soft-delete.sql`, `supabase-deadline-events.sql` (the last also added INSERT/UPDATE/DELETE policies to `deadlines`, which previously had SELECT only).
+
+### Экзамены free module (replaced the locked «Как оплатить…» card)
+IELTS, TOEFL, CSCA, Duolingo guides (`src/content/exams/`, route `/api/learning/exam/[examId]`, whitelist lookup — no path built from the param). Real logos for IELTS/TOEFL/Duolingo in `public/images/exams/`; **CSCA has no logo** — the file supplied was «China Standard Conformity Assessment Co.», an unrelated ISO-cert company sharing the acronym. TOEFL Home-Edition-rejected-by-some-vuzy and Duolingo's patchy acceptance are the key traps documented. Per-country IELTS/TOEFL booking links; **no hardcoded exam dates** (IELTS is per-centre, TOEFL 2027 dates aren't released) — the guides explain scheduling instead.
+
+### Dark mode (`a054e9e`)
+- The `study` palette moved to **CSS variables** so a theme swap costs no per-component edits. Light values are byte-identical to before. Two extra tokens: `--study-overlay` (modal scrims — dark in both themes) and `--study-inverse` (surfaces that carry white text, e.g. the pyramid top tier — reusing `study-dark` put white-on-white once it inverts).
+- Toggle: pill switch (`src/components/ThemeSwitch.tsx`) in the sidebar, mobile header, mobile menu, and the desktop page header. Follows OS on first visit then remembers. **Anti-flash init script inlined in `<head>`** (`ThemeContext.tsx` `THEME_INIT_SCRIPT`) applies the theme before first paint.
+- 137 literal `bg-white` → themed card token; stock Tailwind tints (`bg-red-50` etc.) across ~27 infographics got `dark:` variants; card shadows redone (black shadow is invisible on dark). Themed logo (`src/components/Logo.tsx`, light/dark PNGs swapped by CSS). **Form controls** (later, `247a338`): a global `:where(input,select,textarea)` rule themes text + placeholder and gives fields a recessed dark background — native controls render browser-white otherwise, unreadable on dark modals.
+
+### Onboarding tour hardened (`b3ee276`)
+Doodles now **preloaded** (they only downloaded when their step rendered, so on mobile the characters never appeared) and resized 4.4 MB → 1.6 MB. **Completion only counts if the user reached the last step** — `driver.js` fires `onDestroyed` on *any* dismissal, so closing early used to burn the once-per-account tour forever. `localStorage` key bumped to `v3` (the v2 flag was written before the server call, so browsers held "seen" flags for accounts whose `onboarding_completed_at` was still null).
+
+### «Жизнь в Китае» module + per-lesson summaries (`a25ddd2`)
+- New paid two-lesson module under the three tutorial tracks (wide card → `setActiveModule` → lesson list): **Полезные приложения** (25 apps, App Store screenshots in `public/images/life-china/`, sourced from `useful_apps_pics/` which is **not** committed) and **Что купить в общежитие** (table of items with live Taobao `e.tb.cn` links — those expire over time; each row keeps the 「中文」 name to re-search).
+- **Hardcoded «Краткое резюме» for 20 lessons**, hoisted to module scope in `LearningStart.tsx` as `AI_SUMMARY`, keyed by `lessonKey`, with the loading→typing animation. ⚠️ **These are hardcoded — editing a lesson's substance does NOT update its summary.** Skips the two life-china lists and the shortest guide (duolingo).
+
+### SMM (Alisa) content review (`b858a3e`)
+Кейсы поступлений: dropped 3 near-empty columns, admissions sorted first then by completeness, sparse fields moved to a per-row detail line, copy rewritten to state these are **open-source reference cases, not our students'** (consent posture). intro/how-to-choose/exam edits; Справка о несудимости reframed as unpredictable timing (leadTimeDays 45→60); медобследование gained psychological-check + minor-deviations notes; b1 profile table and program-comparison table made fillable with **localStorage + CSV download + clear**; DirectionCitiesMatrix made read-only (its selection led nowhere). ⚠️ **Lesson infographics are injected positionally** («the Nth list/table in section X»); several b1 injections were dead because the markdown lost its numbered headings, and editing lesson markdown can silently drop an infographic. Consider anchoring on explicit `<!-- component -->` markers someday.
+
+### Checklist row (`247a338`)
+Status tick and document name are now **separate tap targets** — tapping the name opens an info card (full name + details) on mobile / shows a desktop hover tooltip; the tick still toggles готово/upload. Fixes truncated names being unreadable.
+
+### Consultant doodle
+Cropped `consultant.png` to the figure and re-tuned the peek transforms; made only the figure tappable (the invisible `opacity:0` label pill was a hit target, so a stray tap opened Telegram).
+
+### 🚀 LAUNCH (2026-07-24) — `app.kaykitay.ru`
+1. **Pushed all of the above first** so the launched site is current, not the stale build. (Learned the hard way earlier: always build a clean/env-less checkout before pushing — Timeweb's Docker build has no env vars.)
+2. **Bound `app.kaykitay.ru`** to the `-9bc8` app via the Timeweb app panel → «Домены» → «+ Внешний домен». Gotcha: the dropdown only lists whole domains (`kaykitay.ru`), so a subdomain goes through «Внешний домен»; and the user first landed in the **wrong app** (`-51d7`, serves 404) — always confirm the panel shows the `-9bc8` host. A hand-added `A app → 104.171.138.217` record was **wrong** (that IP is the Supabase VM, not the app); Timeweb auto-manages the record once bound.
+3. **Repointed auth URLs** on the VM: `SITE_URL=https://app.kaykitay.ru`, added `app.kaykitay.ru` + the twc1 host to `ADDITIONAL_REDIRECT_URLS`, restarted GoTrue. Backup at `/opt/supabase/docker/supabase-project/.env.bak-predomain-*`.
+4. **Verified end-to-end**: `app.kaykitay.ru` = 200 + valid TLS + latest bundle; a real magic-link token redeemed over the new domain signs a user in.
+
+**⚠️ mail.ru deliverability (open):** Gmail/Yandex receive the verification email; **mail.ru does not**. GoTrue logs show the send succeeds with no SMTP error (~600–900 ms handoff to `smtp.timeweb.ru`), so it fails downstream between Timeweb's relay and mail.ru. SPF (`include:_spf.timeweb.ru ~all`), DKIM (selector `dkim`), DMARC (`p=none`), MX all present and correct. Almost certainly mail.ru reputation-filtering Timeweb's shared relay IP (or landing in Спам). Next moves: check mail.ru Spam; check `Authentication-Results` on a Gmail-received copy; register kaykitay.ru at **postmaster.mail.ru**; open a Timeweb ticket about the relay IP vs mail.ru. Then tighten SPF `~all→-all` and DMARC `p=none→p=quarantine`.
+
+**⚠️ `useful_apps_pics/` and `ProdVersion_doodles/`** are uncommitted scratch/source folders in the repo root — leave them out of commits. `China_Universities_Programs.json` (one link edited by the user) IS committed now.
+
+---
+
 ## Self-hosted Supabase — operating notes
 
 | | |
@@ -312,30 +362,32 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 
 ## Next Steps (priority order)
 
-1. ~~Audit the remaining RLS policies~~ ✅ **done 2026-07-19** — all 16 reviewed and isolation proven empirically. See session log.
-2. **Tell the buyer about the 2-year window.** It is enforced in code but stated
-   *nowhere* in the UI or the terms. Selling time-limited access without saying so
-   is the shape of a refund argument, and it blocks the first ten sales. Frame it as
-   «2 года доступа к постоянно обновляемой платформе» — the constant updates are
-   what makes the window honest rather than stingy.
-3. **Missing legal documents.** `/terms` publishes the Согласие на обработку персональных данных only.
-   - **Политика обработки персональных данных** — section 7 of the consent has users confirm they've read it, and it doesn't exist. Normally a required published document under 152-FZ.
-   - **Пользовательское соглашение** — terms of service, refunds, liability. Matters more once YooKassa takes money.
-   - The consent covers only *username + email*. `students` still has `phone`, `age`, `telegram_chat_id`, `program` from the consultant era; if any start being populated, the consent no longer covers what's collected.
-3. **Test the PIN → paid-access flow end to end.** Admin sets `pin_code` in the dashboard → student enters it → `/api/auth/verify-pin` flips `subscription_status` to `active`. The code is unchanged and the column survived migration, but **nobody has exercised this since the cutover**, and it is the money path.
-4. **Payment / self-serve subscription — YooKassa (ЮKassa)** *(decided; not built)*. Target flow: create-payment route → YooKassa `confirmation_url` → webhook on `payment.succeeded` → generate a PIN → email it → the existing `verify-pin` activates access. Requires a legal entity (самозанятый/ИП/ООО). Email is no longer a blocker — `noreply@kaykitay.ru` works.
-5. **Vercel still points at supabase.com.** Two live deployments reading different databases off one codebase. Harmless while nobody uses the Vercel URL; the moment someone registers there you have split-brain data *and* personal data in the wrong country. Repoint or take it down.
-6. **Passwordless login (optional).** Registration confirmation already uses the code; login itself is still email+password. Moving login to `signInWithOtp` would reuse the same code-entry component. **Keep passwords as a fallback either way** — with magic-link-only, a spam-foldered email is a total lockout.
-   - **Naming:** «код подтверждения» / `otp` in UI and code. The existing `pin_code` + `verify-pin` are the *subscription* unlock — two different 6-digit "codes" in one product will confuse everyone.
-7. **Move the app to `kaykitay.ru`** — point apex/`www` at the Timeweb app, update `NEXT_PUBLIC_APP_URL`, and update `SITE_URL` in the VM's `.env` or magic links will keep resolving to the `*.twc1.net` host. Also lets the email templates use the real logo (currently a text wordmark, deliberately — see gotchas).
-8. **Deliverability hardening** — test against Mail.ru / Yandex / Rambler (not Gmail; wrong audience). First branded send landed in the Gmail **inbox**. Once confident, tighten DMARC `p=none` → `p=quarantine`. Ask Timeweb the mailbox's outbound limit: magic links mean one email *per login*, so volume scales faster than signups.
-9. **Change the admin password** from the generated one in `~/Downloads/kaykitay-admin-login.txt`.
-10. **Grow the Мои шансы dataset** — real admission outcomes are a recurring moat.
-11. **Mobile QA pass** on a real phone before launch (lesson reader, video modal/iframe, tracker + table tap targets, tour, consultant widget, and now the code-entry screen).
+Launch is done; these are the post-launch priorities. Several older items are now closed (magic link, domain move, dark mode).
+
+1. **🔴 mail.ru email deliverability** — verification emails don't reach mail.ru (Gmail/Yandex fine). Blocks a chunk of real signups. See the launch session log for the diagnosis and the fix sequence (postmaster.mail.ru registration, Timeweb ticket, check Спам). Highest-priority because it silently costs signups.
+2. **Tell the buyer about the 2-year window.** Still enforced in code, stated *nowhere* in UI or terms. Refund-argument shape; frame as «2 года доступа к постоянно обновляемой платформе».
+3. **Test the PIN → paid-access flow end to end.** Admin sets `pin_code` → student enters it → `/api/auth/verify-pin` flips `subscription_status` to `active` and sets `access_expires_at` +2y. **Still not exercised since the cutover**, and it's the money path.
+4. **Missing legal documents.** `/terms` has only the Согласие. **Политика обработки персональных данных** (referenced by section 7 of the consent users already sign; required under 152-FZ) and a **Пользовательское соглашение** don't exist. Consent covers only *username + email*.
+5. **Payment / self-serve subscription — YooKassa** *(decided; not built)*. create-payment → `confirmation_url` → webhook on `payment.succeeded` → generate PIN → email → existing `verify-pin` activates. Needs a legal entity.
+6. **Set `NEXT_PUBLIC_APP_URL=https://app.kaykitay.ru`** in the Timeweb app env (old value has no scheme). Not urgent — `/auth/confirm` uses relative redirects — but it's the correct value.
+7. **Delete the dead `-51d7` Timeweb app** (leftover, serves 404, may cost money) and **decommission Vercel** (still points at supabase.com — split-brain risk the moment anyone registers there).
+8. **Reset the 3 review accounts to `trial`** before real sales — `ashot1hovh@gmail.com`, `ashoth1g@163.com`, `ashot.sinoservices@gmail.com` were set `subscription_status='active'`, `access_expires_at=null` (never expires) this session so paid content could be reviewed. They're active in prod. Decide which to keep as staff/demo.
+9. **Change the admin password** from `~/Downloads/kaykitay-admin-login.txt`.
+10. **Chunk-load resilience (optional).** After a redeploy, a user on the old page can hit a `ChunkLoadError` clicking a link whose lazy chunk was replaced. An error boundary that auto-reloads on chunk errors makes deploys seamless. Not built.
+11. **Grow the Кейсы поступлений dataset** — real admission outcomes are a recurring moat.
+12. **Mobile QA pass** on a real phone (lesson reader, video modal, calendar, tour, consultant widget, code-entry, the new checklist info card).
+13. **Finish the CSCA exam guide's logo + review the content** with Iana; and confirm the mail-medical "psychological check" claim (currently hedged).
+
+### Safe-deploy playbook (the app is LIVE now — real users)
+The app is **stateless**: sessions are JWT cookies validated against GoTrue, data is in Supabase. So a Timeweb rebuild/restart does **not** log users out or lose their state — the only exposure is a ~10–30s window where a fresh page-load or in-flight request may error (a reload fixes it).
+1. **Build env-less locally before every push:** `mv .env.local .env.local.bak && npm run build; mv .env.local.bak .env.local`. Reproduces Timeweb's env-less Docker build and catches failures before they hit prod. (Do NOT `git worktree` + symlink `node_modules` for this — `git worktree remove --force` follows the symlink and wipes the real `node_modules`; happened this session, recovered with `npm ci`.)
+2. **DB migrations: additive-only, expand-contract.** Adding → migrate DB **first** (`if not exists`, nullable/defaulted), then push code. Removing/renaming → deploy code that stops using it, wait, drop the column **later**. Never drop/rename a column in the same deploy as the code that depends on it.
+3. **Push off-peak** (late MSK), watch the bundle hash change, smoke-test login + a couple of routes.
+4. Rollback is safe because migrations are additive — reverting a code commit doesn't break the DB.
 
 ### Housekeeping
-- **⚠️ Local dev now writes to PRODUCTION.** `.env.local` points at `db.kaykitay.ru`. Registering a test user locally creates a real account in the real database. There is no sandbox — the old supabase.com values are in `.env.local.pre-selfhost.bak` (gitignored) but repointing back means writing to the wrong country again.
-- **Crop the transparent padding off the doodles.** They're 1024² with the figure filling ~40% of the width, which is both why they total 4.4 MB (all loaded during the mobile intro tour) and why CSS `width` doesn't mean what it looks like.
+- **⚠️ Local dev writes to PRODUCTION.** `.env.local` points at `db.kaykitay.ru`. No sandbox. During this session, review accounts were also given permanent `active` access — see Next Step #8.
+- ~~Crop the transparent padding off the doodles~~ — ✅ the consultant doodle was cropped + re-tuned; the others are resized (tour doodles 4.4 MB → 1.6 MB) but not padding-cropped.
 - **Admin session sprawl:** consultants are exempt from the device limit *and* nothing prunes their sessions, so the admin account accumulates them without bound. Harmless for two staff accounts. Don't let `role='consultant'` become a general "trusted user" flag — it is now also an exemption from sharing limits.
 - **Commit the email templates** into the repo (`infra/email-templates/`) — they exist only on the VM.
 - **Three real accounts** on the self-hosted DB: `ashot1hovh@gmail.com`, `ashoth1g@163.com`, `ianadved@yandex.ru` (all testing) + the admin. They registered *before* the consent deploy, so their `terms_accepted_at` is null — expected, not a bug. All are `diy`/`trial`, so **they now hit the paywall** on lessons — that's the server-side gate working, not a regression.
@@ -343,9 +395,11 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 - **Decommission the supabase.com project** once confident in self-hosting. Keep it until then as rollback + schema reference.
 - **Move backups off-box** — they currently sit on the same VM as the database.
 - **Configure `unattended-upgrades`** on the VM for OS security patches; not set up yet.
-- `src/data/China_Universities_Programs.json` has an **uncommitted local modification** predating the 07-15 session — decide whether to keep or discard it.
+- `src/data/China_Universities_Programs.json` — the user edited one link; **now committed**. 67 of 182 universities still have no programs listed (English-taught) → the explorer shows «обучение на китайском» for those.
 - `src/lib/supabase/client.ts` (browser Supabase client) is **dead code** — safe to delete.
-- Consider committing the email templates into the repo (`infra/email-templates/`); they currently exist only on the VM.
+- **Commit the email templates** into the repo (`infra/email-templates/`) — still only on the VM.
+- **`useful_apps_pics/` (repo root)** — the source App Store screenshots for the Жизнь-в-Китае apps lesson; already copied into `public/images/life-china/`, so this folder is scratch — don't commit, safe to delete.
+- **Lesson summaries are hardcoded** (`AI_SUMMARY` in `LearningStart.tsx`) — if a lesson's content changes materially, update its summary by hand or it goes stale.
 
 ---
 

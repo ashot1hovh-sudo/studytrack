@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
+import { escapeHtml, notifyTelegram } from '@/lib/telegram'
 
 export async function POST(request: Request) {
   if (missingSupabaseEnv()) return setupErrorResponse()
@@ -111,6 +112,25 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
+
+  // Fire-and-forget owner notification. notifyTelegram swallows every failure
+  // and is time-bounded, so awaiting it cannot delay or break the signup. Fires
+  // at registration submit — before email confirmation — because this is the only
+  // place the free students row is created.
+  const signupTime = new Intl.DateTimeFormat('ru-RU', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Europe/Moscow',
+  }).format(new Date(now))
+
+  await notifyTelegram(
+    [
+      '🎉 <b>Новая регистрация StudyTrack</b>',
+      `📧 ${escapeHtml(email)}`,
+      `👤 ${escapeHtml(fullName)}`,
+      `📅 ${escapeHtml(signupTime)} (МСК)`,
+    ].join('\n')
+  )
 
   // The account exists but is unconfirmed: the user must enter the 6-digit code
   // from the email (or follow its link) before they can sign in.

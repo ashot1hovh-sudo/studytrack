@@ -15,8 +15,7 @@ import {
   Clock,
   FileText,
   GraduationCap,
-  Youtube,
-  Instagram,
+  Play,
   Send,
   Users,
   Home,
@@ -379,7 +378,7 @@ const EXAMS = [
  */
 const SOCIALS = [
   {
-    label: 'Telegram-канал',
+    label: 'соцсеть с кружочками',
     handle: '@kaykitay',
     href: 'https://t.me/kaykitay',
     icon: Send,
@@ -387,18 +386,19 @@ const SOCIALS = [
     color: '#229ED9',
   },
   {
-    label: 'Instagram',
+    // lucide's Instagram glyph removed; rendered as a lettermark instead.
+    label: 'Нельзя-грам',
     handle: '@kaykitay',
     href: 'https://www.instagram.com/kaykitay/',
-    icon: Instagram,
-    mark: null,
+    icon: null,
+    mark: 'Н—Г',
     color: '#C13584',
   },
   {
-    label: 'YouTube',
+    label: 'соцсеть с длинными видео',
     handle: '@kaykitay',
     href: 'https://www.youtube.com/@kaykitay',
-    icon: Youtube,
+    icon: Play,
     mark: null,
     color: '#FF0000',
   },
@@ -412,7 +412,7 @@ const SOCIALS = [
     color: '#0077FF',
   },
   {
-    label: 'Ашот — личный Telegram',
+    label: 'Ашот — личный чат',
     handle: '@ash_china',
     href: 'https://t.me/ash_china',
     icon: Send,
@@ -420,7 +420,7 @@ const SOCIALS = [
     color: '#6B4F4B',
   },
   {
-    label: 'Яна — личный Telegram',
+    label: 'Яна — личный чат',
     handle: '@ianamedvedeva',
     href: 'https://t.me/ianamedvedeva',
     icon: Send,
@@ -728,9 +728,7 @@ export default function LearningStart() {
             <div className="w-12 h-12 rounded-xl bg-study-brown/10 flex items-center justify-center shrink-0">
               <GraduationCap className="w-6 h-6 text-study-brown" />
             </div>
-            <div className="w-8 h-8 rounded-full bg-study-dark/10 flex items-center justify-center shrink-0">
-              <Lock className="w-4 h-4 text-study-dark" />
-            </div>
+            <span className="text-xs font-bold text-study-green bg-study-green/10 rounded-full px-2.5 py-1">Бесплатно</span>
           </div>
           <h2 className="text-xl font-bold text-study-dark">Как определиться с программой?</h2>
           <p className="text-sm text-study-gray mt-2">таблица для подбора ВУЗов</p>
@@ -924,11 +922,11 @@ export default function LearningStart() {
 
         {/*  */}
         <p className="text-[11px] leading-relaxed text-study-gray mt-3">
-          Instagram принадлежит компании Meta Platforms Inc., признанной экстремистской
+          «Нельзя-грам» принадлежит компании Meta Platforms Inc., признанной экстремистской
           организацией, её деятельность запрещена на территории Российской Федерации.
         </p>
         <p className="text-[11px] leading-relaxed text-study-gray mt-1">
-        Telegram и YouTube признаны нежелательными организациями на территории РФ.
+        «Соцсеть с кружочками» и «соцсеть с длинными видео» признаны нежелательными организациями на территории РФ.
         </p>
       </div>
 
@@ -1080,12 +1078,41 @@ export default function LearningStart() {
               <div className="rounded-xl bg-study-orange/10 border border-study-orange/20 p-4">
                 <p className="text-sm font-semibold text-study-dark">Это платный модуль</p>
                 <p className="text-sm text-study-gray mt-1 leading-relaxed">
-                  Чтобы открыть этот модуль, свяжитесь с Яной и оформите подписку.
+                  Чтобы открыть модуль, свяжитесь с Яной, оплатите подписку и получите индивидуальный PIN-код. После этого введите его ниже.
                 </p>
               </div>
+
+              <input
+                type="password"
+                value={pinCode}
+                onChange={(event) => { setPinCode(event.target.value); setPinError(null) }}
+                onKeyDown={(e) => e.key === 'Enter' && verifyPin()}
+                placeholder="Введите PIN-код"
+                className="mt-4 w-full rounded-xl border border-study-lightgray bg-study-card px-4 py-3 text-sm text-study-dark focus:outline-none focus:border-study-brown"
+              />
+
+              {pinError && (
+                <p className="mt-2 text-xs text-study-red font-medium">{pinError}</p>
+              )}
+
+              <button
+                onClick={verifyPin}
+                disabled={!pinCode.trim() || isVerifyingPin}
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-study-brown px-4 py-3 text-sm font-bold text-white hover:bg-study-brown/90 transition-colors disabled:opacity-50"
+              >
+                <KeyRound className="w-5 h-5" />
+                {isVerifyingPin ? 'Проверка...' : 'Открыть модуль'}
+              </button>
+
+              <div className="mt-3 flex items-center gap-3">
+                <div className="flex-1 h-px bg-study-lightgray" />
+                <span className="text-xs text-study-gray">или</span>
+                <div className="flex-1 h-px bg-study-lightgray" />
+              </div>
+
               <button
                 onClick={openTelegram}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-study-green px-4 py-3 text-sm font-bold text-white hover:bg-study-green/90 transition-colors"
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-study-green px-4 py-3 text-sm font-bold text-white hover:bg-study-green/90 transition-colors"
               >
                 <MessageCircle className="w-5 h-5" />
                 Написать Яне
@@ -1268,12 +1295,17 @@ function renderInline(text: string): React.ReactNode[] {
     if (bold) { parts.push(<strong key={match.index}>{renderInline(bold[1])}</strong>); last = match.index + match[0].length; continue }
     const link = match[0].match(/^\[(.*?)\]\((.*?)\)$/)
     if (link) {
-      const isExternal = link[2].startsWith('http')
+      const href = link[2]
+      const isExternal = href.startsWith('http')
+      // A local link to a file (PDF etc.) should download, not navigate the SPA
+      // away to the raw file.
+      const isDownload = href.startsWith('/') && /\.(pdf|docx?|xlsx?|zip)$/i.test(href)
       parts.push(
-        <a key={match.index} href={link[2]}
+        <a key={match.index} href={href}
           className="text-study-brown underline font-semibold"
-          target={isExternal ? '_blank' : undefined}
-          rel={isExternal ? 'noopener noreferrer' : undefined}>
+          target={isExternal || isDownload ? '_blank' : undefined}
+          rel={isExternal || isDownload ? 'noopener noreferrer' : undefined}
+          download={isDownload ? '' : undefined}>
           {link[1]}
         </a>
       )

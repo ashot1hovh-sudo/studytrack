@@ -10,13 +10,26 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   if (response) return response
 
   const body = await request.json().catch(() => ({}))
-  const { status, deadline } = body as { status?: string; deadline?: string | null }
+  const { status, deadline, major, examRequirements, portalUrl, price, city } = body as {
+    status?: string
+    deadline?: string | null
+    major?: string | null
+    examRequirements?: string | null
+    portalUrl?: string | null
+    price?: string | null
+    city?: string | null
+  }
 
   // Only the keys actually sent are written, so a status change can't blank the
   // deadline — and with it every document deadline derived from that date.
   const patch: Record<string, unknown> = {}
   if (status !== undefined) patch.status = status
   if (deadline !== undefined) patch.deadline = deadline || null
+  if (major !== undefined) patch.major = major || null
+  if (examRequirements !== undefined) patch.exam_requirements = examRequirements || null
+  if (portalUrl !== undefined) patch.portal_url = portalUrl || null
+  if (price !== undefined) patch.price = price || null
+  if (city !== undefined) patch.city = city || null
 
   if (!Object.keys(patch).length) {
     return NextResponse.json({ error: 'Нечего обновлять' }, { status: 400 })

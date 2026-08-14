@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { ExternalLink, Clock, ChevronRight, X, Plus, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { ExternalLink, Clock, ChevronRight, X, Plus, Trash2, CheckCircle2 } from 'lucide-react'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import type { ApplicationStatus, University } from '@/types/studytrack'
 import rawData from '@/data/China_Universities_Programs.json'
@@ -31,10 +31,100 @@ function getInitials(name: string): string {
   return name.split(' ').filter((w) => w.length > 2).slice(0, 2).map((w) => w[0].toUpperCase()).join('')
 }
 
+const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+// Format an ISO date (YYYY-MM-DD) as «31 июля 2026 г.» without timezone drift.
+function formatRuDate(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '')
+  if (!m) return ''
+  return `${Number(m[3])} ${MONTHS_RU[Number(m[2]) - 1]} ${m[1]} г.`
+}
+
 function getSuggestions(query: string): UniSuggestion[] {
   const q = query.toLowerCase().trim()
   if (!q || q.length < 2) return []
   return UNI_INDEX.filter((u) => u.name.toLowerCase().includes(q)).slice(0, 8)
+}
+
+// Label with an optional «?» that shows a floating tooltip (bubble + arrow)
+// above the icon. Desktop: reveals on hover (CSS group-hover). Mobile (no
+// hover): tap toggles it. Width is capped so it never clips against the add
+// modal's overflow bounds.
+function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+  const [showHint, setShowHint] = useState(false)
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <label className="text-xs font-medium text-study-dark">{label}</label>
+        {hint && (
+          <span className="group relative inline-flex">
+            <button
+              type="button"
+              onClick={() => setShowHint((s) => !s)}
+              onMouseLeave={() => setShowHint(false)}
+              aria-label="Подсказка"
+              className="w-4 h-4 rounded-full bg-study-lightgray text-study-gray flex items-center justify-center text-[10px] font-bold leading-none hover:bg-study-gray/30 cursor-help"
+            >
+              ?
+            </button>
+            <span
+              className={`${showHint ? 'flex' : 'hidden'} group-hover:flex pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-max max-w-[220px] -translate-x-1/2 flex-col items-center`}
+            >
+              <span className="rounded-md bg-[#1f2937] px-2.5 py-1.5 text-center text-[11px] font-normal leading-snug text-white shadow-lg">
+                {hint}
+              </span>
+              <span className="h-0 w-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-[#1f2937]" />
+            </span>
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+// Specialty field: a combobox that opens its program list on focus/tap, filters
+// as you type, and still allows free text. Falls back to a plain input when the
+// university has no programs in our DB.
+function MajorCombobox({
+  value, onChange, programs, placeholder = 'Специальность',
+}: { value: string; onChange: (v: string) => void; programs: string[]; placeholder?: string }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const q = value.trim().toLowerCase()
+  const filtered = q ? programs.filter((p) => p.toLowerCase().includes(q)) : programs
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      <input
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+        placeholder={placeholder}
+        autoComplete="off"
+        className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+      />
+      {open && programs.length > 0 && filtered.length > 0 && (
+        <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-study-card rounded-xl card-shadow-hover border border-study-lightgray z-30">
+          {filtered.map((p, i) => (
+            <button
+              key={i}
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); onChange(p); setOpen(false) }}
+              className="w-full text-left px-4 py-2.5 text-sm text-study-dark hover:bg-study-bg border-b border-study-lightgray last:border-0"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 const statusConfig: Record<ApplicationStatus, { label: string; color: string }> = {
@@ -75,6 +165,10 @@ export default function UniTracker() {
     name: '', deadline: '', price: '', examRequirements: '', city: '', major: '', portalUrl: '',
   })
   const [suggestions, setSuggestions] = useState<UniSuggestion[]>([])
+  // Programs of the currently-named university (from our DB), used to power the
+  // specialty datalist. Empty when the vuz isn't in the DB — the field then
+  // stays a plain free-text input.
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([])
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -83,6 +177,74 @@ export default function UniTracker() {
   const [uniToDelete, setUniToDelete] = useState<University | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  // Editable fields of the currently-open university in the pipeline.
+  const [edit, setEdit] = useState({ deadline: '', major: '', examRequirements: '', portalUrl: '' })
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editSaved, setEditSaved] = useState(false)
+
+  // Load the open university's fields into the edit form; reset save state.
+  // Keyed on the id (not the object) so saving — which replaces selectedUni with
+  // an updated object of the same id — doesn't wipe the "Сохранено" message.
+  useEffect(() => {
+    if (!selectedUni) return
+    setEdit({
+      deadline: selectedUni.rawDeadline ?? '',
+      major: selectedUni.major ?? '',
+      examRequirements: selectedUni.examRequirements ?? '',
+      portalUrl: selectedUni.portalUrl ?? '',
+    })
+    setEditError(null)
+    setEditSaved(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedUni?.id])
+
+  const updateEdit = (patch: Partial<typeof edit>) => {
+    setEdit((current) => ({ ...current, ...patch }))
+    setEditSaved(false)
+    setEditError(null)
+  }
+
+  const saveUniversityEdits = async () => {
+    if (!selectedUni) return
+    setIsSavingEdit(true)
+    setEditError(null)
+    try {
+      const deadlineChanged = (edit.deadline || '') !== (selectedUni.rawDeadline || '')
+      const response = await fetch(`/api/universities/${selectedUni.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deadline: edit.deadline,
+          major: edit.major,
+          examRequirements: edit.examRequirements,
+          portalUrl: edit.portalUrl,
+        }),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось сохранить изменения')
+
+      const updated: University = {
+        ...selectedUni,
+        rawDeadline: edit.deadline || null,
+        deadline: formatRuDate(edit.deadline),
+        major: edit.major || null,
+        examRequirements: edit.examRequirements || null,
+        portalUrl: edit.portalUrl,
+      }
+      setSelectedUni(updated)
+      setUniversities((current) => current.map((item) => (item.id === updated.id ? updated : item)))
+      setEditSaved(true)
+      window.setTimeout(() => setEditSaved(false), 3000)
+      // A moved deadline reschedules the shared checklist on the server; tell the
+      // rest of the app so Чек-лист and Дедлайны re-read the new dates.
+      if (deadlineChanged) window.dispatchEvent(new Event('st:documents-changed'))
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'Не удалось сохранить изменения')
+    } finally {
+      setIsSavingEdit(false)
+    }
+  }
 
   const confirmDeleteUniversity = async () => {
     if (!uniToDelete) return
@@ -136,6 +298,7 @@ export default function UniTracker() {
 
       setUniversities((current) => [...current, data.university])
       setNewUniversity({ name: '', deadline: '', price: '', examRequirements: '', city: '', major: '', portalUrl: '' })
+      setSelectedPrograms([])
       setIsAddOpen(false)
       // The server just seeded the standard checklist for this vuz and
       // rescheduled the shared documents; Чек-лист needs to re-read them.
@@ -166,6 +329,12 @@ export default function UniTracker() {
     }
   }
 
+  // Programs of the open university, from our DB — powers the specialty dropdown
+  // when editing. Empty if the vuz isn't in the DB (then it's a plain text field).
+  const editPrograms = selectedUni
+    ? UNI_INDEX.find((u) => u.name.toLowerCase() === selectedUni.name.toLowerCase())?.programs ?? []
+    : []
+
   return (
     <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
@@ -174,7 +343,7 @@ export default function UniTracker() {
           <p className="text-xs text-study-gray mt-0.5">Добавляйте вузы из списка ниже и отслеживайте статус заявок</p>
         </div>
         <button
-          onClick={() => setIsAddOpen(true)}
+          onClick={() => { setSelectedPrograms([]); setIsAddOpen(true) }}
           className="shrink-0 w-9 h-9 rounded-lg bg-study-brown text-white flex items-center justify-center hover:bg-study-brown/90"
           title="Добавить вуз"
         >
@@ -279,25 +448,69 @@ export default function UniTracker() {
                 {formError && <p className="text-xs text-study-red mt-2">{formError}</p>}
               </div>
 
-              <div className="space-y-2.5 text-sm">
-                {selectedUni.deadline && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-study-gray shrink-0" />
-                    <span className="text-study-dark">Дедлайн: <span className="font-medium">{selectedUni.deadline}</span></span>
+              <div className="space-y-3">
+                <Field label="Крайний срок подачи" hint="Дедлайн зависит от программы и вуза — точную дату смотрите на портале. Изменение даты пересчитает сроки документов в чек-листе.">
+                  <input
+                    type="date"
+                    value={edit.deadline}
+                    onChange={(e) => updateEdit({ deadline: e.target.value })}
+                    className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                  />
+                </Field>
+
+                <Field
+                  label="Специальность"
+                  hint={editPrograms.length > 0
+                    ? 'Начните вводить — покажем программы этого вуза из нашей базы. Можно вписать свою. Названия в базе на английском.'
+                    : 'Впишите выбранную программу. Можно менять в любой момент.'}
+                >
+                  <MajorCombobox
+                    value={edit.major}
+                    onChange={(v) => updateEdit({ major: v })}
+                    programs={editPrograms}
+                  />
+                </Field>
+
+                <Field label="Экзамены и требования" hint="Например: HSK 4, IELTS 6.0. Требования зависят от программы — сверяйтесь с порталом вуза.">
+                  <input
+                    value={edit.examRequirements}
+                    onChange={(e) => updateEdit({ examRequirements: e.target.value })}
+                    placeholder="Например: HSK 4, IELTS 6.0"
+                    className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                  />
+                </Field>
+
+                <Field label="Ссылка на портал" hint="Ссылка на страницу поступления/программ вуза.">
+                  <input
+                    value={edit.portalUrl}
+                    onChange={(e) => updateEdit({ portalUrl: e.target.value })}
+                    placeholder="Ссылка на портал"
+                    className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                  />
+                </Field>
+                {edit.portalUrl && (
+                  <a href={edit.portalUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-study-green hover:underline">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Открыть портал
+                  </a>
+                )}
+
+                {editError && <p className="rounded-xl bg-study-red/10 px-3 py-2 text-sm font-semibold text-study-red">{editError}</p>}
+
+                <button
+                  onClick={saveUniversityEdits}
+                  disabled={isSavingEdit}
+                  className="w-full rounded-xl bg-study-green text-white py-2.5 text-sm font-bold disabled:opacity-50"
+                >
+                  {isSavingEdit ? 'Сохраняем...' : 'Сохранить изменения'}
+                </button>
+
+                {editSaved && (
+                  <div className="flex items-center justify-center gap-1.5 rounded-xl bg-study-green/10 px-3 py-2 text-sm font-semibold text-study-green">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Изменения сохранены
                   </div>
                 )}
-                {selectedUni.portalUrl && (
-                  <div className="flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4 text-study-gray shrink-0" />
-                    <a href={selectedUni.portalUrl} className="text-study-green hover:underline break-all" target="_blank" rel="noopener noreferrer">
-                      Портал вуза
-                    </a>
-                  </div>
-                )}
-                {selectedUni.price && <div className="text-study-dark">Стоимость: <span className="font-medium">{selectedUni.price}</span></div>}
-                {selectedUni.examRequirements && <div className="text-study-dark">Экзамены: <span className="font-medium">{selectedUni.examRequirements}</span></div>}
-                {selectedUni.city && <div className="text-study-dark">Город: <span className="font-medium">{selectedUni.city}</span></div>}
-                {selectedUni.major && <div className="text-study-dark">Специальность: <span className="font-medium">{selectedUni.major}</span></div>}
               </div>
 
               {selectedUni.history.length > 0 && (
@@ -400,6 +613,7 @@ export default function UniTracker() {
             </div>
 
             <div className="p-4 sm:p-6 space-y-3">
+              <Field label="Университет" hint="Начните вводить название и выберите вуз из базы — тогда подставится ссылка на портал, а в «Специальности» появятся доступные программы.">
               <div className="relative" ref={suggestionsRef}>
                 <input
                   value={newUniversity.name}
@@ -407,6 +621,10 @@ export default function UniTracker() {
                     const val = e.target.value
                     setNewUniversity((current) => ({ ...current, name: val }))
                     setSuggestions(getSuggestions(val))
+                    // Keep specialty suggestions in sync if the typed name exactly
+                    // matches a vuz in the DB; otherwise clear them.
+                    const match = UNI_INDEX.find((u) => u.name.toLowerCase() === val.toLowerCase())
+                    setSelectedPrograms(match ? match.programs : [])
                   }}
                   onBlur={() => setTimeout(() => setSuggestions([]), 150)}
                   placeholder="Начните вводить название университета..."
@@ -425,6 +643,7 @@ export default function UniTracker() {
                             name: u.name,
                             portalUrl: u.link,
                           }))
+                          setSelectedPrograms(u.programs)
                           setSuggestions([])
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-study-bg transition-colors border-b border-study-lightgray last:border-0 flex items-center gap-3"
@@ -439,32 +658,40 @@ export default function UniTracker() {
                   </div>
                 )}
               </div>
+              </Field>
               <div className="grid sm:grid-cols-2 gap-3">
+                <Field label="Крайний срок подачи" hint="Заполняется вручную. Дедлайн зависит от программы и вуза — точную дату смотрите на портале (ссылка ниже). Мы намеренно не подставляем её автоматически, чтобы не показать неверную.">
                 <input
                   type="date"
                   value={newUniversity.deadline}
                   onChange={(event) => setNewUniversity((current) => ({ ...current, deadline: event.target.value }))}
-                  className="rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                  className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
                 />
-                <input
+                </Field>
+                <Field label="Специальность" hint={selectedPrograms.length > 0 ? 'Начните вводить — покажем программы этого вуза из нашей базы. Можно вписать свою. Названия в базе на английском.' : 'Впишите специальность вручную. Для этого вуза у нас пока нет списка программ на английском — уточните на портале.'}>
+                <MajorCombobox
                   value={newUniversity.major}
-                  onChange={(event) => setNewUniversity((current) => ({ ...current, major: event.target.value }))}
-                  placeholder="Специальность"
-                  className="rounded-xl border border-study-lightgray px-4 py-3 text-sm"
+                  onChange={(v) => setNewUniversity((current) => ({ ...current, major: v }))}
+                  programs={selectedPrograms}
                 />
+                </Field>
               </div>
+              <Field label="Экзамены и требования" hint="Впишите вручную, например: HSK 4, IELTS 6.0. Требования зависят от программы — сверяйтесь с порталом вуза.">
               <input
                 value={newUniversity.examRequirements}
                 onChange={(event) => setNewUniversity((current) => ({ ...current, examRequirements: event.target.value }))}
-                placeholder="Экзамены и требования, например HSK / IELTS"
+                placeholder="Например: HSK 4, IELTS 6.0"
                 className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
               />
+              </Field>
+              <Field label="Ссылка на портал" hint="Подставляется автоматически при выборе вуза из базы. При необходимости измените вручную.">
               <input
                 value={newUniversity.portalUrl}
                 onChange={(event) => setNewUniversity((current) => ({ ...current, portalUrl: event.target.value }))}
                 placeholder="Ссылка на портал"
                 className="w-full rounded-xl border border-study-lightgray px-4 py-3 text-sm"
               />
+              </Field>
 
               {formError && <p className="rounded-xl bg-study-red/10 px-3 py-2 text-sm font-semibold text-study-red">{formError}</p>}
 

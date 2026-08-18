@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AlertCircle, Check, ExternalLink, FileText, GraduationCap, LogOut, RefreshCw, Trash2, UserPlus, X } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
+import UniversityBankTool from '@/sections/admin/UniversityBankTool'
 import type { AdminStudentSummary, AdminUniversity, AdminUpload, ApplicationStatus, DocumentStatus, StudentDocument } from '@/types/studytrack'
 
 const universityStatuses: { value: ApplicationStatus; label: string }[] = [
@@ -63,7 +64,7 @@ const emptyStudentForm = {
   customDocument: '',
 }
 
-type AdminTab = 'premium' | 'diy'
+type AdminTab = 'premium' | 'diy' | 'shortlists'
 
 export default function AdminDashboard() {
   const { user, logout } = useApp()
@@ -590,10 +591,22 @@ export default function AdminDashboard() {
             >
               DIY клиенты
             </button>
+            <button
+              onClick={() => { setAdminTab('shortlists'); setSelectedStudent(null) }}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                adminTab === 'shortlists'
+                  ? 'bg-study-brown text-white'
+                  : 'text-study-gray hover:text-study-dark'
+              }`}
+            >
+              Подбор вузов
+            </button>
           </div>
         )}
 
-        {!isLoading && !error && (
+        {!isLoading && !error && adminTab === 'shortlists' && <UniversityBankTool />}
+
+        {!isLoading && !error && adminTab !== 'shortlists' && (
           <div className="grid lg:grid-cols-[1fr_460px] gap-5">
             <div className="space-y-5">
               {adminTab === 'premium' && (

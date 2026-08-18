@@ -25,7 +25,7 @@ Launching into the **Russian market** — this drives the infrastructure migrati
 
 ---
 
-## Current State (as of commit `097a003`)
+## Current State (as of commit `d19a621`)
 
 **The platform is LIVE at `https://app.kaykitay.ru`.** Six main pages (sidebar / mobile nav): **Начало обучения, Главная, Чек-лист, Вузы, Дедлайны, Кейсы поступлений** (renamed from «Мои шансы») + consultant Admin dashboard. Light/dark theme toggle. Parent mode was removed entirely.
 
@@ -278,6 +278,45 @@ Cropped `consultant.png` to the figure and re-tuned the peek transforms; made on
 
 ---
 
+## Session log — 2026-07-28 / 08-14 (custdev feedback, university intros, doc examples)
+
+Deployed as commit **`d19a621`** on `diy-product` (was `097a003`). Context: sold access to **3 users at 5 000 ₽ (50% custdev discount)** for in-depth feedback; several of the fixes below came straight from their notes.
+
+### Learning / paywall fixes (from user feedback)
+1. **🔒 The module-level paywall had no PIN input.** Tapping a locked *module* (e.g. the apply-guide tutorial) opened the `videoOpen` modal in `LearningStart.tsx`, which only offered «Написать Яне» — a paid user with a PIN was dead-ended. Added the same PIN-entry block the lesson-level `lockedBox` modal already had (reuses `verifyPin`). **This was the money path.**
+2. **«Как определиться с программой?» is free but showed a lock icon.** Swapped the `Lock` for a «Бесплатно» badge.
+
+### Вузы — «Добавить вуз» form + editable pipeline (`UniTracker.tsx`)
+- Form fields gained **labels + a tappable/hover `?` hint** (`Field` component, floating CSS tooltip) — the date field had no label at all, which confused testers.
+- **Specialty is now a combobox** (`MajorCombobox`): opens its program list on focus/tap, filters as you type, free-text fallback. Sourced from the selected uni's programs in `China_Universities_Programs.json`. Used in both the add form and the edit modal. (Started as a native `<datalist>` — it doesn't reliably open on tap, hence the custom combobox.)
+- **Pipeline detail modal is now editable**: deadline (date), specialty, exams, portal URL, with «Сохранить изменения» + a green «Изменения сохранены» confirmation. `PATCH /api/universities/[id]` was extended from `status`/`deadline` only to also accept `major` / `examRequirements` / `portalUrl` / `price` / `city` (columns already existed). Client-side `formatRuDate` helper added (server's isn't importable in a client component). ⚠️ The save-confirmation only shows because the reset effect is keyed on `selectedUni?.id`, not the object — keying on the object wiped the flag on save.
+
+### Вузы explorer — city filter + university intros + hover cards (`Universities.tsx`)
+- **City filter** (dropdown, 55 cities). New `src/data/universityCities.json` maps all **182** tracker unis → Russian city: 176 from existing data, **6 hand-verified by the user** (Jiangxi UFE→Наньчан, Capital UEB→Пекин, Nanjing UFE→Нанкин, China Medical (Shenyang)→Шэньян, CUHK-Shenzhen→Шэньчжэнь, Guangdong Technion→Шаньтоу). Normalized the Сямынь/Сямэнь duplicate. City shown on each card.
+- **University intros** — new `src/data/universityIntros.json` (182 entries), surfaced as a **tap-to-open modal** (RU name, city/founded/ranking chips, blurb, programs toggle, «перейти на портал» ↗, Wikipedia source) and a **desktop hover-reveal overlay** on each card (study-brown, slides up).
+  - Built by a one-time enrichment pipeline (scripts in scratchpad): Wikipedia REST summary API, **RU-Wikipedia-first** (60 unis, native), English-fallback machine-translated to standardized RU (122 unis). **Wikidata `country = China (Q148)` guard** is the *selector*, not just a flag — it auto-corrected disambiguation traps that would have shipped wrong schools (China Medical→Taiwan article; Guangdong Technion→Israeli Technion). Rankings only from the verified 45-uni `universities.json`, never Wikipedia.
+  - ⚠️ **The 122 machine-drafted intros are DRAFTS, not ratified.** They are LIVE in prod as of this push. Review sheet at `~/Downloads/university_intros_REVIEW.csv` (edit → reload into `universityIntros.json`, keyed by the English name). Hunan University's founded year is the historical Yuelu Academy (0976) and was blanked.
+
+### Embedded example documents in lessons
+Real filled-in sample documents, so students see what each looks like:
+- **Medical exam form** (`module-b6_new.md`, lesson `b5`): filled example (2 jpg pages, stacked) **+ a blank downloadable PDF** template.
+- **CV** (`module-b10_new.md`, lesson `b9`): inline PDF view.
+- **Non-criminal certificate** (`module-b5_new.md`, lesson `b4`): original + notarized EN translation, inline PDF.
+- **Marketing teaching plan** (`how-to-choose.md`, section 5 «Где смотреть учебный план»): inline PDF. Verified the edit doesn't disturb the positional infographic injection (those are in sections 2/3/8/10; the `?`-counted stats are per-section).
+- **Parser enhancement:** `renderInline` now makes local file links (`[text](/x.pdf)`) **download** (adds `download` + `target=_blank`) instead of navigating the SPA away. Applies platform-wide.
+- ⚠️ **These sample docs contain Iana Medvedeva's real personal/medical data** (birth date, blood type, health answers, MVD stamps, CV email/phone). Deliberate — they're her own docs used as examples — but flagged in case any should be redacted before scaling.
+
+### Social block rebrand (`LearningStart.tsx`) — RU-compliance/humour
+Instagram → **«Нельзя-грам»** (lucide glyph removed, `Н—Г` lettermark); YouTube → **«соцсеть с длинными видео»**, logo is now just the `Play` triangle; Telegram-канал → **«соцсеть с кружочками»**; «Ашот/Яна — личный Telegram» → «…личный чат»; the Meta/нежелательные-организации disclaimer reworded to the nicknames. The actual links (t.me, youtube.com, instagram.com) are unchanged.
+
+### Discussed, not built
+- **Student case (Дмитрий)** — produced a 10-uni English-taught-business shortlist in the user's own CSV format (`~/Downloads/Подбор_вузов_Дмитрий_shortlist.csv`). Filled name/link/city/programs from our data; **left ranks/tuition/exam-requirements/deadlines/dorm as «требует проверки»** — those aren't in our data and must be verified per uni site (accuracy rule).
+- **«Следующий шаг» spine** — analysed as the top fix for the *information-overload* complaint (testers feel the platform is too much to read). Finding: `NextActionBanner` reads a consultant-era `next_actions` table that's always empty for DIY, so the "next step" is effectively dead; the fix is a **computed** engine (from `/api/universities` + `/api/documents` + `/api/deadlines`) that shows one prioritized action with a working CTA, made the top of Главная. **Designed, set aside — not built.** Priority ladder + a new-user entry-point decision are the open questions.
+
+**Standing directive saved to memory (`accuracy-first-directive`):** optimize every content/data input for 100% accuracy; if a fact can't be verified, say so and let the user check — never guess. This drove the «требует проверки» flags above.
+
+---
+
 ## Self-hosted Supabase — operating notes
 
 | | |
@@ -364,6 +403,7 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 
 Launch is done; these are the post-launch priorities. Several older items are now closed (magic link, domain move, dark mode).
 
+0. **🔴 Ratify the 122 draft university intros — they are LIVE in prod but unreviewed.** From the 2026-07-28/08-14 session. Edit `~/Downloads/university_intros_REVIEW.csv`, then reload into `src/data/universityIntros.json` (keyed by English name). Accuracy risk: machine-drafted RU blurbs in front of paying users. See that session log.
 1. **🔴 mail.ru email deliverability** — verification emails don't reach mail.ru (Gmail/Yandex fine). Blocks a chunk of real signups. See the launch session log for the diagnosis and the fix sequence (postmaster.mail.ru registration, Timeweb ticket, check Спам). Highest-priority because it silently costs signups.
 2. **Tell the buyer about the 2-year window.** Still enforced in code, stated *nowhere* in UI or terms. Refund-argument shape; frame as «2 года доступа к постоянно обновляемой платформе».
 3. **Test the PIN → paid-access flow end to end.** Admin sets `pin_code` → student enters it → `/api/auth/verify-pin` flips `subscription_status` to `active` and sets `access_expires_at` +2y. **Still not exercised since the cutover**, and it's the money path.

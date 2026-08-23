@@ -25,7 +25,7 @@ Launching into the **Russian market** — this drives the infrastructure migrati
 
 ---
 
-## Current State (as of commit `cede806`)
+## Current State (as of commit `1be19ab`)
 
 > Two consultant-only internal tools added on top of the student app (2026-08-15/21 session): the **University Bank / shortlist tool** in the admin panel, and the **concierge CRM** at `clients.kaykitay.ru`. See that session log. The CRM then gained four add-ons on 2026-08-22 (stage timers + three new columns — see that session log).
 
@@ -351,7 +351,7 @@ Code is pushed (autodeploys the `-9bc8` app). **Remaining manual step:** in Time
 
 ## Session log — 2026-08-22 (CRM add-ons — Iana feedback)
 
-Four consultant-facing add-ons to the concierge CRM (`clients.kaykitay.ru`), from Iana's notes. Pushed to `diy-product` as commit **`cede806`** (was `fe663a9`). Nothing in the student app was touched. One additive DB migration was applied to the live self-hosted DB via Studio **before** the code deploy (expand-contract).
+Four consultant-facing add-ons to the concierge CRM (`clients.kaykitay.ru`), from Iana's notes. Pushed to `diy-product` as commit **`1be19ab`** (was `fe663a9`). Nothing in the student app was touched. One additive DB migration was applied to the live self-hosted DB via Studio **before** the code deploy (expand-contract).
 
 1. **Stage timers (SLA countdowns).** A new client auto-starts in «Анкета отправлена» with a **10-day** deadline; entering «Первичный подбор» arms a **7-day** deadline, re-firing every time she steps back to it after a client asks to revise the shortlist. Logic is centralized: `STAGE_AUTO_DEADLINE_DAYS` + `autoDeadlineIso()` in `src/lib/crm.ts`; the POST route seeds the 10-day on create; a new `setStage()` in `CrmApp.tsx` applies the timer on **every** stage change — used by both places the stage is set (the table cell popover and the peek `<select>`), so neither path can bypass it. Reuses the existing `deadlineInfo`/deadline-chip countdown. Stages **without** a timer leave the existing deadline untouched (they do not clear it). ⚠️ **Open spec:** Iana still owes the full timer table. Only `anketa`=10d and `primary_selection`=7d are wired. Undecided: whether any other stage gets a timer, and whether moving to «Финальный список» should **clear** the leftover 7-day countdown (currently it keeps showing).
 

@@ -7,13 +7,16 @@ import {
   CheckSquare,
   Clock,
   ExternalLink,
+  GraduationCap,
   GripVertical,
+  Languages,
   Link2,
   LogOut,
   MapPin,
   Maximize2,
   MessageCircle,
   Plus,
+  StickyNote,
   Trash2,
   Users,
   X,
@@ -25,6 +28,9 @@ import {
   PROGRAMS,
   STAGES,
   STAGE_BY_ID,
+  STUDY_LANGUAGES,
+  STUDY_LANGUAGE_BY_ID,
+  autoDeadlineIso,
   genId,
   type Block,
   type CrmClient,
@@ -64,7 +70,13 @@ function markdownLiteToHtml(text: string) {
 }
 
 type Popover =
-  | { kind: 'stage' | 'anketa' | 'program' | 'uni' | 'text'; clientId: string; field?: 'parentName' | 'telegramId'; top: number; left: number }
+  | {
+      kind: 'stage' | 'anketa' | 'program' | 'uni' | 'text' | 'language' | 'notes'
+      clientId: string
+      field?: 'parentName' | 'telegramId' | 'majors'
+      top: number
+      left: number
+    }
   | null
 
 type UniSuggestion = { name: string; city: string }
@@ -209,6 +221,20 @@ export default function CrmApp() {
     [mutate, queuePatch]
   )
 
+  /* ---------- stage change (with automatic timer) ----------
+     Some stages reset the deadline the instant they're entered (see
+     STAGE_AUTO_DEADLINE_DAYS): «Первичный подбор» → +7 дней on every entry, so
+     stepping back after the client asks to change the shortlist re-arms it.
+     Stages without a timer leave the existing deadline untouched. */
+  const setStage = useCallback(
+    (clientId: string, stageId: string) => {
+      const iso = autoDeadlineIso(stageId)
+      mutate(clientId, (c) => ({ ...c, stage: stageId, ...(iso ? { stageDeadline: iso } : {}) }))
+      queuePatch(clientId, iso ? { stage: stageId, stageDeadline: iso } : { stage: stageId }, true)
+    },
+    [mutate, queuePatch]
+  )
+
   /* ---------- universities ---------- */
   const addUni = useCallback(
     async (clientId: string, name: string, source: 'explorer' | 'manual') => {
@@ -309,7 +335,7 @@ export default function CrmApp() {
 
   /* ---------- popover ---------- */
   const openPopover = useCallback(
-    (kind: NonNullable<Popover>['kind'], clientId: string, e: React.MouseEvent, field?: 'parentName' | 'telegramId') => {
+    (kind: NonNullable<Popover>['kind'], clientId: string, e: React.MouseEvent, field?: 'parentName' | 'telegramId' | 'majors') => {
       e.stopPropagation()
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
       const width = kind === 'text' ? 240 : 280
@@ -395,6 +421,7 @@ export default function CrmApp() {
   const popClient = popover ? clients.find((c) => c.id === popover.clientId) ?? null : null
 
   const programLabel = (id: string) => PROGRAMS.find((p) => p.id === id)?.label ?? id
+  const langLabel = (id: string) => STUDY_LANGUAGE_BY_ID[id]?.label ?? id
 
   /* ============================================================ RENDER ============================================================ */
   return (
@@ -484,8 +511,11 @@ export default function CrmApp() {
             <div>Telegram ID</div>
             <div>Анкета</div>
             <div>Этап</div>
+            <div>Заметки по этапу</div>
             <div>Программа</div>
+            <div>Язык</div>
             <div>Вузы</div>
+            <div>Специальности</div>
             <div>Экзамены</div>
             <div>Чек-лист</div>
           </div>
@@ -540,12 +570,25 @@ export default function CrmApp() {
                       </span>
                     </div>
                   </div>
+                  <div className="clickable-cell" onClick={(e) => openPopover('notes', c.id, e)}>
+                    <div className={`cell-notes ${c.stageNotes ? '' : 'muted'}`}>{c.stageNotes || '—'}</div>
+                  </div>
                   <div className="clickable-cell" onClick={(e) => openPopover('program', c.id, e)}>
                     <span className="program-pill">{programLabel(c.program)}</span>
+                  </div>
+                  <div className="clickable-cell" onClick={(e) => openPopover('language', c.id, e)}>
+                    {c.studyLanguage ? (
+                      <span className="lang-pill" data-lang={c.studyLanguage}>{langLabel(c.studyLanguage)}</span>
+                    ) : (
+                      <span className="cell-sub">—</span>
+                    )}
                   </div>
                   <div className="clickable-cell" onClick={(e) => openPopover('uni', c.id, e)}>
                     <div className="uni-cell">{uniPreview || '—'}</div>
                     {c.universities.length > 2 && <div className="uni-count">+{c.universities.length - 2} ещё</div>}
+                  </div>
+                  <div className="clickable-cell" onClick={(e) => openPopover('text', c.id, e, 'majors')}>
+                    <div className={`cell-majors ${c.majors ? '' : 'muted'}`}>{c.majors || '—'}</div>
                   </div>
                   <div style={{ cursor: 'pointer' }} onClick={() => openPeek(c.id)}>
                     <div className="cell-sub">{examRows.length ? `${examsDone}/${examRows.length} сдано` : '—'}</div>
@@ -599,6 +642,7 @@ export default function CrmApp() {
             setAddBlockFor={setAddBlockFor}
             onClose={closePeek}
             setField={setField}
+            setStage={setStage}
             setBlocks={setBlocks}
             addUni={addUni}
             removeUni={removeUni}
@@ -627,7 +671,7 @@ export default function CrmApp() {
                     key={st.id}
                     className="cp-option"
                     onClick={() => {
-                      setField(popClient.id, 'stage', st.id, true)
+                      setStage(popClient.id, st.id)
                       closePopover()
                     }}
                   >
@@ -688,6 +732,44 @@ export default function CrmApp() {
                   </div>
                 ))}
               </div>
+            </>
+          )}
+
+          {popover.kind === 'language' && (
+            <>
+              <div className="cp-hint">Язык обучения</div>
+              <div className="cp-options">
+                {STUDY_LANGUAGES.map((l) => (
+                  <div
+                    key={l.id}
+                    className="cp-option"
+                    onClick={() => {
+                      setField(popClient.id, 'studyLanguage', l.id, true)
+                      closePopover()
+                    }}
+                  >
+                    <span className="cp-dots"><GripVertical style={{ width: 12, height: 12 }} /></span>
+                    <span className="cp-tag" style={{ background: pillBg(l.color), color: pillFg(l.color) }}>
+                      {l.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {popover.kind === 'notes' && (
+            <>
+              <div className="cp-input-row">
+                <textarea
+                  className="cp-textarea"
+                  autoFocus
+                  defaultValue={popClient.stageNotes ?? ''}
+                  placeholder="Кому что обещано на этом этапе..."
+                  onBlur={(e) => setField(popClient.id, 'stageNotes', e.target.value, true)}
+                />
+              </div>
+              <div className="cp-locked-note">Клик вне поля — сохранить.</div>
             </>
           )}
 
@@ -773,6 +855,7 @@ function PeekContent(props: {
   setAddBlockFor: (id: string | null) => void
   onClose: () => void
   setField: (clientId: string, field: keyof CrmClient, value: unknown, immediate?: boolean) => void
+  setStage: (clientId: string, stageId: string) => void
   setBlocks: (clientId: string, updater: (blocks: Block[]) => Block[], immediate?: boolean) => void
   addUni: (clientId: string, name: string, source: 'explorer' | 'manual') => void
   removeUni: (clientId: string, uniId: number) => void
@@ -790,6 +873,7 @@ function PeekContent(props: {
     setAddBlockFor,
     onClose,
     setField,
+    setStage,
     setBlocks,
     addUni,
     removeUni,
@@ -856,7 +940,7 @@ function PeekContent(props: {
             className="tag-select"
             style={{ background: pillBg(STAGE_BY_ID[s.stage]?.color ?? 'gray'), color: pillFg(STAGE_BY_ID[s.stage]?.color ?? 'gray') }}
             value={s.stage}
-            onChange={(e) => setField(s.id, 'stage', e.target.value, true)}
+            onChange={(e) => setStage(s.id, e.target.value)}
           >
             {STAGES.map((st) => (
               <option key={st.id} value={st.id}>
@@ -864,6 +948,14 @@ function PeekContent(props: {
               </option>
             ))}
           </select>
+        </PropRow>
+
+        <PropRow icon={<StickyNote className="icon" />} label="Заметки по этапу">
+          <textarea
+            value={s.stageNotes ?? ''}
+            placeholder="Кому что обещано на этом этапе..."
+            onChange={(e) => setField(s.id, 'stageNotes', e.target.value)}
+          />
         </PropRow>
 
         <PropRow icon={<Clock className="icon" />} label="Дедлайн этапа">
@@ -898,6 +990,25 @@ function PeekContent(props: {
             {PROGRAMS.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
+              </option>
+            ))}
+          </select>
+        </PropRow>
+
+        <PropRow icon={<Languages className="icon" />} label="Язык обучения">
+          <select
+            className="tag-select"
+            data-lang={s.studyLanguage ?? 'unsure'}
+            style={{
+              background: pillBg(STUDY_LANGUAGE_BY_ID[s.studyLanguage ?? '']?.color ?? 'gray'),
+              color: pillFg(STUDY_LANGUAGE_BY_ID[s.studyLanguage ?? '']?.color ?? 'gray'),
+            }}
+            value={s.studyLanguage ?? 'unsure'}
+            onChange={(e) => setField(s.id, 'studyLanguage', e.target.value, true)}
+          >
+            {STUDY_LANGUAGES.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.label}
               </option>
             ))}
           </select>
@@ -970,6 +1081,14 @@ function PeekContent(props: {
               )}
             </span>
           </div>
+        </PropRow>
+
+        <PropRow icon={<GraduationCap className="icon" />} label="Специальности">
+          <input
+            value={s.majors ?? ''}
+            placeholder="Напр.: Экономика, Международная торговля"
+            onChange={(e) => setField(s.id, 'majors', e.target.value)}
+          />
         </PropRow>
 
         <PropRow icon={<Link2 className="icon" />} label="Ссылка на подбор">

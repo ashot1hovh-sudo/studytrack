@@ -49,9 +49,9 @@
 .crm-scope .filter-count{ font-size:11.5px; color:rgb(var(--gray)); margin-left:auto; padding-left:8px; white-space:nowrap; }
 
 .crm-scope .table-card{ background:rgb(var(--card)); border-radius:14px; box-shadow:0 1px 2px rgba(43,45,66,.06), 0 4px 16px rgba(43,45,66,.05); overflow:hidden; }
-.crm-scope .thead-row{ display:grid; grid-template-columns:1.3fr 1.1fr 1fr 0.7fr 1.2fr 1fr 1.6fr 1fr 1.2fr; gap:0; padding:11px 14px; border-bottom:1.5px solid rgb(var(--lightgray)); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:rgb(var(--gray)); }
+.crm-scope .thead-row{ display:grid; grid-template-columns:1.2fr 0.85fr 0.85fr 0.5fr 1.15fr 1.3fr 0.85fr 0.75fr 1.15fr 1.05fr 0.75fr 0.95fr; gap:0; padding:11px 14px; border-bottom:1.5px solid rgb(var(--lightgray)); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:rgb(var(--gray)); }
 .crm-scope .thead-row > div{ padding-right:8px; display:flex; align-items:center; }
-.crm-scope .data-row{ display:grid; grid-template-columns:1.3fr 1.1fr 1fr 0.7fr 1.2fr 1fr 1.6fr 1fr 1.2fr; gap:0; padding:11px 14px; cursor:pointer; align-items:center; transition:background .12s ease; border-bottom:1px solid rgb(var(--lightgray)); position:relative; }
+.crm-scope .data-row{ display:grid; grid-template-columns:1.2fr 0.85fr 0.85fr 0.5fr 1.15fr 1.3fr 0.85fr 0.75fr 1.15fr 1.05fr 0.75fr 0.95fr; gap:0; padding:11px 14px; cursor:pointer; align-items:center; transition:background .12s ease; border-bottom:1px solid rgb(var(--lightgray)); position:relative; }
 .crm-scope .data-row:last-child{ border-bottom:none; }
 .crm-scope .data-row:hover{ background:rgb(var(--bg)); }
 .crm-scope .data-row.active-row{ background:rgba(107,79,75,.06); }
@@ -80,6 +80,16 @@
 .crm-scope .program-pill{ font-size:11px; font-weight:600; color:rgb(var(--brown)); background:rgb(var(--brown) / .1); padding:3px 8px; border-radius:7px; display:inline-block; white-space:nowrap; }
 .crm-scope .uni-cell{ font-size:12px; color:rgb(var(--dark)); white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
 .crm-scope .uni-count{ font-size:11px; color:rgb(var(--gray)); }
+
+/* stage-notes + majors table cells (2-line clamp) */
+.crm-scope .cell-notes, .crm-scope .cell-majors{ font-size:11.5px; line-height:1.35; color:rgb(var(--dark)); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.crm-scope .cell-notes.muted, .crm-scope .cell-majors.muted{ color:rgb(var(--gray)); }
+
+/* language pill */
+.crm-scope .lang-pill{ font-size:11px; font-weight:600; padding:3px 8px; border-radius:7px; display:inline-block; white-space:nowrap; }
+.crm-scope .lang-pill[data-lang="chinese"]{ color:rgb(var(--brown)); background:rgb(var(--brown) / .1); }
+.crm-scope .lang-pill[data-lang="english"]{ color:rgb(var(--orange)); background:rgb(var(--orange) / .12); }
+.crm-scope .lang-pill[data-lang="unsure"]{ color:rgb(var(--gray)); background:rgb(var(--gray) / .12); }
 
 .crm-scope .mini-progress{ display:flex; align-items:center; gap:6px; }
 .crm-scope .mini-bar{ flex:1; height:5px; border-radius:3px; background:rgb(var(--lightgray)); overflow:hidden; min-width:30px; }
@@ -174,6 +184,7 @@
 .crm-scope .cp-chip button{ background:none; border:none; cursor:pointer; padding:0; display:flex; opacity:.65; color:inherit; }
 .crm-scope .cp-chip button:hover{ opacity:1; }
 .crm-scope .cp-caret-input{ border:none; outline:none; background:transparent; font-family:inherit; font-size:12.5px; flex:1; min-width:60px; padding:3px 2px; color:rgb(var(--dark)); }
+.crm-scope .cp-textarea{ width:100%; border:none; outline:none; background:transparent; font-family:inherit; font-size:12.5px; line-height:1.45; color:rgb(var(--dark)); resize:vertical; min-height:84px; padding:3px 2px; }
 .crm-scope .cp-hint{ font-size:10.5px; font-weight:700; color:rgb(var(--gray)); text-transform:uppercase; letter-spacing:.03em; padding:9px 12px 5px; }
 .crm-scope .cp-options{ max-height:220px; overflow-y:auto; padding:2px 6px 8px; }
 .crm-scope .cp-option{ display:flex; align-items:center; gap:8px; padding:6px 7px; border-radius:7px; cursor:pointer; }

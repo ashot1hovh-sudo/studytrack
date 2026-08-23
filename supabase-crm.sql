@@ -25,7 +25,15 @@ create table if not exists public.crm_clients (
   stage_deadline timestamptz,
   date_x date,
 
+  -- "Who was promised what" at the current stage — its own column next to Этап
+  -- so the consultant sees it without opening each client's peek.
+  stage_notes text,
+
   program text not null default 'bachelor',
+  -- Language of instruction the student targets: 'chinese' | 'english' | 'unsure'.
+  study_language text,
+  -- Free-text specialties (majors) the student is applying for.
+  majors text,
 
   -- Free-form content area (text / checklist / exam_table blocks). JSONB rather
   -- than a normalized block schema because shape and order vary freely per
@@ -92,3 +100,12 @@ using (public.is_consultant()) with check (public.is_consultant());
 -- which bypasses RLS. These policies are the second layer — anon has no
 -- applicable policy (fails closed) and a non-consultant authenticated user
 -- matches none either.
+
+-- ---------------------------------------------------------------------------
+-- Additive columns for existing databases (see supabase-crm-addons.sql).
+-- Idempotent — the create-table block above already has them on fresh installs.
+-- ---------------------------------------------------------------------------
+
+alter table public.crm_clients add column if not exists stage_notes text;
+alter table public.crm_clients add column if not exists study_language text;
+alter table public.crm_clients add column if not exists majors text;

@@ -3,6 +3,7 @@ import { getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   CLIENT_COLUMNS,
+  autoDeadlineIso,
   defaultBlocks,
   serializeClient,
   serializeClientUniversity,
@@ -73,6 +74,8 @@ export async function POST(request: Request) {
     parent_name: String(body?.parentName ?? '').trim() || null,
     telegram_id: String(body?.telegramId ?? '').trim() || null,
     stage: 'anketa',
+    // New client starts in «Анкета отправлена» with an automatic 10-day timer.
+    stage_deadline: autoDeadlineIso('anketa'),
     program: 'bachelor',
     blocks: defaultBlocks(),
     created_by: user?.id ?? null,

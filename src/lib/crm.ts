@@ -29,6 +29,35 @@ export const PROGRAMS: { id: string; label: string }[] = [
   { id: 'bachelor', label: 'Бакалавриат' },
 ]
 
+// Language of instruction the student is targeting.
+export const STUDY_LANGUAGES: { id: string; label: string; color: CrmStageColor }[] = [
+  { id: 'chinese', label: 'Китайский', color: 'brown' },
+  { id: 'english', label: 'Английский', color: 'orange' },
+  { id: 'unsure', label: 'Не уверены', color: 'gray' },
+]
+export const STUDY_LANGUAGE_BY_ID: Record<string, { id: string; label: string; color: CrmStageColor }> =
+  Object.fromEntries(STUDY_LANGUAGES.map((l) => [l.id, l]))
+
+// ---------------------------------------------------------------------------
+// Stage timers (Iana's SLA logic)
+// ---------------------------------------------------------------------------
+// Some stages carry an automatic deadline, set the moment the stage is entered:
+//   anketa (on create) → 10 days
+//   primary_selection  → 7 days  (re-fires every time she steps back to it after
+//                                  the client asks to change the shortlist)
+// Stages absent here don't touch the deadline — it keeps whatever was there.
+export const STAGE_AUTO_DEADLINE_DAYS: Record<string, number> = {
+  anketa: 10,
+  primary_selection: 7,
+}
+
+const DAY_MS = 86400000
+// ISO deadline for a stage that carries a timer, else null (leave deadline as-is).
+export function autoDeadlineIso(stageId: string, from: number = Date.now()): string | null {
+  const days = STAGE_AUTO_DEADLINE_DAYS[stageId]
+  return days ? new Date(from + days * DAY_MS).toISOString() : null
+}
+
 export const EXAM_TYPES = ['CSCA Math', 'CSCA Physics', 'IELTS', 'HSK']
 export const EXAM_STATUSES = ['Не сдан', 'Записан', 'Сдан'] as const
 
@@ -76,9 +105,10 @@ export function genId(prefix: string) {
 // The 4 default blocks a brand-new client is seeded with. After creation every
 // block is freely addable/editable/deletable — this is only the starting shape.
 export function defaultBlocks(): Block[] {
+  // Note: "Заметки по этапу" moved out to its own crm_clients.stage_notes column
+  // (shown next to Этап in the table), so it's no longer seeded as a block.
   return [
     { id: genId('blk'), type: 'text', title: 'Профиль студента', text: '', size: 'md' },
-    { id: genId('blk'), type: 'text', title: 'Заметки по этапу', text: '', size: 'md' },
     {
       id: genId('blk'),
       type: 'exam_table',
@@ -115,8 +145,11 @@ export type CrmClient = {
   podborLink: string | null
   stage: string
   stageDeadline: string | null
+  stageNotes: string | null
   dateX: string | null
   program: string
+  studyLanguage: string | null
+  majors: string | null
   blocks: Block[]
   universities: CrmClientUniversity[]
   createdAt: string
@@ -134,8 +167,11 @@ export function serializeClient(row: Record<string, any>, universities: CrmClien
     podborLink: row.podbor_link,
     stage: row.stage,
     stageDeadline: row.stage_deadline,
+    stageNotes: row.stage_notes,
     dateX: row.date_x,
     program: row.program,
+    studyLanguage: row.study_language,
+    majors: row.majors,
     blocks: Array.isArray(row.blocks) ? (row.blocks as Block[]) : [],
     universities,
     createdAt: row.created_at,
@@ -153,7 +189,7 @@ export function serializeClientUniversity(row: Record<string, any>): CrmClientUn
 }
 
 export const CLIENT_COLUMNS =
-  'id,name,parent_name,telegram_id,anketa_done,anketa_link,podbor_link,stage,stage_deadline,date_x,program,blocks,created_at,updated_at'
+  'id,name,parent_name,telegram_id,anketa_done,anketa_link,podbor_link,stage,stage_deadline,stage_notes,date_x,program,study_language,majors,blocks,created_at,updated_at'
 
 // Map incoming camelCase → DB columns for PATCH. Only these may be updated.
 export const CLIENT_FIELD_MAP: Record<string, string> = {
@@ -165,7 +201,10 @@ export const CLIENT_FIELD_MAP: Record<string, string> = {
   podborLink: 'podbor_link',
   stage: 'stage',
   stageDeadline: 'stage_deadline',
+  stageNotes: 'stage_notes',
   dateX: 'date_x',
   program: 'program',
+  studyLanguage: 'study_language',
+  majors: 'majors',
   blocks: 'blocks',
 }

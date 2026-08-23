@@ -25,7 +25,10 @@ Launching into the **Russian market** — this drives the infrastructure migrati
 
 ---
 
-## Current State (as of commit `d19a621`)
+## Current State (as of commit `cede806`)
+
+> Two consultant-only internal tools added on top of the student app (2026-08-15/21 session): the **University Bank / shortlist tool** in the admin panel, and the **concierge CRM** at `clients.kaykitay.ru`. See that session log. The CRM then gained four add-ons on 2026-08-22 (stage timers + three new columns — see that session log).
+
 
 **The platform is LIVE at `https://app.kaykitay.ru`.** Six main pages (sidebar / mobile nav): **Начало обучения, Главная, Чек-лист, Вузы, Дедлайны, Кейсы поступлений** (renamed from «Мои шансы») + consultant Admin dashboard. Light/dark theme toggle. Parent mode was removed entirely.
 
@@ -317,6 +320,55 @@ Instagram → **«Нельзя-грам»** (lucide glyph removed, `Н—Г` let
 
 ---
 
+## Session log — 2026-08-15/21 (University Bank tool + concierge CRM)
+
+Two internal, **consultant-only** tools built and pushed to `diy-product` as commit **`fe663a9`** (was `d19a621`). Both reuse the existing Supabase Auth + `is_consultant()` gate — no new auth system. Migrations were applied to the live self-hosted DB via Studio; all four new tables are consultant-only RLS and invisible to students.
+
+### 1. University Bank + per-student shortlists — **in the admin panel** (new «Подбор вузов» tab)
+Purpose: stop re-researching the same universities for every premium client. A reusable bank of researched university+program rows; a shortlist for a new student is assembled from the bank and **exported to XLSX** in the exact format of the team's manual hand-built sheets (3 colored header bands, merged headers, frozen panes, real hyperlinks — ported verbatim into `exceljs`, added as a dependency).
+- **Tables** (`supabase-university-bank.sql`): `university_bank` (unique on `lower(university_name), lower(program)` — the dedup point), `student_shortlists`, `shortlist_items`. **Shortlist items are SNAPSHOTS** copied from the bank row at add-time — editing a bank row later must NOT change an already-handed-out shortlist.
+- **Routes:** `src/app/api/admin/university-bank/{route,[id]}` (search/create/edit/delete; edit re-stamps `verified_at`) and `src/app/api/admin/shortlists/{route,[id],[id]/items}` (server-side snapshot on add). Shared serializers in `src/lib/universityBank.ts` (kept out of `route.ts` — a non-handler export there is a Next build error).
+- **UI:** `src/sections/admin/UniversityBankTool.tsx`, mounted as a third tab in `AdminDashboard.tsx` (`adminTab` now `'premium' | 'diy' | 'shortlists'`). Freshness dots: green ≤3mo / orange ≤6mo / red older, off `verified_at`.
+- **`verifiedBy`/`createdBy` are a manual «Ашот / Яна» dropdown**, not derived from the session (fine for two staff; revisit if the team grows).
+
+### 2. Concierge CRM — **`clients.kaykitay.ru`** (same deployment, host-guarded)
+For students who have **already paid** for full сопровождение (not leads — lead/prospect tracking is a separate, unbuilt system). Notion-style side-peek + per-cell popovers + free-form content blocks. Built per `clients-crm-build-brief.md` + `crm-prototype.html`.
+- **Same Next deployment as the student app**, split by host in **`src/middleware.ts`**: `/crm` (+`/api/crm`) is served only on `clients.kaykitay.ru` or localhost, returns **404 on `app.kaykitay.ru`** (hidden from students even by accident); the clients-subdomain root redirects to `/crm`. ⚠️ **The old root `middleware.ts` never actually ran** — with the App Router under `src/`, Next only detects middleware at `src/middleware.ts`. It was moved there and is now a **pure host-guard + passthrough** (deliberately does NOT call `updateSession`, so the live student app behaves exactly as before; the CRM doesn't need session refresh — its API gates on the auth cookie like every route). The unused `@/lib/supabase/middleware` `updateSession` still exists but is now wired nowhere.
+- **Tables** (`supabase-crm.sql`): `crm_clients` (core filterable columns + a `blocks` JSONB free-form content area + `updated_at` trigger) and `crm_client_universities` (separate table so "which clients have uni X" stays queryable). Consultant-only RLS.
+- **Routes:** `src/app/api/crm/clients/{route,[id],[id]/universities}` (blocks round-trip as one JSONB object, no server-side per-block diffing) and `src/app/api/crm/universities` (autocomplete over `universityExplorer.json`). Shared constants/types/serializers in `src/lib/crm.ts` (STAGES, PROGRAMS, EXAM_TYPES, DOC_TEMPLATE, block model — one source of truth for front + back).
+- **UI:** `src/app/crm/page.tsx` (auth gate → reuses `Login`, consultant-only) + `src/sections/crm/CrmApp.tsx` (table, filters, live deadline countdown, side-peek, per-cell popovers, blocks: text/checklist/exam_table). Styles in `src/app/crm/crm.css`, **scoped under `.crm-scope`** so the prototype's generic class names (`.btn`, `.toast`, `.data-row`) can't collide with the student app. **Dark-mode aware:** the scoped palette vars map onto the app's `--study-*` tokens (which flip in `.dark`); dark-chrome elements (toast, block toolbar, open-pill, scrims) use `--study-overlay`. `ThemeSwitch` added to the CRM topbar.
+- **v1 scope calls (per brief):** university search is `universityExplorer.json` only (the `university_bank` above exists but is empty until the import below — pointing CRM search at it is a clean follow-up); program is the fixed 3 (Языковой год / Предвуз / Бакалавриат), no create-new; **no drag-to-reorder** blocks; light-only was rejected — dark mode shipped.
+
+### Deploy state / what's left for `clients.kaykitay.ru`
+Code is pushed (autodeploys the `-9bc8` app). **Remaining manual step:** in Timeweb → the `-9bc8` app → Домены → «+ Внешний домен» → `clients.kaykitay.ru` (subdomain must go through «Внешний домен», not the whole-domain dropdown; no hand-added A record — Timeweb auto-manages it; Let's Encrypt auto-issues). Then smoke-test: `https://clients.kaykitay.ru` → CRM login → consultant login → add a client; confirm `app.kaykitay.ru/crm` → 404.
+
+### Still TODO (future sessions)
+- **🔴 University Bank one-time import** — backfill the bank from ~**19** legacy hand-built shortlist `.xlsx` files (some vary in structure; not all have the student name). Spec in `university-bank-import-spec.md`: 3-step pipeline (parse → **human-review CSV** → ingest), writes nothing to the DB until the CSV is signed off; global cross-sheet dedup. **User will drop the files in ~4 batches of 5.** Inspect each sheet's structure before parsing (accuracy-first). NOT started.
+- **CRM follow-ups:** point the university picker at `university_bank` first (fall back to explorer) once the bank is populated; per-uni `program` free-text field (column exists, UI doesn't set it yet); consider drag-to-reorder blocks; verifier/creator from session instead of a dropdown if the team grows.
+- **CRM hardening** (the reason for a separate subdomain): later it can get an IP allowlist / stricter auth without touching the public app.
+
+---
+
+## Session log — 2026-08-22 (CRM add-ons — Iana feedback)
+
+Four consultant-facing add-ons to the concierge CRM (`clients.kaykitay.ru`), from Iana's notes. Pushed to `diy-product` as commit **`cede806`** (was `fe663a9`). Nothing in the student app was touched. One additive DB migration was applied to the live self-hosted DB via Studio **before** the code deploy (expand-contract).
+
+1. **Stage timers (SLA countdowns).** A new client auto-starts in «Анкета отправлена» with a **10-day** deadline; entering «Первичный подбор» arms a **7-day** deadline, re-firing every time she steps back to it after a client asks to revise the shortlist. Logic is centralized: `STAGE_AUTO_DEADLINE_DAYS` + `autoDeadlineIso()` in `src/lib/crm.ts`; the POST route seeds the 10-day on create; a new `setStage()` in `CrmApp.tsx` applies the timer on **every** stage change — used by both places the stage is set (the table cell popover and the peek `<select>`), so neither path can bypass it. Reuses the existing `deadlineInfo`/deadline-chip countdown. Stages **without** a timer leave the existing deadline untouched (they do not clear it). ⚠️ **Open spec:** Iana still owes the full timer table. Only `anketa`=10d and `primary_selection`=7d are wired. Undecided: whether any other stage gets a timer, and whether moving to «Финальный список» should **clear** the leftover 7-day countdown (currently it keeps showing).
+
+2. **«Специальности» (majors) column** — new `crm_clients.majors` (free text). Table cell (2-line clamp → text popover) + peek input.
+
+3. **«Язык обучения» column** — new `crm_clients.study_language` = `'chinese' | 'english' | 'unsure'`, rendered as a colored pill (brown / orange / gray). Popover + peek `<select>`; `STUDY_LANGUAGES` / `STUDY_LANGUAGE_BY_ID` in `crm.ts`.
+
+4. **«Заметки по этапу» promoted to its own column**, sitting right after Этап so Iana sees "who was promised what" without opening each peek — new `crm_clients.stage_notes`. It used to be a seeded text block; **removed from `defaultBlocks()`** so new clients get the column instead. Table cell (2-line preview → textarea popover) + peek textarea. ⚠️ The 3 existing test clients still carry the **old** «Заметки по этапу» block; their new column starts empty (no auto-copy).
+
+**Final column order** (after Iana's tweak — она хотела вузы слева, специальности справа): Студент · Родитель · Telegram · Анкета · Этап · **Заметки по этапу** · Программа · **Язык** · **Вузы · Специальности** · Экзамены · Чек-лист. The table grid in `crm.css` went from 9 → 12 columns.
+
+**Migration:** `supabase-crm-addons.sql` — three `alter table ... add column if not exists` (nullable, idempotent, reversible). Applied to prod via Studio, folded into `supabase-crm.sql`'s create-table block plus an idempotent alter section for existing DBs. Verified present on prod before pushing.
+
+⚠️ **Local dev still writes to prod** — the migration had to land on the live DB for the localhost review to render (no sandbox; see Housekeeping).
+
+---
+
 ## Self-hosted Supabase — operating notes
 
 | | |
@@ -402,6 +454,10 @@ Without the Supabase vars the API routes return setup errors and nothing loads.
 ## Next Steps (priority order)
 
 Launch is done; these are the post-launch priorities. Several older items are now closed (magic link, domain move, dark mode).
+
+0a. **🔴 Bind `clients.kaykitay.ru`** in Timeweb + smoke-test the CRM (see 2026-08-15/21 session). Code is deployed; only the domain-bind + test remain.
+0b. **🔴 University Bank import** — backfill the bank from ~19 legacy shortlist `.xlsx` (spec `university-bank-import-spec.md`; user drops files in batches of 5). See 2026-08-15/21 session.
+
 
 0. **🔴 Ratify the 122 draft university intros — they are LIVE in prod but unreviewed.** From the 2026-07-28/08-14 session. Edit `~/Downloads/university_intros_REVIEW.csv`, then reload into `src/data/universityIntros.json` (keyed by English name). Accuracy risk: machine-drafted RU blurbs in front of paying users. See that session log.
 1. **🔴 mail.ru email deliverability** — verification emails don't reach mail.ru (Gmail/Yandex fine). Blocks a chunk of real signups. See the launch session log for the diagnosis and the fix sequence (postmaster.mail.ru registration, Timeweb ticket, check Спам). Highest-priority because it silently costs signups.

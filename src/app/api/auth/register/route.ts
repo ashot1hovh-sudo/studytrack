@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const password = String(body?.password ?? '')
   const fullName = String(body?.fullName ?? '').trim()
   const acceptedTerms = body?.acceptedTerms === true
-  const marketingConsent = body?.marketingConsent === true
+  const acceptedAgreement = body?.acceptedAgreement === true
 
   if (!email || !password || !fullName) {
     return NextResponse.json(
@@ -30,8 +30,17 @@ export async function POST(request: Request) {
   }
 
   // Enforced server-side, not just by the disabled submit button: consent has to
-  // be provable, and a client-side-only check proves nothing.
+  // be provable, and a client-side-only check proves nothing. Both consents are
+  // mandatory: the personal-data consent (Согласие + Политика конфиденциальности)
+  // and acceptance of the Пользовательское соглашение.
   if (!acceptedTerms) {
+    return NextResponse.json(
+      { error: 'Необходимо дать согласие на обработку персональных данных' },
+      { status: 400 }
+    )
+  }
+
+  if (!acceptedAgreement) {
     return NextResponse.json(
       { error: 'Необходимо принять пользовательское соглашение' },
       { status: 400 }
@@ -99,9 +108,13 @@ export async function POST(request: Request) {
     service_type: 'diy',
     subscription_status: 'trial',
     pin_code: null,
+    // Both mandatory consents are given together at registration, so this single
+    // timestamp records acceptance of the whole legal package (Согласие на
+    // обработку ПД, Политика конфиденциальности, Пользовательское соглашение).
     terms_accepted_at: now,
-    marketing_consent: marketingConsent,
-    marketing_consent_at: marketingConsent ? now : null,
+    // The marketing opt-in was removed from registration; nobody opts in here.
+    marketing_consent: false,
+    marketing_consent_at: null,
   })
 
   if (profileError) {

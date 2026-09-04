@@ -49,9 +49,9 @@
 .crm-scope .filter-count{ font-size:11.5px; color:rgb(var(--gray)); margin-left:auto; padding-left:8px; white-space:nowrap; }
 
 .crm-scope .table-card{ background:rgb(var(--card)); border-radius:14px; box-shadow:0 1px 2px rgba(43,45,66,.06), 0 4px 16px rgba(43,45,66,.05); overflow:hidden; }
-.crm-scope .thead-row{ display:grid; grid-template-columns:1.2fr 0.85fr 0.85fr 0.5fr 1.15fr 1.3fr 0.85fr 0.75fr 1.15fr 1.05fr 0.75fr 0.95fr; gap:0; padding:11px 14px; border-bottom:1.5px solid rgb(var(--lightgray)); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:rgb(var(--gray)); }
+.crm-scope .thead-row{ display:grid; grid-template-columns:1.2fr 0.85fr 0.85fr 0.5fr 1.15fr 1.3fr 1fr 0.85fr 0.75fr 1.15fr 1.05fr 0.75fr 0.95fr; gap:0; padding:11px 14px; border-bottom:1.5px solid rgb(var(--lightgray)); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:rgb(var(--gray)); }
 .crm-scope .thead-row > div{ padding-right:8px; display:flex; align-items:center; }
-.crm-scope .data-row{ display:grid; grid-template-columns:1.2fr 0.85fr 0.85fr 0.5fr 1.15fr 1.3fr 0.85fr 0.75fr 1.15fr 1.05fr 0.75fr 0.95fr; gap:0; padding:11px 14px; cursor:pointer; align-items:center; transition:background .12s ease; border-bottom:1px solid rgb(var(--lightgray)); position:relative; }
+.crm-scope .data-row{ display:grid; grid-template-columns:1.2fr 0.85fr 0.85fr 0.5fr 1.15fr 1.3fr 1fr 0.85fr 0.75fr 1.15fr 1.05fr 0.75fr 0.95fr; gap:0; padding:11px 14px; cursor:pointer; align-items:center; transition:background .12s ease; border-bottom:1px solid rgb(var(--lightgray)); position:relative; }
 .crm-scope .data-row:last-child{ border-bottom:none; }
 .crm-scope .data-row:hover{ background:rgb(var(--bg)); }
 .crm-scope .data-row.active-row{ background:rgba(107,79,75,.06); }

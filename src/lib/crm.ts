@@ -146,6 +146,7 @@ export type CrmClient = {
   stage: string
   stageDeadline: string | null
   stageNotes: string | null
+  payments: string | null
   dateX: string | null
   program: string
   studyLanguage: string | null
@@ -168,6 +169,7 @@ export function serializeClient(row: Record<string, any>, universities: CrmClien
     stage: row.stage,
     stageDeadline: row.stage_deadline,
     stageNotes: row.stage_notes,
+    payments: row.payments,
     dateX: row.date_x,
     program: row.program,
     studyLanguage: row.study_language,
@@ -189,7 +191,7 @@ export function serializeClientUniversity(row: Record<string, any>): CrmClientUn
 }
 
 export const CLIENT_COLUMNS =
-  'id,name,parent_name,telegram_id,anketa_done,anketa_link,podbor_link,stage,stage_deadline,stage_notes,date_x,program,study_language,majors,blocks,created_at,updated_at'
+  'id,name,parent_name,telegram_id,anketa_done,anketa_link,podbor_link,stage,stage_deadline,stage_notes,payments,date_x,program,study_language,majors,blocks,created_at,updated_at'
 
 // Map incoming camelCase → DB columns for PATCH. Only these may be updated.
 export const CLIENT_FIELD_MAP: Record<string, string> = {
@@ -202,6 +204,7 @@ export const CLIENT_FIELD_MAP: Record<string, string> = {
   stage: 'stage',
   stageDeadline: 'stage_deadline',
   stageNotes: 'stage_notes',
+  payments: 'payments',
   dateX: 'date_x',
   program: 'program',
   studyLanguage: 'study_language',

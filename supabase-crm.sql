@@ -28,6 +28,8 @@ create table if not exists public.crm_clients (
   -- "Who was promised what" at the current stage — its own column next to Этап
   -- so the consultant sees it without opening each client's peek.
   stage_notes text,
+  -- Free-text payment notes — its own column right after stage_notes.
+  payments text,
 
   program text not null default 'bachelor',
   -- Language of instruction the student targets: 'chinese' | 'english' | 'unsure'.
@@ -109,3 +111,4 @@ using (public.is_consultant()) with check (public.is_consultant());
 alter table public.crm_clients add column if not exists stage_notes text;
 alter table public.crm_clients add column if not exists study_language text;
 alter table public.crm_clients add column if not exists majors text;
+alter table public.crm_clients add column if not exists payments text;

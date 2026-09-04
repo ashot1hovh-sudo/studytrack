@@ -73,7 +73,7 @@ type Popover =
   | {
       kind: 'stage' | 'anketa' | 'program' | 'uni' | 'text' | 'language' | 'notes'
       clientId: string
-      field?: 'parentName' | 'telegramId' | 'majors'
+      field?: 'parentName' | 'telegramId' | 'majors' | 'payments'
       top: number
       left: number
     }
@@ -335,7 +335,7 @@ export default function CrmApp() {
 
   /* ---------- popover ---------- */
   const openPopover = useCallback(
-    (kind: NonNullable<Popover>['kind'], clientId: string, e: React.MouseEvent, field?: 'parentName' | 'telegramId' | 'majors') => {
+    (kind: NonNullable<Popover>['kind'], clientId: string, e: React.MouseEvent, field?: 'parentName' | 'telegramId' | 'majors' | 'payments') => {
       e.stopPropagation()
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
       const width = kind === 'text' ? 240 : 280
@@ -512,6 +512,7 @@ export default function CrmApp() {
             <div>Анкета</div>
             <div>Этап</div>
             <div>Заметки по этапу</div>
+            <div>Оплаты</div>
             <div>Программа</div>
             <div>Язык</div>
             <div>Вузы</div>
@@ -572,6 +573,9 @@ export default function CrmApp() {
                   </div>
                   <div className="clickable-cell" onClick={(e) => openPopover('notes', c.id, e)}>
                     <div className={`cell-notes ${c.stageNotes ? '' : 'muted'}`}>{c.stageNotes || '—'}</div>
+                  </div>
+                  <div className="clickable-cell" onClick={(e) => openPopover('text', c.id, e, 'payments')}>
+                    <div className={`cell-notes ${c.payments ? '' : 'muted'}`}>{c.payments || '—'}</div>
                   </div>
                   <div className="clickable-cell" onClick={(e) => openPopover('program', c.id, e)}>
                     <span className="program-pill">{programLabel(c.program)}</span>

@@ -47,11 +47,32 @@ export async function GET() {
     return NextResponse.json({ students: [] })
   }
 
+  // PostgREST turns `.in('student_id', ids)` into a `student_id=in.(…)` query
+  // string, so the whole id list rides in the request URL. Past a few hundred
+  // students that URL overflows the server's limit and the request dies with
+  // "URI too long" (HTTP 414). Batch the ids so each request stays small; the
+  // page-level Promise.all still runs the batches concurrently.
+  const CHUNK = 100
+  const idChunks: string[][] = []
+  for (let i = 0; i < studentIds.length; i += CHUNK) idChunks.push(studentIds.slice(i, i + CHUNK))
+
+  async function gatherByStudent<T>(
+    table: string,
+    columns: string
+  ): Promise<{ data: T[] | null; error: { message: string } | null }> {
+    const results = await Promise.all(
+      idChunks.map((ids) => supabase.from(table).select(columns).in('student_id', ids))
+    )
+    const failed = results.find((r) => r.error)
+    if (failed?.error) return { data: null, error: failed.error }
+    return { data: results.flatMap((r) => (r.data ?? []) as T[]), error: null }
+  }
+
   const [{ data: documents, error: documentsError }, { data: universities, error: universitiesError }, { data: deadlines, error: deadlinesError }] =
     await Promise.all([
-      supabase.from('documents').select('student_id,status').in('student_id', studentIds),
-      supabase.from('universities').select('student_id').in('student_id', studentIds),
-      supabase.from('deadlines').select('student_id,is_urgent').in('student_id', studentIds),
+      gatherByStudent<{ student_id: string; status: string }>('documents', 'student_id,status'),
+      gatherByStudent<{ student_id: string }>('universities', 'student_id'),
+      gatherByStudent<{ student_id: string; is_urgent: boolean }>('deadlines', 'student_id,is_urgent'),
     ])
 
   const error = documentsError ?? universitiesError ?? deadlinesError

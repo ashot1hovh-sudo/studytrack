@@ -521,6 +521,26 @@ export default function CrmApp() {
             <div>Чек-лист</div>
           </div>
 
+          {/* New-student form sits at the top of the list, so adding a client
+              doesn't mean scrolling past every existing row to reach it. */}
+          {showAdd && (
+            <div className="add-row-form">
+              <div className="field-grid">
+                <input placeholder="Имя студента" value={naName} onChange={(e) => setNaName(e.target.value)} />
+                <input placeholder="Имя родителя" value={naParent} onChange={(e) => setNaParent(e.target.value)} />
+                <input placeholder="@username" value={naTg} onChange={(e) => setNaTg(e.target.value)} />
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button className="btn btn-outline" onClick={() => setShowAdd(false)}>
+                  Отмена
+                </button>
+                <button className="btn btn-primary" onClick={createClient}>
+                  Создать
+                </button>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="empty-state">Загрузка…</div>
           ) : error ? (
@@ -610,24 +630,6 @@ export default function CrmApp() {
                 </div>
               )
             })
-          )}
-
-          {showAdd && (
-            <div className="add-row-form">
-              <div className="field-grid">
-                <input placeholder="Имя студента" value={naName} onChange={(e) => setNaName(e.target.value)} />
-                <input placeholder="Имя родителя" value={naParent} onChange={(e) => setNaParent(e.target.value)} />
-                <input placeholder="@username" value={naTg} onChange={(e) => setNaTg(e.target.value)} />
-              </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button className="btn btn-outline" onClick={() => setShowAdd(false)}>
-                  Отмена
-                </button>
-                <button className="btn btn-primary" onClick={createClient}>
-                  Создать
-                </button>
-              </div>
-            </div>
           )}
         </div>
       </div>

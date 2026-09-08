@@ -562,6 +562,16 @@ export default function CrmApp() {
 
               return (
                 <div key={c.id} className={`data-row ${peekId === c.id ? 'active-row' : ''}`}>
+                  <button
+                    className="row-delete"
+                    title="Удалить студента"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteClient(c.id, c.name)
+                    }}
+                  >
+                    <Trash2 style={{ width: 13, height: 13 }} />
+                  </button>
                   <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => openPeek(c.id)}>
                     <span className="open-pill">
                       <Maximize2 style={{ width: 11, height: 11, stroke: '#fff' }} />

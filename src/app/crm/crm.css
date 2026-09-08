@@ -60,6 +60,9 @@
 .crm-scope .open-pill{ position:absolute; left:10px; top:50%; transform:translateY(-50%) scale(.95); opacity:0; background:rgb(var(--overlay)); color:#fff; font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:7px; display:flex; align-items:center; gap:4px; pointer-events:none; transition:opacity .12s ease, transform .12s ease; z-index:5; }
 .crm-scope .data-row:hover .open-pill{ opacity:1; transform:translateY(-50%) scale(1); pointer-events:auto; }
 .crm-scope .data-row:hover .cell-name-wrap{ opacity:0; }
+.crm-scope .row-delete{ position:absolute; right:8px; top:50%; transform:translateY(-50%) scale(.9); opacity:0; display:flex; align-items:center; justify-content:center; width:26px; height:26px; padding:0; border-radius:7px; border:1px solid rgb(var(--lightgray)); background:rgb(var(--card)); color:rgb(190,40,40); cursor:pointer; pointer-events:none; transition:opacity .12s ease, transform .12s ease; z-index:6; }
+.crm-scope .data-row:hover .row-delete{ opacity:1; transform:translateY(-50%) scale(1); pointer-events:auto; }
+.crm-scope .row-delete:hover{ background:rgba(190,40,40,.12); border-color:rgba(190,40,40,.4); }
 .crm-scope .cell-name-wrap{ transition:opacity .1s ease; }
 .crm-scope .cell-name{ font-weight:700; font-size:13px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
 .crm-scope .cell-sub{ font-size:11.5px; color:rgb(var(--gray)); white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }

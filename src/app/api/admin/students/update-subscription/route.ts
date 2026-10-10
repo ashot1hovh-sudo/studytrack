@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
+import { accessExpiryFromNow, getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function PATCH(request: Request) {
@@ -16,6 +16,32 @@ export async function PATCH(request: Request) {
 
   if (!studentId) {
     return NextResponse.json({ error: 'ID студента обязателен' }, { status: 400 })
+  }
+
+  // Activate paid access by hand (payment received outside the PIN flow):
+  // exactly what a PIN activation does, a 2-year window from now.
+  if (body?.grantAccess === true) {
+    const admin = createAdminClient()
+    if (!admin) return NextResponse.json({ error: 'Сервисный ключ Supabase не настроен' }, { status: 500 })
+    const accessExpiresAt = accessExpiryFromNow()
+    const { error } = await admin
+      .from('students')
+      .update({ subscription_status: 'active', access_expires_at: accessExpiresAt, pin_code: null })
+      .eq('id', studentId)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true, accessExpiresAt })
+  }
+
+  // Move a student between DIY and premium (paid, with a личный кабинет).
+  if (body?.serviceType === 'premium' || body?.serviceType === 'diy') {
+    const admin = createAdminClient()
+    if (!admin) return NextResponse.json({ error: 'Сервисный ключ Supabase не настроен' }, { status: 500 })
+    const { error } = await admin
+      .from('students')
+      .update({ service_type: body.serviceType, subscription_status: body.serviceType === 'premium' ? 'active' : 'trial' })
+      .eq('id', studentId)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true })
   }
 
   if (!['trial', 'active', 'inactive'].includes(subscriptionStatus)) {

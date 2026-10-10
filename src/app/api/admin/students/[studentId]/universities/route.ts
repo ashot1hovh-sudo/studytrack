@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import { formatRuDate, getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET(_request: Request, { params }: { params: { studentId: string } }) {
   if (missingSupabaseEnv()) return setupErrorResponse()
 
-  const { supabase, response } = await getConsultantUser()
+  const { response } = await getConsultantUser()
   if (response) return response
+  // Service-role client after the consultant check: the live database has no
+  // consultant INSERT policy on universities, so writes through the
+  // consultant's own session failed with an RLS error.
+  const supabase = createAdminClient()
+  if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY is missing in .env.local' }, { status: 500 })
 
   const { data, error } = await supabase
     .from('universities')
@@ -31,8 +37,13 @@ export async function GET(_request: Request, { params }: { params: { studentId: 
 export async function POST(request: Request, { params }: { params: { studentId: string } }) {
   if (missingSupabaseEnv()) return setupErrorResponse()
 
-  const { supabase, response } = await getConsultantUser()
+  const { response } = await getConsultantUser()
   if (response) return response
+  // Service-role client after the consultant check: the live database has no
+  // consultant INSERT policy on universities, so writes through the
+  // consultant's own session failed with an RLS error.
+  const supabase = createAdminClient()
+  if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY is missing in .env.local' }, { status: 500 })
 
   const { name, status, deadline, portalUrl, consultantNote } = await request.json()
 

@@ -3,6 +3,7 @@ import { AlertCircle, Check, ExternalLink, FileText, GraduationCap, LogOut, Refr
 import { useApp } from '@/context/AppContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import UniversityBankTool from '@/sections/admin/UniversityBankTool'
+import UserAccessTools from '@/sections/admin/UserAccessTools'
 import type { AdminStudentSummary, AdminUniversity, AdminUpload, ApplicationStatus, DocumentStatus, StudentDocument } from '@/types/studytrack'
 
 const universityStatuses: { value: ApplicationStatus; label: string }[] = [
@@ -446,6 +447,9 @@ export default function AdminDashboard() {
           password: newStudent.password,
           age: newStudent.age,
           program: newStudent.program,
+          // Created from the premium tab = a paid premium student. Without this
+          // the route defaults to 'diy' and the student lands in the other tab.
+          serviceType: adminTab === 'premium' ? 'premium' : 'diy',
           documents: newStudent.selectedDocuments,
           universities: newStudent.universitiesText
             .split('\n')
@@ -463,6 +467,43 @@ export default function AdminDashboard() {
       setCreateError(err instanceof Error ? err.message : 'Не удалось создать студента')
     } finally {
       setIsCreatingStudent(false)
+    }
+  }
+
+  // Payment received outside the PIN flow: open paid access for 2 years.
+  const grantAccess = async (studentId: string) => {
+    setDiyPinErrors((current) => ({ ...current, [studentId]: '' }))
+    try {
+      const response = await fetch('/api/admin/students/update-subscription', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, grantAccess: true }),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось активировать доступ')
+      setStudents((current) =>
+        current.map((s) => (s.id === studentId ? { ...s, subscriptionStatus: 'active' as const, pinCode: null } : s))
+      )
+    } catch (err) {
+      setDiyPinErrors((current) => ({ ...current, [studentId]: err instanceof Error ? err.message : 'Не удалось активировать доступ' }))
+    }
+  }
+
+  const moveToPremium = async (studentId: string) => {
+    setDiyPinErrors((current) => ({ ...current, [studentId]: '' }))
+    try {
+      const response = await fetch('/api/admin/students/update-subscription', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, serviceType: 'premium' }),
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(data?.error ?? 'Не удалось перевести в премиум')
+      setStudents((current) =>
+        current.map((s) => (s.id === studentId ? { ...s, serviceType: 'premium' as const, subscriptionStatus: 'active' as const } : s))
+      )
+    } catch (err) {
+      setDiyPinErrors((current) => ({ ...current, [studentId]: err instanceof Error ? err.message : 'Не удалось перевести в премиум' }))
     }
   }
 
@@ -609,6 +650,7 @@ export default function AdminDashboard() {
         {!isLoading && !error && adminTab !== 'shortlists' && (
           <div className="grid lg:grid-cols-[1fr_460px] gap-5">
             <div className="space-y-5">
+              {adminTab === 'diy' && <UserAccessTools onChanged={loadDashboard} />}
               {adminTab === 'premium' && (
               <div className="bg-study-card rounded-xl card-shadow p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -772,7 +814,9 @@ export default function AdminDashboard() {
                     return (
                       <div
                         key={student.id}
-                        className={`w-full text-left border rounded-xl p-4 transition-colors ${
+                        // Premium rows open the student panel; DIY rows hold PIN inputs.
+                        onClick={isDiy ? undefined : () => loadStudentUniversities(student)}
+                        className={`w-full text-left border rounded-xl p-4 transition-colors ${isDiy ? '' : 'cursor-pointer '}${
                           selectedStudent?.id === student.id
                             ? 'border-study-brown bg-study-brown/5'
                             : 'border-study-lightgray hover:bg-study-bg'
@@ -829,6 +873,22 @@ export default function AdminDashboard() {
                                   className="rounded-lg bg-study-brown text-white text-xs font-semibold px-3 py-2 disabled:opacity-50"
                                 >
                                   Сохранить PIN
+                                </button>
+                                {student.subscriptionStatus !== 'active' && (
+                                  <button
+                                    onClick={() => grantAccess(student.id)}
+                                    className="rounded-lg bg-study-green text-white text-xs font-semibold px-3 py-2"
+                                    title="Оплата получена: открыть платный доступ на 2 года без PIN"
+                                  >
+                                    Активировать доступ
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => moveToPremium(student.id)}
+                                  className="rounded-lg bg-study-green/10 text-study-green text-xs font-semibold px-3 py-2"
+                                  title="Перевести в премиум (сопровождение)"
+                                >
+                                  → В премиум
                                 </button>
                                 {diyPinSaved[student.id] && (
                                   <span className="text-xs font-semibold text-study-green flex items-center gap-1">

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
+import { accessExpiryFromNow, getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const defaultDocumentsPackage = [
@@ -35,8 +35,13 @@ export async function POST(request: Request) {
   // one. This route predates the DIY pivot and used to hard-code premium/active,
   // which would have handed every manually created student a free paid
   // subscription. Premium is now opt-in.
-  const serviceType = body?.serviceType === 'premium' ? 'premium' : 'diy'
-  const subscriptionStatus = serviceType === 'premium' ? 'active' : 'trial'
+  // access: 'trial' (free account) | 'paid' (bought the 2-year access, same as
+  // a PIN activation) | 'premium' (personal support). serviceType is the older
+  // field, still accepted.
+  const access = body?.access === 'paid' || body?.access === 'premium' ? body.access : body?.serviceType === 'premium' ? 'premium' : 'trial'
+  const serviceType = access === 'premium' ? 'premium' : 'diy'
+  const subscriptionStatus = access === 'trial' ? 'trial' : 'active'
+  const accessExpiresAt = access === 'paid' ? accessExpiryFromNow() : null
   const age = body?.age ? Number(body.age) : null
   const program = String(body?.program ?? 'bachelor')
   const universities: string[] = Array.isArray(body?.universities)
@@ -80,6 +85,7 @@ export async function POST(request: Request) {
     role: 'student',
     service_type: serviceType,
     subscription_status: subscriptionStatus,
+    access_expires_at: accessExpiresAt,
     pin_code: null,
   })
 

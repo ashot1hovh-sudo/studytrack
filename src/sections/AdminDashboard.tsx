@@ -94,6 +94,7 @@ export default function AdminDashboard() {
   const [diyPinInputs, setDiyPinInputs] = useState<Record<string, string>>({})
   const [diyPinSaved, setDiyPinSaved] = useState<Record<string, boolean>>({})
   const [diyPinErrors, setDiyPinErrors] = useState<Record<string, string>>({})
+  const [payOpen, setPayOpen] = useState<Record<string, boolean>>({})
 
   const filteredStudents = students.filter((s) => s.serviceType === adminTab)
 
@@ -470,43 +471,6 @@ export default function AdminDashboard() {
     }
   }
 
-  // Payment received outside the PIN flow: open paid access for 2 years.
-  const grantAccess = async (studentId: string) => {
-    setDiyPinErrors((current) => ({ ...current, [studentId]: '' }))
-    try {
-      const response = await fetch('/api/admin/students/update-subscription', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, grantAccess: true }),
-      })
-      const data = await response.json().catch(() => null)
-      if (!response.ok) throw new Error(data?.error ?? 'Не удалось активировать доступ')
-      setStudents((current) =>
-        current.map((s) => (s.id === studentId ? { ...s, subscriptionStatus: 'active' as const, pinCode: null } : s))
-      )
-    } catch (err) {
-      setDiyPinErrors((current) => ({ ...current, [studentId]: err instanceof Error ? err.message : 'Не удалось активировать доступ' }))
-    }
-  }
-
-  const moveToPremium = async (studentId: string) => {
-    setDiyPinErrors((current) => ({ ...current, [studentId]: '' }))
-    try {
-      const response = await fetch('/api/admin/students/update-subscription', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, serviceType: 'premium' }),
-      })
-      const data = await response.json().catch(() => null)
-      if (!response.ok) throw new Error(data?.error ?? 'Не удалось перевести в премиум')
-      setStudents((current) =>
-        current.map((s) => (s.id === studentId ? { ...s, serviceType: 'premium' as const, subscriptionStatus: 'active' as const } : s))
-      )
-    } catch (err) {
-      setDiyPinErrors((current) => ({ ...current, [studentId]: err instanceof Error ? err.message : 'Не удалось перевести в премиум' }))
-    }
-  }
-
   const updateDiySubscription = async (studentId: string, pinCode: string) => {
     setDiyPinErrors((current) => ({ ...current, [studentId]: '' }))
     try {
@@ -852,53 +816,73 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                           {isDiy ? (
-                            <div className="flex flex-col gap-2">
-                              {student.pinCode && (
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-study-bg rounded-lg border border-study-lightgray w-fit">
-                                  <span className="text-xs text-study-gray">PIN:</span>
-                                  <span className="text-sm font-bold text-study-dark tracking-widest">{student.pinCode}</span>
+                            // Workflow: new accounts are trial. When the student pays,
+                            // «Оплатил» asks for a PIN; the student enters it in their
+                            // account and paid access opens for 2 years (verify-pin).
+                            <div className="flex flex-col gap-2 items-start md:items-end">
+                              {student.subscriptionStatus === 'active' ? (
+                                <span className="inline-flex items-center gap-1.5 rounded-lg bg-study-green/10 text-study-green text-xs font-semibold px-3 py-2">
+                                  <Check className="w-3.5 h-3.5" /> Оплачен, доступ открыт
+                                </span>
+                              ) : payOpen[student.id] ? (
+                                <div className="flex flex-row flex-wrap gap-2 items-center">
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={diyPinInputs[student.id] ?? ''}
+                                    onChange={(e) => setDiyPinInputs((current) => ({ ...current, [student.id]: e.target.value }))}
+                                    placeholder="PIN-код"
+                                    className="rounded-lg border border-study-lightgray px-3 py-2 text-sm w-32 tracking-widest font-semibold"
+                                    autoFocus
+                                  />
+                                  <button
+                                    onClick={async () => {
+                                      await updateDiySubscription(student.id, diyPinInputs[student.id] ?? '')
+                                      setPayOpen((m) => ({ ...m, [student.id]: false }))
+                                    }}
+                                    disabled={!diyPinInputs[student.id]?.trim()}
+                                    className="rounded-lg bg-study-green text-white text-xs font-semibold px-3 py-2 disabled:opacity-50"
+                                  >
+                                    Сохранить PIN
+                                  </button>
+                                  <button
+                                    onClick={() => setPayOpen((m) => ({ ...m, [student.id]: false }))}
+                                    className="rounded-lg text-xs font-semibold px-2 py-2 text-study-gray"
+                                  >
+                                    Отмена
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex flex-row flex-wrap gap-2 items-center">
+                                  {student.pinCode && (
+                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-study-bg rounded-lg border border-study-lightgray">
+                                      <span className="text-xs text-study-gray">PIN для ученика:</span>
+                                      <span className="text-sm font-bold text-study-dark tracking-widest">{student.pinCode}</span>
+                                    </span>
+                                  )}
+                                  <button
+                                    onClick={() => {
+                                      // Suggest a random 4-digit PIN; it can be edited before saving.
+                                      setDiyPinInputs((current) => ({ ...current, [student.id]: String(Math.floor(1000 + Math.random() * 9000)) }))
+                                      setPayOpen((m) => ({ ...m, [student.id]: true }))
+                                    }}
+                                    className="rounded-lg bg-study-green text-white text-xs font-semibold px-3 py-2"
+                                  >
+                                    {student.pinCode ? 'Новый PIN' : 'Оплатил'}
+                                  </button>
                                 </div>
                               )}
-                              <div className="flex flex-row gap-2 items-center">
-                                <input
-                                  type="text"
-                                  value={diyPinInputs[student.id] ?? ''}
-                                  onChange={(e) => setDiyPinInputs((current) => ({ ...current, [student.id]: e.target.value }))}
-                                  placeholder={student.pinCode ? 'Новый PIN' : 'PIN-код'}
-                                  className="rounded-lg border border-study-lightgray px-3 py-2 text-sm w-32"
-                                />
-                                <button
-                                  onClick={() => updateDiySubscription(student.id, diyPinInputs[student.id] ?? '')}
-                                  disabled={!diyPinInputs[student.id]?.trim()}
-                                  className="rounded-lg bg-study-brown text-white text-xs font-semibold px-3 py-2 disabled:opacity-50"
-                                >
-                                  Сохранить PIN
-                                </button>
-                                {student.subscriptionStatus !== 'active' && (
-                                  <button
-                                    onClick={() => grantAccess(student.id)}
-                                    className="rounded-lg bg-study-green text-white text-xs font-semibold px-3 py-2"
-                                    title="Оплата получена: открыть платный доступ на 2 года без PIN"
-                                  >
-                                    Активировать доступ
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => moveToPremium(student.id)}
-                                  className="rounded-lg bg-study-green/10 text-study-green text-xs font-semibold px-3 py-2"
-                                  title="Перевести в премиум (сопровождение)"
-                                >
-                                  → В премиум
-                                </button>
-                                {diyPinSaved[student.id] && (
-                                  <span className="text-xs font-semibold text-study-green flex items-center gap-1">
-                                    <Check className="w-3.5 h-3.5" /> Сохранён
-                                  </span>
-                                )}
-                                {diyPinErrors[student.id] && (
-                                  <span className="text-xs font-semibold text-study-red">{diyPinErrors[student.id]}</span>
-                                )}
-                              </div>
+                              {student.pinCode && student.subscriptionStatus !== 'active' && !payOpen[student.id] && (
+                                <p className="text-[11px] text-study-gray">Отправьте PIN ученику: он вводит его в своём аккаунте, и доступ откроется на 2 года.</p>
+                              )}
+                              {diyPinSaved[student.id] && (
+                                <span className="text-xs font-semibold text-study-green flex items-center gap-1">
+                                  <Check className="w-3.5 h-3.5" /> PIN сохранён
+                                </span>
+                              )}
+                              {diyPinErrors[student.id] && (
+                                <span className="text-xs font-semibold text-study-red">{diyPinErrors[student.id]}</span>
+                              )}
                             </div>
                           ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:w-[520px]">

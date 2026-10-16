@@ -3,6 +3,9 @@ import { AlertCircle, Check, ExternalLink, FileText, GraduationCap, LogOut, Refr
 import { useApp } from '@/context/AppContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import UniversityBankTool from '@/sections/admin/UniversityBankTool'
+import LkEditor from '@/sections/admin/LkEditor'
+import StudentCard from '@/sections/admin/StudentCard'
+import type { LkCard } from '@/lib/lk/types'
 import UserAccessTools from '@/sections/admin/UserAccessTools'
 import type { AdminStudentSummary, AdminUniversity, AdminUpload, ApplicationStatus, DocumentStatus, StudentDocument } from '@/types/studytrack'
 
@@ -95,12 +98,23 @@ export default function AdminDashboard() {
   const [diyPinSaved, setDiyPinSaved] = useState<Record<string, boolean>>({})
   const [diyPinErrors, setDiyPinErrors] = useState<Record<string, string>>({})
   const [payOpen, setPayOpen] = useState<Record<string, boolean>>({})
+  // ЛК facts for the premium cards (photo, track, major, progress).
+  const [lkCards, setLkCards] = useState<Record<string, LkCard>>({})
 
   const filteredStudents = students.filter((s) => s.serviceType === adminTab)
+
+  const loadLkCards = () => {
+    // Separate from the main load: a ЛК hiccup must not hide the student list.
+    fetch('/api/admin/lk', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.cards) setLkCards(d.cards) })
+      .catch(() => {})
+  }
 
   const loadDashboard = () => {
     setIsLoading(true)
     setError(null)
+    loadLkCards()
 
     Promise.all([
       fetch('/api/admin/students').then((response) => {
@@ -187,6 +201,8 @@ export default function AdminDashboard() {
 
   const loadStudentUniversities = (student: AdminStudentSummary) => {
     setSelectedStudent(student)
+    // The panel renders under the list: bring it into view.
+    window.setTimeout(() => document.getElementById('student-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
     setActiveUniversityId(null)
     setIsStudentLoading(true)
     setStudentError(null)
@@ -448,8 +464,8 @@ export default function AdminDashboard() {
           password: newStudent.password,
           age: newStudent.age,
           program: newStudent.program,
-          // Created from the premium tab = a paid premium student. Without this
-          // the route defaults to 'diy' and the student lands in the other tab.
+          // Created from the premium tab = a paid student. Without this the
+          // route defaults to 'diy' and the student lands in the other tab.
           serviceType: adminTab === 'premium' ? 'premium' : 'diy',
           documents: newStudent.selectedDocuments,
           universities: newStudent.universitiesText
@@ -575,7 +591,7 @@ export default function AdminDashboard() {
 
         {/* Tabs */}
         {!isLoading && !error && (
-          <div className="mb-5 p-1 bg-study-card rounded-xl card-shadow inline-flex">
+          <div className="mb-5 p-1 bg-study-card rounded-xl card-shadow inline-flex max-w-full overflow-x-auto">
             <button
               onClick={() => { setAdminTab('premium'); setSelectedStudent(null) }}
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
@@ -767,6 +783,20 @@ export default function AdminDashboard() {
 
               {students.length === 0 ? (
                 <EmptyState title="Студентов пока нет" description="Когда появятся клиенты, они будут здесь." />
+              ) : adminTab === 'premium' ? (
+                <div className="grid sm:grid-cols-2 2xl:grid-cols-3 gap-4">
+                  {filteredStudents.map((student) => (
+                    <StudentCard
+                      key={student.id}
+                      student={student}
+                      card={lkCards[student.id]}
+                      selected={selectedStudent?.id === student.id}
+                      onOpen={() => loadStudentUniversities(student)}
+                      onDelete={() => deleteStudent(student.id)}
+                      onPhoto={(photo) => setLkCards((c) => ({ ...c, [student.id]: { ...(c[student.id] ?? { track: null, major: null, unis: 0, progress: { done: 0, total: 0 } }), photo } }))}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div className="space-y-3">
                   {filteredStudents.map((student) => {
@@ -778,8 +808,10 @@ export default function AdminDashboard() {
                     return (
                       <div
                         key={student.id}
-                        // Premium rows open the student panel; DIY rows hold PIN inputs.
+                        // Premium rows open the student panel (кабинет, план, вузы, документы).
+                        // DIY rows hold PIN inputs and stay non-clickable.
                         onClick={isDiy ? undefined : () => loadStudentUniversities(student)}
+                        role={isDiy ? undefined : 'button'}
                         className={`w-full text-left border rounded-xl p-4 transition-colors ${isDiy ? '' : 'cursor-pointer '}${
                           selectedStudent?.id === student.id
                             ? 'border-study-brown bg-study-brown/5'
@@ -1015,7 +1047,7 @@ export default function AdminDashboard() {
         )}
 
         {!isLoading && !error && selectedStudent && adminTab === 'premium' && (
-          <div className="mt-5 bg-study-card rounded-xl card-shadow p-4 sm:p-6">
+          <div id="student-panel" className="mt-5 bg-study-card rounded-xl card-shadow p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
               <div>
                 <h2 className="text-lg font-bold text-study-dark">{selectedStudent.fullName}</h2>
@@ -1027,6 +1059,12 @@ export default function AdminDashboard() {
               >
                 Закрыть
               </button>
+            </div>
+
+            {/* The ЛК lives in its own store: shown even if the
+                universities/documents request fails. */}
+            <div className="space-y-4 mb-4">
+              <LkEditor key={selectedStudent.id} studentId={selectedStudent.id} studentName={selectedStudent.fullName} onChanged={loadLkCards} />
             </div>
 
             {isStudentLoading && <LoadingState heightClass="h-32" />}

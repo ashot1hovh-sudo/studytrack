@@ -29,6 +29,14 @@ export function middleware(request: NextRequest) {
     return new NextResponse('Not found', { status: 404 })
   }
 
+  // The v2 prototype (/v2, /v3, /v2-admin) is not ready for students: only
+  // /lk ships, in the v2 design. Hidden outside local dev unless
+  // V2_PREVIEW=1 is set on the server.
+  const isV2Prototype = /^\/(v2|v3|v2-admin|zz-[^/]*)(\/|$)/.test(path)
+  if (isV2Prototype && !isLocal && process.env.V2_PREVIEW !== '1') {
+    return new NextResponse('Not found', { status: 404 })
+  }
+
   // On the clients subdomain the CRM is the whole app — send the root to it.
   // (Local dev is left alone so the student app stays reachable at /.)
   if (isClientsSubdomain && path === '/') {

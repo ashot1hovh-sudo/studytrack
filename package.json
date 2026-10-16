@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lk:import": "node --env-file-if-exists=.env.local --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/lk-import.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

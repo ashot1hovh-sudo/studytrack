@@ -1,8 +1,13 @@
-import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap, Target } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, School, CalendarDays, Compass, MessageCircle, User, ChevronRight, Menu, X, LogOut, GraduationCap, Target, Briefcase } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import Logo from '@/components/Logo'
 import ThemeSwitch from '@/components/ThemeSwitch'
 import { useState } from 'react'
+
+// «Личный кабинет» is a separate page (/lk) already in the v2 design, so it
+// is a link, not a tab. Students without сопровождение see a demo there.
+const LK_HREF = '/lk'
+const NewBadge = () => <span className="ml-auto text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-study-orange/15 text-study-orange">new</span>
 
 const baseMenuItems = [
   { id: 'learning-start', label: 'Начало обучения', icon: GraduationCap },
@@ -52,6 +57,17 @@ export default function Sidebar() {
                 </li>
               )
             })}
+            <li>
+              <a
+                href={LK_HREF}
+                data-tour="nav-lk"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-study-dark hover:bg-study-lightgray/60 transition-all duration-200"
+              >
+                <Briefcase className="w-4 h-4" />
+                <span>Личный кабинет</span>
+                <NewBadge />
+              </a>
+            </li>
           </ul>
         </nav>
 
@@ -82,6 +98,9 @@ export default function Sidebar() {
           <Logo className="h-8 w-auto" />
         </div>
         <div className="flex items-center gap-2">
+          <a href={LK_HREF} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-study-brown/10 text-study-brown text-xs font-semibold">
+            <Briefcase className="w-4 h-4" /> Кабинет
+          </a>
           <ThemeSwitch />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -126,6 +145,11 @@ export default function Sidebar() {
                 </button>
               )
             })}
+            <a href={LK_HREF} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium text-study-dark hover:bg-study-bg transition-all">
+              <Briefcase className="w-5 h-5" />
+              <span>Личный кабинет</span>
+              <NewBadge />
+            </a>
           </div>
 
           {/* Full width with the actions on the right: logout had no mobile

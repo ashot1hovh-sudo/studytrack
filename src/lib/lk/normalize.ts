@@ -103,7 +103,7 @@ export function normalizePayments(v: unknown): LkPayments {
 
 export function normalizeInternal(v: unknown): LkInternal {
   const i = obj(v)
-  return { budget: strOrNull(i.budget, 300), telegram: url(i.telegram) }
+  return { budget: strOrNull(i.budget, 300), telegram: url(i.telegram), notes: strOrNull(i.notes, 4000) }
 }
 
 function source(v: unknown): LkSource | null {

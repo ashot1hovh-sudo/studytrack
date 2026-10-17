@@ -176,6 +176,17 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
     try { localStorage.setItem(VIEW_KEY, v) } catch {}
   }
 
+  // The pinned view switch shows only while this editor is on screen.
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [inView, setInView] = useState(false)
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting))
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   async function addUni(seed: Partial<LkUniPublic>) {
     const body = await post('add', { action: 'add', uni: seed })
     const added = body?.lk?.unis?.at(-1)
@@ -183,7 +194,7 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
   }
 
   return (
-    <div className="rounded-xl border-2 border-study-orange/30 p-4 space-y-4">
+    <div ref={rootRef} className="rounded-xl border-2 border-study-orange/30 p-4 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-bold text-study-dark">Личный кабинет (сопровождение)</h3>
@@ -210,21 +221,31 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
           >
             <ExternalLink className="w-4 h-4" />
           </a>
-          <div className="inline-flex p-1 rounded-lg bg-study-bg" role="tablist" aria-label="Вид редактора">
-            {([['form', 'Редактор', PenLine], ['family', 'Как видит семья', Eye]] as const).map(([k, l, Icon]) => (
-              <button
-                key={k}
-                role="tab"
-                aria-selected={view === k}
-                onClick={() => switchView(k)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${view === k ? 'bg-study-card text-study-dark shadow' : 'text-study-gray hover:text-study-dark'}`}
-              >
-                <Icon className="w-4 h-4" /> {l}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
+
+      {/* View switch: pinned to the right edge of the screen (bottom on
+          phones) while the editor is on screen, so it stays in reach. */}
+      {inView && (
+        <div
+          role="tablist"
+          aria-label="Вид редактора"
+          className="fixed z-40 bottom-4 left-1/2 -translate-x-1/2 flex gap-1 p-1 rounded-xl bg-study-card card-shadow border border-study-lightgray lg:flex-col lg:bottom-auto lg:left-auto lg:right-2 lg:top-1/2 lg:translate-x-0 lg:-translate-y-1/2"
+        >
+          {([['form', 'Редактор', PenLine], ['family', 'Семья', Eye]] as const).map(([k, l, Icon]) => (
+            <button
+              key={k}
+              role="tab"
+              aria-selected={view === k}
+              onClick={() => switchView(k)}
+              title={k === 'family' ? 'Как видит семья' : 'Редактор'}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors lg:flex-col lg:gap-1 lg:w-16 lg:px-1 lg:text-[11px] ${view === k ? 'bg-study-brown text-white' : 'text-study-gray hover:text-study-dark hover:bg-study-bg'}`}
+            >
+              <Icon className="w-4 h-4" /> {l}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && <p className="text-sm text-study-red">{error}</p>}
       {!lk && !error && <p className="text-sm text-study-gray">Загрузка…</p>}
@@ -267,6 +288,8 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
             </button>
           </div>
 
+          <AddUni onAdd={addUni} disabled={busy !== null} existing={lk.unis} />
+
           <div className="space-y-2">
             {lk.unis.length === 0 && <p className="text-sm text-study-gray">Вузов пока нет. Семья видит «Яна готовит ваш план».</p>}
             {lk.unis.map((u, i) => (
@@ -283,8 +306,6 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
               />
             ))}
           </div>
-
-          <AddUni onAdd={addUni} disabled={busy !== null} existing={lk.unis} />
         </>
       )}
     </div>
@@ -367,16 +388,17 @@ function ProfileBlock({ studentId, lk, busy, post, onPhoto }: { studentId: strin
 /* ---------- Iana only: the family's budget and the student's Telegram channel ---------- */
 
 function InternalBlock({ lk, busy, post }: { lk: LkDataPublic; busy: string | null; post: Post }) {
-  const saved = { budget: lk.internal?.budget ?? '', telegram: lk.internal?.telegram ?? '' }
+  const saved = { budget: lk.internal?.budget ?? '', telegram: lk.internal?.telegram ?? '', notes: lk.internal?.notes ?? '' }
   const [budget, setBudget] = useState(saved.budget)
   const [telegram, setTelegram] = useState(saved.telegram)
+  const [notes, setNotes] = useState(saved.notes)
   const [err, setErr] = useState<string | null>(null)
-  useEffect(() => { setBudget(saved.budget); setTelegram(saved.telegram) }, [saved.budget, saved.telegram])
-  const changed = budget.trim() !== saved.budget || telegram.trim() !== saved.telegram
+  useEffect(() => { setBudget(saved.budget); setTelegram(saved.telegram); setNotes(saved.notes) }, [saved.budget, saved.telegram, saved.notes])
+  const changed = budget.trim() !== saved.budget || telegram.trim() !== saved.telegram || notes.trim() !== saved.notes
 
   async function save() {
     setErr(null)
-    const body = await post('internal', { action: 'internal', internal: { budget, telegram } })
+    const body = await post('internal', { action: 'internal', internal: { budget, telegram, notes } })
     // The server drops a link it can't read as http(s): say so instead of losing it silently.
     if (body?.lk && telegram.trim() && !body.lk.internal?.telegram) setErr('Ссылка не распознана. Нужна ссылка вида https://t.me/+…')
   }
@@ -404,6 +426,15 @@ function InternalBlock({ lk, busy, post }: { lk: LkDataPublic; busy: string | nu
           Сохранить
         </button>
       </div>
+      <label className="block text-xs text-study-gray space-y-1">
+        <span>Заметки</span>
+        <textarea
+          className={`${input} min-h-[96px] resize-y`}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Контакты, родитель, что уточнить, какие вузы ещё посмотреть"
+        />
+      </label>
       {err && <p className="text-xs font-semibold text-study-red">{err}</p>}
     </section>
   )

@@ -18,7 +18,7 @@ export async function GET(_req: Request, { params }: { params: { studentId: stri
 // POST { action: 'subtitle', subtitle }
 //    | { action: 'profile', profile: { track, major } }
 //    | { action: 'payments', payments: { total, entries: [{ id?, date, amount, note }] } }
-//    | { action: 'internal', internal: { budget, telegram } }
+//    | { action: 'internal', internal: { budget, telegram, notes } }
 //    | { action: 'add', uni }
 //    | { action: 'save', uni, base, password? }   password: omitted = keep, '' = clear
 //    | { action: 'delete', id } | { action: 'move', id, dir: -1 | 1 }

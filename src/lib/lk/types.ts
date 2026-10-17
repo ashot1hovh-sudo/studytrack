@@ -190,6 +190,8 @@ export type LkInternal = {
   budget: string | null
   /** The company's private Telegram channel for this student (documents and updates). */
   telegram: string | null
+  /** Free-form notes: contacts, parent, what to check next. */
+  notes: string | null
 }
 
 export type LkData = {
@@ -211,7 +213,7 @@ export type LkDataPublic = Omit<LkData, 'unis' | 'internal'> & { unis: LkUniPubl
 
 export const emptyProfile = (): LkProfile => ({ track: null, major: null, photo: null })
 export const emptyPayments = (): LkPayments => ({ total: null, due: null, entries: [] })
-export const emptyInternal = (): LkInternal => ({ budget: null, telegram: null })
+export const emptyInternal = (): LkInternal => ({ budget: null, telegram: null, notes: null })
 export const emptyLk = (): LkData => ({ subtitle: null, profile: emptyProfile(), payments: emptyPayments(), internal: emptyInternal(), unis: [], updated_at: null })
 
 /** Paid so far and what is left (negative = paid more than the total). */

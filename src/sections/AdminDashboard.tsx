@@ -9,15 +9,6 @@ import type { LkCard } from '@/lib/lk/types'
 import UserAccessTools from '@/sections/admin/UserAccessTools'
 import type { AdminStudentSummary } from '@/types/studytrack'
 
-const defaultDocumentOptions = [
-  'Аттестат о среднем образовании',
-  'Справка о здоровье',
-  'Перевод документов',
-  'Рекомендательное письмо',
-  'Мотивационное письмо',
-  'Копия паспорта',
-]
-
 type StudentProgram = 'language_year' | 'bachelor' | 'master'
 
 const programLabels: Record<StudentProgram, string> = {
@@ -26,16 +17,14 @@ const programLabels: Record<StudentProgram, string> = {
   master: "Master's",
 }
 
+// Email + password are required; name, age and program are optional and can
+// be filled in later in the ЛК editor.
 const emptyStudentForm = {
   fullName: '',
   email: '',
   password: '',
   age: '',
   program: 'bachelor' as StudentProgram,
-  universitiesText: '',
-  selectedDocuments: defaultDocumentOptions,
-  documentChoice: '',
-  customDocument: '',
 }
 
 type AdminTab = 'premium' | 'diy' | 'shortlists'
@@ -133,11 +122,6 @@ export default function AdminDashboard() {
           // Created from the premium tab = a paid student. Without this the
           // route defaults to 'diy' and the student lands in the other tab.
           serviceType: adminTab === 'premium' ? 'premium' : 'diy',
-          documents: newStudent.selectedDocuments,
-          universities: newStudent.universitiesText
-            .split('\n')
-            .map((name) => name.trim())
-            .filter(Boolean),
         }),
       })
       const data = await response.json().catch(() => null)
@@ -203,27 +187,6 @@ export default function AdminDashboard() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось удалить пользователя')
     }
-  }
-
-  const addDocumentToNewStudent = (documentName: string) => {
-    const name = documentName.trim()
-    if (!name) return
-
-    setNewStudent((current) => ({
-      ...current,
-      selectedDocuments: current.selectedDocuments.includes(name)
-        ? current.selectedDocuments
-        : [...current.selectedDocuments, name],
-      documentChoice: '',
-      customDocument: '',
-    }))
-  }
-
-  const removeDocumentFromNewStudent = (documentName: string) => {
-    setNewStudent((current) => ({
-      ...current,
-      selectedDocuments: current.selectedDocuments.filter((name) => name !== documentName),
-    }))
   }
 
   return (
@@ -302,7 +265,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-bold text-study-dark">Добавить студента</h2>
-                    <p className="text-sm text-study-gray">Аккаунт, профиль, пакет документов и список вузов</p>
+                    <p className="text-sm text-study-gray">Аккаунт и профиль студента</p>
                   </div>
                   <button
                     onClick={() => setIsCreateOpen((current) => !current)}
@@ -322,6 +285,7 @@ export default function AdminDashboard() {
                       className="rounded-lg border border-study-lightgray px-3 py-2 text-sm"
                     />
                     <input
+                      type="email"
                       value={newStudent.email}
                       onChange={(event) => setNewStudent((current) => ({ ...current, email: event.target.value }))}
                       placeholder="Email"
@@ -353,77 +317,10 @@ export default function AdminDashboard() {
                         ))}
                       </select>
                     </div>
-                    <textarea
-                      value={newStudent.universitiesText}
-                      onChange={(event) => setNewStudent((current) => ({ ...current, universitiesText: event.target.value }))}
-                      placeholder="Желаемые вузы, каждый с новой строки"
-                      className="md:col-span-2 min-h-[96px] rounded-lg border border-study-lightgray px-3 py-2 text-sm resize-none"
-                    />
-                    <div className="md:col-span-2 rounded-xl border border-study-lightgray p-3">
-                      <div className="grid sm:grid-cols-[1fr_auto] gap-2">
-                        <select
-                          value={newStudent.documentChoice}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            setNewStudent((current) => ({ ...current, documentChoice: value }))
-                            if (value && value !== 'other') addDocumentToNewStudent(value)
-                          }}
-                          className="rounded-lg border border-study-lightgray px-3 py-2 text-sm"
-                        >
-                          <option value="">Выбрать документ из пакета</option>
-                          {defaultDocumentOptions.map((documentName) => (
-                            <option key={documentName} value={documentName}>{documentName}</option>
-                          ))}
-                          <option value="other">Другое</option>
-                        </select>
-                        <button
-                          onClick={() => setNewStudent((current) => ({ ...current, selectedDocuments: defaultDocumentOptions }))}
-                          type="button"
-                          className="rounded-lg bg-study-bg text-study-dark text-sm font-semibold px-3 py-2"
-                        >
-                          Весь пакет
-                        </button>
-                      </div>
-
-                      {newStudent.documentChoice === 'other' && (
-                        <div className="grid sm:grid-cols-[1fr_auto] gap-2 mt-2">
-                          <input
-                            value={newStudent.customDocument}
-                            onChange={(event) => setNewStudent((current) => ({ ...current, customDocument: event.target.value }))}
-                            placeholder="Название документа"
-                            className="rounded-lg border border-study-lightgray px-3 py-2 text-sm"
-                          />
-                          <button
-                            onClick={() => addDocumentToNewStudent(newStudent.customDocument)}
-                            disabled={!newStudent.customDocument.trim()}
-                            type="button"
-                            className="rounded-lg bg-study-green text-white text-sm font-semibold px-3 py-2 disabled:opacity-50"
-                          >
-                            Добавить
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {newStudent.selectedDocuments.map((documentName) => (
-                          <button
-                            key={documentName}
-                            type="button"
-                            onClick={() => removeDocumentFromNewStudent(documentName)}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-study-bg px-2.5 py-1.5 text-xs font-semibold text-study-dark"
-                            title="Убрать документ"
-                          >
-                            {documentName}
-                            <X className="w-3 h-3 text-study-gray" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <p className="text-xs text-study-gray">Будет добавлено документов: {newStudent.selectedDocuments.length}</p>
+                    <div className="md:col-span-2 flex justify-end">
                       <button
                         onClick={createStudent}
-                        disabled={isCreatingStudent || !newStudent.fullName || !newStudent.email || !newStudent.password || newStudent.selectedDocuments.length === 0}
+                        disabled={isCreatingStudent || !newStudent.email || !newStudent.password}
                         className="rounded-lg bg-study-green text-white text-sm font-semibold px-4 py-2 disabled:opacity-50"
                       >
                         Создать аккаунт

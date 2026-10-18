@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
-import { normalizeInternal, normalizePayments, normalizeProfile, normalizeUni, strOrNull } from '@/lib/lk/normalize'
+import { normalizeInternal, normalizeItems, normalizePayments, normalizeProfile, normalizeUni, strOrNull } from '@/lib/lk/normalize'
 import { MissingSecretKeyError } from '@/lib/lk/secret'
 import { getLkStore, NotFoundError, toPublic } from '@/lib/lk/store'
 
@@ -21,6 +21,7 @@ export async function GET(_req: Request, { params }: { params: { studentId: stri
 //    | { action: 'internal', internal: { budget, telegram, notes } }
 //    | { action: 'add', uni }
 //    | { action: 'save', uni, base, password? }   password: omitted = keep, '' = clear
+//    | { action: 'common', items, base }           the checklist shared by all universities
 //    | { action: 'delete', id } | { action: 'move', id, dir: -1 | 1 }
 //    | { action: 'password', id }                  reveal for Iana
 export async function POST(request: Request, { params }: { params: { studentId: string } }) {
@@ -52,6 +53,8 @@ export async function POST(request: Request, { params }: { params: { studentId: 
         const password = typeof body.password === 'string' ? body.password.slice(0, 200) : undefined
         return ok(store.saveUni(sid, normalizeUni(body.uni), body.base ? normalizeUni(body.base) : null, password))
       }
+      case 'common':
+        return ok(store.saveCommon(sid, normalizeItems(body.items), Array.isArray(body.base) ? normalizeItems(body.base) : null))
       case 'delete':
         if (typeof body.id !== 'string') return NextResponse.json({ error: 'id required' }, { status: 400 })
         return ok(store.deleteUni(sid, body.id))

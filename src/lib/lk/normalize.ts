@@ -41,6 +41,7 @@ function item(v: unknown): LkItem | null {
     owner: owner(t.owner),
     stage,
     done,
+    start: ymd(t.start),
     due: ymd(t.due),
     note: strOrNull(t.note, 200),
     comment: strOrNull(t.comment, 2000),
@@ -71,6 +72,11 @@ function foldTranslate(raw: unknown[]): unknown[] {
     twin.comment = joinText(twin.comment, t.comment, 2000)
   }
   return out
+}
+
+/** A checklist as sent by the admin editor (or read from disk). */
+export function normalizeItems(v: unknown): LkItem[] {
+  return foldTranslate(arr(v)).map(item).filter((t): t is LkItem => !!t).slice(0, 120)
 }
 
 export function normalizeProfile(v: unknown): LkProfile {
@@ -163,7 +169,7 @@ export function normalizeUni(v: unknown): LkUni {
     status: isStatus(u.status) ? u.status : 'preparing',
     comment: commentText ? { text: commentText, at: ymd(comment.at) ?? new Date().toLocaleDateString('sv-SE') } : null,
     portal: { url: url(portal.url), login: strOrNull(portal.login, 200), note: strOrNull(portal.note, 500) },
-    items: foldTranslate(arr(legacy ? legacy.items : u.items)).map(item).filter((t): t is LkItem => !!t).slice(0, 120),
+    items: normalizeItems(legacy ? legacy.items : u.items),
     sources: arr(u.sources).map(source).filter((s): s is LkSource => !!s).slice(0, 10),
     updated_at: typeof u.updated_at === 'string' ? u.updated_at : new Date().toISOString(),
   }

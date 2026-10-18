@@ -8,9 +8,9 @@ import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { getSupabaseConfig } from '@/lib/supabase/config'
-import { normalizeInternal, normalizePayments, normalizeProfile, normalizeUni } from './normalize'
+import { normalizeInternal, normalizeItems, normalizePayments, normalizeProfile, normalizeUni } from './normalize'
 import { decryptSecret, encryptSecret } from './secret'
-import { emptyLk, isStageOf, withStage, type LkData, type LkDataPublic, type LkInternal, type LkPayments, type LkProfile, type LkUni } from './types'
+import { COMMON_ID, emptyLk, isStageOf, LK_VERSION, RENAMED_STARTERS, stagesOf, withStage, type LkData, type LkDataPublic, type LkInternal, type LkItem, type LkPayments, type LkProfile, type LkUni } from './types'
 
 export interface LkStore {
   get(studentId: string): Promise<LkData>
@@ -34,9 +34,14 @@ export interface LkStore {
    * changed that same item herself.
    */
   saveUni(studentId: string, uni: LkUni, base: LkUni | null, password?: string): Promise<LkData>
+  /** Iana saves the common checklist; `base` works as in saveUni. */
+  saveCommon(studentId: string, items: LkItem[], base: LkItem[] | null): Promise<LkData>
   deleteUni(studentId: string, uniId: string): Promise<LkData>
   moveUni(studentId: string, uniId: string, dir: -1 | 1): Promise<LkData>
-  /** The family moves one of their items to a stage. Iana's own items are hers to move. */
+  /**
+   * The family moves one of their items to a stage. Iana's own items are hers
+   * to move. `uniId` is COMMON_ID for the common checklist.
+   */
   familyStage(studentId: string, uniId: string, itemId: string, stage: string): Promise<LkData>
   getPassword(studentId: string, uniId: string): Promise<string | null>
 }
@@ -44,23 +49,65 @@ export interface LkStore {
 export class NotFoundError extends Error {}
 export class BadRequestError extends Error {}
 
+/**
+ * Version 1 → 2 (2026-10-18): «Собрать» documents are the same for every
+ * university, so they move from each university into the common checklist.
+ * The same document listed under several universities becomes one card: the
+ * copy furthest along wins, missing dates and notes are filled from the
+ * others. Old English starter names get Iana's Russian wording. Nothing is
+ * written here: the moved shape is saved with the next change to this ЛК.
+ */
+function toV2(d: LkData) {
+  const rename = (t: LkItem): LkItem => ({ ...t, text: RENAMED_STARTERS[t.text.trim().toLowerCase()] ?? t.text })
+  const key = (t: LkItem) => t.text.trim().toLowerCase()
+  const rank = (t: LkItem) => stagesOf(t.group).findIndex((x) => x.key === t.stage)
+  const common = d.common.map(rename)
+  for (const u of d.unis) {
+    u.items = u.items.map(rename)
+    for (const t of u.items.filter((x) => x.group === 'collect')) {
+      const i = common.findIndex((c) => c.group === 'collect' && key(c) === key(t))
+      if (i < 0) { common.push(t); continue }
+      const [win, other] = rank(t) > rank(common[i]) ? [t, common[i]] : [common[i], t]
+      common[i] = { ...win, start: win.start ?? other.start, due: win.due ?? other.due, note: win.note ?? other.note, comment: win.comment ?? other.comment }
+    }
+    u.items = u.items.filter((x) => x.group !== 'collect')
+  }
+  d.common = common
+}
+
 /** Re-validate on read: brings data saved in an older shape up to date. */
 function normalizeData(raw: Partial<LkData> | null | undefined): LkData {
-  const d = { ...emptyLk(), ...raw }
+  const d = { ...emptyLk(), ...raw, v: typeof raw?.v === 'number' ? raw.v : 1 }
   d.profile = normalizeProfile(d.profile)
   d.payments = normalizePayments(d.payments)
   d.internal = normalizeInternal(d.internal)
+  d.common = normalizeItems(d.common)
   d.unis = (d.unis ?? []).map((u) => {
     const n = normalizeUni(u)
     n.portal.password_enc = u.portal?.password_enc ?? null
     return n
   })
+  if (d.v < 2) toV2(d)
+  d.v = LK_VERSION
   return d
 }
 
 // Student ids are uuids; anything else never reaches the disk or the bucket.
 function checkId(studentId: string) {
   if (!/^[0-9a-f-]{36}$/i.test(studentId)) throw new NotFoundError('Студент не найден')
+}
+
+/**
+ * Iana's saved checklist, with the family's moves made since she loaded it
+ * (`base`) kept: an item keeps the current stage unless she moved it herself.
+ * Returns copies, so a retried write (Supabase version clash) can run again.
+ */
+function keepFamilyMoves(next: LkItem[], cur: LkItem[], base: LkItem[] | null): LkItem[] {
+  return next.map((t) => {
+    const now = cur.find((x) => x.id === t.id)
+    const was = base?.find((x) => x.id === t.id)
+    return now && was && t.stage === was.stage ? { ...t, stage: now.stage, done: now.done, done_at: now.done_at } : { ...t }
+  })
 }
 
 abstract class BaseLkStore implements LkStore {
@@ -92,18 +139,15 @@ abstract class BaseLkStore implements LkStore {
     return this.mutate(studentId, (d) => {
       const cur = this.uni(d, uni.id)
       // Work on a copy: a retried write (Supabase version clash) runs fn again.
-      const next: LkUni = { ...uni, portal: { ...uni.portal }, items: uni.items.map((t) => ({ ...t })) }
-      if (base) {
-        for (const t of next.items) {
-          const now = cur.items.find((x) => x.id === t.id)
-          const was = base.items.find((x) => x.id === t.id)
-          if (now && was && t.stage === was.stage) Object.assign(t, { stage: now.stage, done: now.done, done_at: now.done_at })
-        }
-      }
+      const next: LkUni = { ...uni, portal: { ...uni.portal }, items: keepFamilyMoves(uni.items, cur.items, base?.items ?? null) }
       next.updated_at = new Date().toISOString()
       next.portal.password_enc = password === undefined ? cur.portal.password_enc ?? null : enc
       d.unis = d.unis.map((x) => (x.id === next.id ? next : x))
     })
+  }
+
+  saveCommon(studentId: string, items: LkItem[], base: LkItem[] | null) {
+    return this.mutate(studentId, (d) => { d.common = keepFamilyMoves(items, d.common, base) })
   }
 
   deleteUni(studentId: string, uniId: string) {
@@ -123,12 +167,14 @@ abstract class BaseLkStore implements LkStore {
 
   familyStage(studentId: string, uniId: string, itemId: string, stage: string) {
     return this.mutate(studentId, (d) => {
-      const u = this.uni(d, uniId)
-      const t = u.items.find((x) => x.id === itemId)
+      const list = uniId === COMMON_ID ? d.common : this.uni(d, uniId).items
+      const t = list.find((x) => x.id === itemId)
       if (!t) throw new NotFoundError('Пункт не найден')
       if (!isStageOf(t.group, stage)) throw new BadRequestError('Неизвестный этап')
       if (t.owner === 'iana' || t.stage === stage) return
-      u.items = u.items.map((x) => (x.id === itemId ? withStage(x, stage) : x))
+      const moved = list.map((x) => (x.id === itemId ? withStage(x, stage) : x))
+      if (uniId === COMMON_ID) d.common = moved
+      else this.uni(d, uniId).items = moved
     }, false)
   }
 

@@ -6,7 +6,7 @@
 
 import { getLkCatalog } from './catalog'
 import { normalizeUni } from './normalize'
-import { emptyLk, STARTER_ITEMS, type AppStatus, type GroupKey, type LkData, type LkItem, type Owner, stagesOf } from './types'
+import { emptyLk, STARTER_COMMON, STARTER_UNI, type AppStatus, type GroupKey, type LkData, type LkItem, type Owner, stagesOf } from './types'
 
 /** Used when the tracker has fewer than two universities. */
 const FALLBACK = ['Zhejiang University', 'Sun Yat-sen University', 'Shenzhen University']
@@ -14,11 +14,11 @@ const STATUSES: AppStatus[] = ['submitted', 'preparing', 'interview']
 const TONES = ['navy', 'coral', 'tint'] as const
 
 const ITEM_COMMENTS: Record<string, string> = {
-  Passport: 'Пример: нужен скан всех страниц, включая пустые.',
-  'Study Plan': 'Пример: у вуза свой шаблон, Яна пришлёт его вместе с подсказками.',
-  'Bank Statement': 'Пример: сумма и срок выписки зависят от вуза, Яна уточнит.',
+  Загранпаспорт: 'Пример: нужен скан всех страниц, включая пустые.',
+  'Учебный план (Study Plan)': 'Пример: у вуза свой шаблон, Яна пришлёт его вместе с подсказками.',
+  'Выписка о доступном остатке из банка': 'Пример: сумма и срок выписки зависят от вуза, Яна уточнит.',
 }
-const OWNERS: Partial<Record<string, Owner>> = { 'Bank Statement': 'parent', Интервью: 'iana', 'Recommendation Letter 1': 'iana' }
+const OWNERS: Partial<Record<string, Owner>> = { 'Выписка о доступном остатке из банка': 'parent', Интервью: 'iana', 'Рекомендательное письмо 1': 'iana' }
 
 /** Small deterministic generator: the demo looks the same on every reload. */
 function rng(seed: string) {
@@ -47,26 +47,33 @@ export async function buildDemoLk(studentId: string, tracker: TrackerUni[]): Pro
     if (!picked.some((u) => norm(u.name) === norm(name))) picked.push({ name, city: null, major: null, deadline: null })
   }
 
-  const unis = picked.map((t, i) => {
-    const c = find(t.name)
-    const items: LkItem[] = STARTER_ITEMS.map((s, j) => {
+  // `reach`: how far along the boards look (0..1), so the demo looks lived in.
+  // Dates: spread over the next months, so the timeline has something to show.
+  const demoItems = (list: typeof STARTER_UNI, prefix: string, reach: number): LkItem[] =>
+    list.map((s, j) => {
       const stages = stagesOf(s.group as GroupKey)
-      // The first university is further along, so the boards look lived in.
-      const reach = i === 0 ? 0.75 : 0.4
       const stage = stages[Math.min(stages.length - 1, Math.floor(rand() * stages.length * reach * 1.6))].key
+      const from = Math.round(rand() * 70) - 20
       return {
-        id: `demo-${i}-${j}`,
+        id: `${prefix}-${j}`,
         group: s.group,
         text: s.text,
         owner: OWNERS[s.text] ?? 'student',
         stage,
         done: stage === 'done',
-        due: null,
-        note: null,
+        start: plusDays(from),
+        due: plusDays(from + 14 + Math.round(rand() * 40)),
+        note: s.note ?? null,
         comment: ITEM_COMMENTS[s.text] ?? null,
         done_at: null,
       }
     })
+  const common = demoItems(STARTER_COMMON, 'demo-common', 0.6)
+
+  const unis = picked.map((t, i) => {
+    const c = find(t.name)
+    // The first university is further along.
+    const items = demoItems(STARTER_UNI, `demo-${i}`, i === 0 ? 0.75 : 0.4)
     const short = c?.name ?? t.name
     return normalizeUni({
       id: `demo-${i}`,
@@ -85,5 +92,5 @@ export async function buildDemoLk(studentId: string, tracker: TrackerUni[]): Pro
     })
   })
 
-  return { ...emptyLk(), subtitle: 'Демо-версия кабинета', unis, updated_at: new Date().toISOString() }
+  return { ...emptyLk(), subtitle: 'Демо-версия кабинета', common, unis, updated_at: new Date().toISOString() }
 }

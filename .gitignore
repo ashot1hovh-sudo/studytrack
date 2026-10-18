@@ -7,3 +7,6 @@ dist/
 .env*
 *.tsbuildinfo
 .DS_Store
+
+# University sync local data (sheet copy with contacts, staging, published)
+.data/

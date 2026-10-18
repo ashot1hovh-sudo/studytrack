@@ -30,7 +30,10 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   const email = String(body?.email ?? '').trim().toLowerCase()
   const password = String(body?.password ?? '')
-  const fullName = String(body?.fullName ?? '').trim()
+  // The admin form now sends only email + password. students.full_name is
+  // NOT NULL, so fall back to the part of the email before @ (same rule as
+  // supabase-fix-orphan-student.sql); the real name is set later in the ЛК.
+  const fullName = String(body?.fullName ?? '').trim() || email.split('@')[0]
   // Defaults to 'diy' so a manually created account matches a self-registered
   // one. This route predates the DIY pivot and used to hard-code premium/active,
   // which would have handed every manually created student a free paid
@@ -51,8 +54,8 @@ export async function POST(request: Request) {
     ? body.documents.map((name: unknown) => String(name).trim()).filter(Boolean)
     : defaultDocumentsPackage
 
-  if (!email || !password || !fullName) {
-    return NextResponse.json({ error: 'Email, пароль и имя обязательны' }, { status: 400 })
+  if (!email || !password) {
+    return NextResponse.json({ error: 'Email и пароль обязательны' }, { status: 400 })
   }
 
   if (password.length < 6) {

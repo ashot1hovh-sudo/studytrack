@@ -54,6 +54,7 @@ export async function GET(request: Request) {
 }
 
 // POST { action: 'stage', uniId, itemId, stage } | { action: 'password', uniId }
+// uniId 'common' (COMMON_ID) = the checklist shared by all universities.
 // A consultant's preview can reveal passwords but never moves anything.
 export async function POST(request: Request) {
   if (missingSupabaseEnv()) return setupErrorResponse()

@@ -4,10 +4,13 @@
  * v2 «Личный кабинет» (сопровождение).
  *
  * One family account (student + parents). The page is about the universities
- * Iana chose with the family: pick one with the buttons on top, and see where
- * its application stands, what is ready and what is left. Exams are a list
- * with a status; documents, letters and the rest are pipeline boards whose
- * cards move from stage to stage. Done = every card in its last stage.
+ * Iana chose with the family. Two checklists sit side by side: «Общие
+ * документы», shared by every university, and the documents of the
+ * university picked with the buttons on top. Exams are a list with a status;
+ * documents, letters and the rest are pipeline boards whose cards move from
+ * stage to stage. Done = every card in its last stage. The university's facts
+ * and portal login open in a popup from its button. «Таймлайн» shows both
+ * lists on one time axis instead of the boards.
  *
  * `LkPage` loads /api/lk for the family. `LkView` is the page itself; the
  * admin renders it too («Как видит семья»), with `admin` set, so Iana edits
@@ -16,11 +19,12 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
-import { ArrowUpRight, CalendarClock, Check, Copy, Eye, EyeOff, Globe, KeyRound, MessageCircle, Phone, ShieldCheck } from 'lucide-react'
+import { ArrowUpRight, CalendarClock, Check, Copy, Eye, EyeOff, Globe, Info, KeyRound, MessageCircle, Phone, ShieldCheck, X } from 'lucide-react'
 import DatePicker from '@/components/DatePicker'
-import { paymentsSummary, progressOf, rub, STATUS_LABEL, STATUSES, withStage, type AppStatus, type LkDataPublic, type LkItem, type LkPayments, type LkUniPublic } from '@/lib/lk/types'
+import { COMMON_ID, paymentsSummary, progressOf, progressWith, rub, STATUS_LABEL, STATUSES, withStage, type AppStatus, type LkDataPublic, type LkItem, type LkPayments, type LkUniPublic } from '@/lib/lk/types'
 import { plural } from './plural'
 import LkBoard from './lkBoard'
+import LkTimeline from './lkTimeline'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
@@ -34,7 +38,6 @@ const todayYmd = () => new Date().toLocaleDateString('sv-SE')
 const daysTo = (ymd: string) => Math.round((new Date(`${ymd}T00:00:00`).getTime() - new Date(`${todayYmd()}T00:00:00`).getTime()) / 86400000)
 const daysWord = (n: number) => `${n} ${plural(n, 'день', 'дня', 'дней')}`
 const untilWord = (n: number) => (n > 0 ? `через ${daysWord(n)}` : n === 0 ? 'сегодня' : `${daysWord(-n)} назад`)
-const isExam = (g: string) => g === 'exams'
 
 /** Where the application window stands today, in one line. */
 function windowLine(u: LkUniPublic): { text: string; hot: boolean } | null {
@@ -48,6 +51,11 @@ function windowLine(u: LkUniPublic): { text: string; hot: boolean } | null {
 type Loaded = { preview: boolean; demo?: boolean; student: { id: string; fullName: string }; lk: LkDataPublic }
 
 const IANA_TG = 'https://t.me/ianamedvedeva'
+
+type Mode = 'boards' | 'timeline'
+const MODE_KEY = 'lk-mode'
+const isExam = (g: string) => g === 'exams'
+const notExam = (g: string) => g !== 'exams'
 
 /* =====================================================================
    The family's page: loads its ЛК and saves the family's own card moves.
@@ -78,9 +86,15 @@ export default function LkPage() {
   const moves = useRef(new Map<string, { timer?: number; busy: boolean; want: string; saved: string }>())
   const [moveError, setMoveError] = useState<string | null>(null)
 
+  // uniId is COMMON_ID for the checklist shared by all universities.
   const setStage = useCallback(
     (uniId: string, itemId: string, stage: string) =>
-      setData((d) => d && { ...d, lk: { ...d.lk, unis: d.lk.unis.map((u) => (u.id !== uniId ? u : { ...u, items: u.items.map((t) => (t.id === itemId ? withStage(t, stage) : t)) })) } }),
+      setData((d) => {
+        if (!d) return d
+        const moveIn = (items: LkItem[]) => items.map((t) => (t.id === itemId ? withStage(t, stage) : t))
+        if (uniId === COMMON_ID) return { ...d, lk: { ...d.lk, common: moveIn(d.lk.common) } }
+        return { ...d, lk: { ...d.lk, unis: d.lk.unis.map((u) => (u.id !== uniId ? u : { ...u, items: moveIn(u.items) })) } }
+      }),
     [],
   )
 
@@ -111,7 +125,8 @@ export default function LkPage() {
       if (!data || data.preview) return
       // Demo (no сопровождение): cards move on screen only, nothing is saved.
       if (data.demo) { setStage(uniId, itemId, stage); return }
-      const item = data.lk.unis.find((u) => u.id === uniId)?.items.find((t) => t.id === itemId)
+      const list = uniId === COMMON_ID ? data.lk.common : data.lk.unis.find((u) => u.id === uniId)?.items
+      const item = list?.find((t) => t.id === itemId)
       if (!item || item.owner === 'iana' || item.stage === stage) return
       const key = `${uniId}:${itemId}`
       const m = moves.current.get(key) ?? { busy: false, want: item.stage, saved: item.stage }
@@ -145,6 +160,8 @@ export default function LkPage() {
 export type LkAdminApi = {
   /** Change one university (status, comment, facts, items…). Saved by the caller. */
   patchUni: (uniId: string, patch: Partial<LkUniPublic>) => void
+  /** Replace the common checklist. Saved by the caller. */
+  setCommon: (items: LkItem[]) => void
   setSubtitle: (s: string | null) => void
   /** Shown in the bar on top: «Сохраняю…», «Сохранено», an error. */
   saveState: string | null
@@ -158,18 +175,47 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
   demo?: boolean
   /** `?student=<id>` for a consultant, '' for the family: used to reveal portal passwords. */
   query: string
+  /** uniId is COMMON_ID for the common checklist. */
   onMove: (uniId: string, itemId: string, stage: string) => void
   moveError?: string | null
   admin?: LkAdminApi
 }) {
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [infoId, setInfoId] = useState<string | null>(null)
+  // Boards or timeline: a per-browser preference.
+  const [mode, setModeState] = useState<Mode>('boards')
+  useEffect(() => {
+    try { if (localStorage.getItem(MODE_KEY) === 'timeline') setModeState('timeline') } catch {}
+  }, [])
+  const setMode = (m: Mode) => {
+    setModeState(m)
+    try { localStorage.setItem(MODE_KEY, m) } catch {}
+  }
   const unis = lk.unis
   const active = unis.find((u) => u.id === activeId) ?? unis[0] ?? null
-  const yourTurn = unis.flatMap((u) => u.items.filter((t) => !t.done && t.owner !== 'iana'))
+  const info = unis.find((u) => u.id === infoId) ?? null
+  const yourTurn = [...lk.common, ...unis.flatMap((u) => u.items)].filter((t) => !t.done && t.owner !== 'iana')
   const nearest = unis.filter((u) => u.deadline.date && daysTo(u.deadline.date) >= 0).sort((a, b) => (a.deadline.date! < b.deadline.date! ? -1 : 1))[0]
   const canMove = (t: LkItem) => !!admin || (!preview && t.owner !== 'iana')
   const patch = admin && active ? (p: Partial<LkUniPublic>) => admin.patchUni(active.id, p) : undefined
-  const pipelineItems = active?.items.filter((t) => !isExam(t.group)) ?? []
+  const infoPatch = admin && info ? (p: Partial<LkUniPublic>) => admin.patchUni(info.id, p) : undefined
+  // Exams sit in the university card on top; the two pipelines below hold the rest.
+  const commonDocs = lk.common.filter((t) => notExam(t.group))
+  const uniDocs = active?.items.filter((t) => notExam(t.group)) ?? []
+  const common = progressOf({ items: commonDocs })
+  const exams = active ? [...lk.common, ...active.items].filter((t) => isExam(t.group)) : []
+  const commonIds = new Set(lk.common.map((t) => t.id))
+  // An exam from the common list moves there; the rest belong to the university.
+  const moveExam = (itemId: string, stage: string) => active && onMove(commonIds.has(itemId) ? COMMON_ID : active.id, itemId, stage)
+  // Admin edits of the exam list: common exams go back to the common list, new ones to the university.
+  const editExams = admin && active
+    ? (next: LkItem[]) => {
+        const nextCommon = [...lk.common.filter((t) => notExam(t.group)), ...next.filter((t) => commonIds.has(t.id))]
+        if (JSON.stringify(nextCommon) !== JSON.stringify(lk.common)) admin.setCommon(nextCommon)
+        admin.patchUni(active.id, { items: [...active.items.filter((t) => notExam(t.group)), ...next.filter((t) => !commonIds.has(t.id))] })
+      }
+    : undefined
+  const moveHint = canMove({ owner: 'student' } as LkItem) ? 'перетащите карточку в нужный этап' : null
 
   return (
     <LayoutGroup>
@@ -246,18 +292,20 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
 
         {active && (
           <>
-            {/* University buttons */}
+            {/* University buttons. «Информация о моей программе» opens its facts and portal login. */}
             <div className="v2-lk-switch span-12" role="tablist" aria-label="Вузы">
               {unis.map((u, i) => {
-                const p = progressOf(u)
+                const p = progressWith(lk.common, u)
                 const on = u.id === active.id
                 return (
-                  <motion.button
+                  <motion.div
                     key={u.id}
                     role="tab"
+                    tabIndex={0}
                     aria-selected={on}
                     className={`v2-lk-tab tone-${u.tone}${on ? ' is-on' : ''}`}
                     onClick={() => setActiveId(u.id)}
+                    onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setActiveId(u.id) } }}
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE, delay: 0.08 + i * 0.05 } }}
                   >
@@ -266,24 +314,33 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
                     <span className="txt">
                       <b>{u.short}</b>
                       <span>{[u.country, u.city].filter(Boolean).join(' · ')}</span>
-                      <em className={`st-${u.status}`}>{STATUS_LABEL[u.status]}</em>
+                      <span className="row">
+                        <em className={`st-${u.status}`}>{STATUS_LABEL[u.status]}</em>
+                        <button
+                          type="button"
+                          className="v2-lk-tab-info"
+                          onClick={(e) => { e.stopPropagation(); setActiveId(u.id); setInfoId(u.id) }}
+                        >
+                          <Info aria-hidden /> Информация о моей программе
+                        </button>
+                      </span>
                     </span>
-                  </motion.button>
+                  </motion.div>
                 )
               })}
             </div>
 
-            {/* The selected university: status, Iana's comment, exams */}
+            {/* The selected university: status, deadline, Iana's comment, exams */}
             <AnimatePresence mode="wait">
               <motion.section
                 key={active.id}
-                className="v2-card v2-lk-path span-8"
+                className="v2-card v2-lk-path span-12"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.4, ease: EASE }}
               >
-                <UniHead u={active} patch={patch} />
+                <UniHead u={active} common={lk.common} patch={patch} />
                 {patch ? (
                   <div className="v2-lk-comment">
                     <span className="ava" aria-hidden>Я</span>
@@ -309,46 +366,20 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
                     </div>
                   )
                 )}
-                {moveError && <p className="v2-lk-tickerr" role="alert">{moveError}</p>}
-                {active.items.length === 0 && !admin ? (
-                  <p className="v2-lk-nolist">Яна составит список документов и задач для этого вуза. Он появится здесь.</p>
-                ) : (
-                  <LkBoard
-                    items={active.items}
-                    only={isExam}
-                    canMove={canMove}
-                    onMove={(itemId, stage) => onMove(active.id, itemId, stage)}
-                    edit={patch ? (items) => patch({ items }) : undefined}
-                    showEmpty={!!admin}
-                  />
-                )}
+                <LkBoard items={exams} only={isExam} canMove={canMove} onMove={moveExam} edit={editExams} showEmpty={!!admin} />
               </motion.section>
-            </AnimatePresence>
-
-            {/* University card */}
-            <AnimatePresence mode="wait">
-              <motion.aside
-                key={`side-${active.id}`}
-                className={`v2-card v2-lk-side span-4${unis.length > 1 ? ' is-tall' : ''}`}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4, ease: EASE, delay: 0.05 }}
-              >
-                <UniSide u={active} query={query} patch={patch} />
-              </motion.aside>
             </AnimatePresence>
 
             {/* All universities at a glance */}
             {unis.length > 1 && (
-              <motion.section className="v2-card v2-lk-matrix span-8" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE, delay: 0.25 }}>
+              <motion.section className="v2-card v2-lk-matrix span-12" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE, delay: 0.2 }}>
                 <div className="v2-card-head">
                   <div className="v2-h">Все вузы на одном экране</div>
                   <span className="v2-cab-count">нажмите на строку, чтобы открыть вуз</span>
                 </div>
                 <div className="v2-lk-ov">
                   {unis.map((u) => {
-                    const p = progressOf(u)
+                    const p = progressWith(lk.common, u)
                     return (
                       <button key={u.id} className={`v2-lk-ov-row${u.id === active.id ? ' is-on' : ''}`} onClick={() => setActiveId(u.id)}>
                         <span className="name">{u.short}</span>
@@ -364,33 +395,105 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
                 </div>
               </motion.section>
             )}
-            {/* Documents, letters, the rest: pipeline boards */}
-            {(pipelineItems.length > 0 || admin) && (
+
+            <div className="v2-lk-mode span-12" role="tablist" aria-label="Вид">
+              <span className="lbl">Вид</span>
+              {([['boards', 'Доски'], ['timeline', 'Таймлайн']] as const).map(([k, l]) => (
+                <button key={k} role="tab" aria-selected={mode === k} className={mode === k ? 'is-on' : ''} onClick={() => setMode(k)}>{l}</button>
+              ))}
+            </div>
+
+            {moveError && <p className="v2-lk-tickerr span-12" role="alert">{moveError}</p>}
+
+            {mode === 'timeline' && (
               <motion.section
-                key={`board-${active.id}`}
-                className="v2-card v2-lk-boards span-12"
+                key={`tl-${active.id}`}
+                className="v2-card v2-lk-tlcard span-12"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, ease: EASE, delay: 0.1 }}
+                transition={{ duration: 0.45, ease: EASE }}
               >
-                <div className="v2-card-head">
-                  <div className="v2-h">Документы и задачи: {active.short}</div>
-                  <span className="v2-cab-count">{canMove({ owner: 'student' } as LkItem) ? 'перетащите карточку в нужный этап' : 'где сейчас каждый документ'}</span>
+                <div className="v2-lk-tl-head">
+                  <h2>Таймлайн подготовки</h2>
+                  <p>Общие документы и {active.short} на одной шкале. Наведите на полоску, чтобы увидеть этап и сроки.</p>
                 </div>
-                <LkBoard
-                  items={active.items}
-                  only={(g) => !isExam(g)}
-                  canMove={canMove}
-                  onMove={(itemId, stage) => onMove(active.id, itemId, stage)}
-                  edit={patch ? (items) => patch({ items }) : undefined}
-                  showEmpty={!!admin}
-                />
+                <LkTimeline common={lk.common} uni={active} />
+                {admin && <p className="v2-lk-fine">Даты меняются на карточках в виде «Доски»: «Начало» и «Срок».</p>}
               </motion.section>
             )}
 
+            {mode === 'boards' && (<>
+            {/* Left: the checklist every university shares */}
+            <motion.section
+              className="v2-card v2-lk-pipe span-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: EASE, delay: 0.1 }}
+            >
+              <div className="v2-lk-pipe-head">
+                <div>
+                  <div className="v2-kicker">Для всех вузов</div>
+                  <h2>Общие документы</h2>
+                </div>
+                <span className="v2-lk-pipe-count num">{common.done}/{common.total}</span>
+              </div>
+              {moveHint && commonDocs.length > 0 && <p className="v2-lk-pipe-hint">{moveHint}</p>}
+              {commonDocs.length === 0 && !admin ? (
+                <p className="v2-lk-nolist">Яна составит список документов, общих для всех вузов. Он появится здесь.</p>
+              ) : (
+                <LkBoard
+                  items={lk.common}
+                  only={notExam}
+                  canMove={canMove}
+                  onMove={(itemId, stage) => onMove(COMMON_ID, itemId, stage)}
+                  edit={admin ? admin.setCommon : undefined}
+                  showEmpty={!!admin}
+                  starterDocs
+                />
+              )}
+            </motion.section>
+
+            {/* Right: what the selected university asks for on top */}
+            <AnimatePresence mode="wait">
+              <motion.section
+                key={`pipe-${active.id}`}
+                className="v2-card v2-lk-pipe span-6"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: EASE }}
+              >
+                <div className="v2-lk-pipe-head">
+                  <div>
+                    <div className="v2-kicker">Только для этого вуза</div>
+                    <h2>Документы для {active.short}</h2>
+                  </div>
+                  <span className="v2-lk-pipe-count num">{uniDocs.filter((t) => t.done).length}/{uniDocs.length}</span>
+                </div>
+                {moveHint && uniDocs.length > 0 && <p className="v2-lk-pipe-hint">{moveHint}</p>}
+                {uniDocs.length === 0 && !admin ? (
+                  <p className="v2-lk-nolist">Яна составит список того, что нужно именно для {active.short}. Он появится здесь.</p>
+                ) : (
+                  <LkBoard
+                    items={active.items}
+                    only={notExam}
+                    canMove={canMove}
+                    onMove={(itemId, stage) => onMove(active.id, itemId, stage)}
+                    edit={patch ? (items) => patch({ items }) : undefined}
+                    showEmpty={!!admin}
+                  />
+                )}
+              </motion.section>
+            </AnimatePresence>
+            </>)}
           </>
         )}
       </div>
+
+      {/* University facts and portal login */}
+      <AnimatePresence>
+        {info && <UniSheet key={info.id} u={info} query={query} patch={infoPatch} onClose={() => setInfoId(null)} />}
+      </AnimatePresence>
     </LayoutGroup>
   )
 }
@@ -449,8 +552,9 @@ function T({ v, patch, k, ph, area }: { v: string | null; patch?: (val: string |
   )
 }
 
-function UniHead({ u, patch }: { u: LkUniPublic; patch?: Patch }) {
-  const p = progressOf(u)
+/** Top of the university card: name, status, readiness (common + its own), deadline. */
+function UniHead({ u, common, patch }: { u: LkUniPublic; common: LkItem[]; patch?: Patch }) {
+  const p = progressWith(common, u)
   const w = windowLine(u)
   return (
     <div className="v2-lk-pathhead">
@@ -473,6 +577,60 @@ function UniHead({ u, patch }: { u: LkUniPublic; patch?: Patch }) {
         {w && <span className={`dl${w.hot ? ' is-hot' : ''}`}><CalendarClock aria-hidden /> {w.text}</span>}
       </div>
     </div>
+  )
+}
+
+/** The popup with everything about one university: facts, portal login, contacts. */
+function UniSheet({ u, query, patch, onClose }: { u: LkUniPublic; query: string; patch?: Patch; onClose: () => void }) {
+  const close = useRef<HTMLButtonElement>(null)
+  // Kept in a ref: the parent passes a new function on every render, and
+  // re-running the effect would pull focus away from a field Iana is typing in.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+  useEffect(() => {
+    close.current?.focus()
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+  return (
+    <motion.div
+      className="v2-scrim"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="v2-sheet v2-lk-info"
+        role="dialog"
+        aria-modal="true"
+        aria-label={u.name}
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 12, scale: 0.98 }}
+        transition={{ duration: 0.35, ease: EASE }}
+      >
+        <button ref={close} className="v2-sheet-x" onClick={onClose} aria-label="Закрыть"><X aria-hidden /></button>
+        <div className="v2-lk-side">
+          <div className="v2-lk-info-head">
+            <div className="v2-kicker">{[u.country, u.city].filter(Boolean).join(' · ')}</div>
+            {patch ? (
+              <h2 className="is-edit">
+                <input className="v2-lk-edit h" value={u.short} onChange={(e) => patch({ short: e.target.value })} placeholder="Короткое название" />
+                <input className="v2-lk-edit cn" value={u.nameCn ?? ''} onChange={(e) => patch({ nameCn: e.target.value || null })} placeholder="中文名" />
+              </h2>
+            ) : (
+              <h2>{u.short} <span>{u.nameCn ?? ''}</span></h2>
+            )}
+            <StatusPill s={u.status} patch={patch} />
+          </div>
+          <UniSide u={u} query={query} patch={patch} />
+        </div>
+      </motion.div>
+    </motion.div>
   )
 }
 

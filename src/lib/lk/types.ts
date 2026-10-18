@@ -119,6 +119,8 @@ export type LkItem = {
   stage: string
   /** Always `stage === 'done'`; kept so progress counts stay simple. */
   done: boolean
+  /** YYYY-MM-DD: when work on it starts (the left end of its timeline bar). */
+  start: string | null
   /** YYYY-MM-DD: deadline, or when it was done. */
   due: string | null
   /** Short visible note, e.g. «Сдан, 7.0» or «шаблон вуза». */
@@ -195,11 +197,22 @@ export type LkInternal = {
 }
 
 export type LkData = {
+  /**
+   * Shape version. 2 = «Собрать» documents live in `common`, not in each
+   * university (store.ts moves them once, on read, from older data).
+   */
+  v: number
   /** Line above the name in the hero, e.g. «11 класс · поступление 2027». */
   subtitle: string | null
   profile: LkProfile
   payments: LkPayments
   internal: LkInternal
+  /**
+   * «Общие документы»: the checklist shared by every university (passport,
+   * IELTS, transcript…). Each university's own `items` hold only what that
+   * university asks for on top. Shown side by side on the family's page.
+   */
+  common: LkItem[]
   unis: LkUni[]
   updated_at: string | null
 }
@@ -214,7 +227,11 @@ export type LkDataPublic = Omit<LkData, 'unis' | 'internal'> & { unis: LkUniPubl
 export const emptyProfile = (): LkProfile => ({ track: null, major: null, photo: null })
 export const emptyPayments = (): LkPayments => ({ total: null, due: null, entries: [] })
 export const emptyInternal = (): LkInternal => ({ budget: null, telegram: null, notes: null })
-export const emptyLk = (): LkData => ({ subtitle: null, profile: emptyProfile(), payments: emptyPayments(), internal: emptyInternal(), unis: [], updated_at: null })
+export const LK_VERSION = 2
+export const emptyLk = (): LkData => ({ v: LK_VERSION, subtitle: null, profile: emptyProfile(), payments: emptyPayments(), internal: emptyInternal(), common: [], unis: [], updated_at: null })
+
+/** Stands in for a university id when a family move targets the common checklist. */
+export const COMMON_ID = 'common'
 
 /** Paid so far and what is left (negative = paid more than the total). */
 export function paymentsSummary(p: LkPayments) {
@@ -229,12 +246,19 @@ export function progressOf(u: Pick<LkUni, 'items'>) {
   return { done: u.items.filter((i) => i.done).length, total: u.items.length }
 }
 
+/** Everything needed to apply to one university: the common checklist plus its own. */
+export function progressWith(common: LkItem[], u: Pick<LkUni, 'items'>) {
+  const p = progressOf(u)
+  const c = progressOf({ items: common })
+  return { done: p.done + c.done, total: p.total + c.total }
+}
+
 /** One student card in the admin list (GET /api/admin/lk). */
 export type LkCard = LkProfile & { unis: number; progress: { done: number; total: number } }
 
-/** Progress over all universities, for Iana's student cards. */
-export function progressAll(d: Pick<LkData, 'unis'>) {
-  return d.unis.reduce((a, u) => { const p = progressOf(u); return { done: a.done + p.done, total: a.total + p.total } }, { done: 0, total: 0 })
+/** Progress over the common checklist and all universities, for Iana's student cards. */
+export function progressAll(d: Pick<LkData, 'unis' | 'common'>) {
+  return [{ items: d.common }, ...d.unis].reduce((a, u) => { const p = progressOf(u); return { done: a.done + p.done, total: a.total + p.total } }, { done: 0, total: 0 })
 }
 
 /** Move an item to a stage; keeps `done` / `done_at` in step with it. */
@@ -244,21 +268,46 @@ export function withStage(t: LkItem, stage: string): LkItem {
   return { ...t, stage, done, done_at: done ? (t.done ? t.done_at : new Date().toISOString()) : null }
 }
 
-/** A starting checklist that mirrors Iana's «План действий»; she edits it per university. */
-export const STARTER_ITEMS: { group: GroupKey; text: string }[] = [
-  { group: 'exams', text: 'IELTS' },
-  { group: 'collect', text: 'Passport' },
-  { group: 'collect', text: 'Study Certificate' },
-  { group: 'collect', text: 'Transcript' },
-  { group: 'collect', text: 'Foreigner Physical Examination Form' },
-  { group: 'collect', text: 'Non-Criminal Record' },
-  { group: 'collect', text: 'Bank Statement' },
-  { group: 'write', text: 'Study Plan' },
-  { group: 'write', text: 'Recommendation Letter 1' },
-  { group: 'write', text: 'Recommendation Letter 2' },
-  { group: 'write', text: 'CV' },
-  { group: 'contact', text: 'Интервью' },
+/**
+ * A starting checklist that mirrors Iana's «План действий», in her wording
+ * (taken from her own lists, 2026-10-18). `common` items go to the checklist
+ * shared by all universities, the rest to each university's own list.
+ */
+export const STARTER_ITEMS: { group: GroupKey; text: string; note?: string; common: boolean }[] = [
+  { group: 'exams', text: 'IELTS', common: true },
+  { group: 'collect', text: 'Загранпаспорт', note: 'Уточнить срок действия', common: true },
+  { group: 'collect', text: 'Аттестат за 9 класс', note: 'Аттестат с приложением оценок', common: true },
+  { group: 'collect', text: 'Выписка годовых оценок за 10 класс', note: 'Указать промежуточные оценки по полугодиям и годовые', common: true },
+  { group: 'collect', text: 'Выписка промежуточных оценок за 11 класс', note: 'За первый семестр или четверть, в зависимости от вашей системы', common: true },
+  { group: 'collect', text: 'Справка о зачислении в школу', note: 'С примерной датой выпуска', common: true },
+  { group: 'collect', text: 'Справка о несудимости', note: 'Бумажная, с печатью', common: true },
+  { group: 'collect', text: 'Медицинское обследование', note: 'Анализы на ВИЧ и сифилис, ЭКГ, флюорография', common: true },
+  { group: 'collect', text: 'Выписка о доступном остатке из банка', note: '$5000 или эквивалент в рублях', common: true },
+  { group: 'write', text: 'Мотивационное письмо', common: true },
+  { group: 'write', text: 'Рекомендательное письмо 1', common: true },
+  { group: 'write', text: 'Рекомендательное письмо 2', common: true },
+  { group: 'write', text: 'Учебный план (Study Plan)', common: false },
+  { group: 'contact', text: 'Интервью', common: false },
 ]
+export const STARTER_COMMON = STARTER_ITEMS.filter((s) => s.common)
+export const STARTER_UNI = STARTER_ITEMS.filter((s) => !s.common)
 
 /** «Типовой список документов»: the «Собрать» part of the starter list. */
-export const STARTER_DOCS = STARTER_ITEMS.filter((s) => s.group === 'collect').map((s) => s.text)
+export const STARTER_DOCS = STARTER_ITEMS.filter((s) => s.group === 'collect')
+
+/**
+ * The old English starter names (before 2026-10-18) and their Russian
+ * wording. Applied once, when store.ts brings older data to version 2.
+ */
+export const RENAMED_STARTERS: Record<string, string> = {
+  passport: 'Загранпаспорт',
+  'study certificate': 'Справка о зачислении в школу',
+  transcript: 'Выписка оценок',
+  'foreigner physical examination form': 'Медицинское обследование',
+  'non-criminal record': 'Справка о несудимости',
+  'bank statement': 'Выписка о доступном остатке из банка',
+  'recommendation letter 1': 'Рекомендательное письмо 1',
+  'recommendation letter 2': 'Рекомендательное письмо 2',
+  'study plan': 'Учебный план (Study Plan)',
+  cv: 'Резюме (CV)',
+}

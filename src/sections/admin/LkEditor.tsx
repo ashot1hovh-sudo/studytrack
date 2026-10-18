@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, Camera, ChevronDown, ClipboardPaste, ExternalLink, Eye, ListPlus, Lock, PenLine, Plus, Search, Send, Trash2, Wallet, X } from 'lucide-react'
 import {
+  COMMON_ID,
   firstStage,
   GROUPS,
   paymentsSummary,
   progressOf,
   rub,
-  STARTER_ITEMS,
+  STARTER_COMMON,
+  STARTER_UNI,
   STATUS_LABEL,
   STATUSES,
   TONES,
@@ -113,8 +115,10 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
       setSaveState('Сохраняю…')
       const payload = key === '__subtitle'
         ? { action: 'subtitle', subtitle: local.subtitle }
-        : { action: 'save', uni: local.unis.find((u) => u.id === key), base: a.server?.unis.find((u) => u.id === key) ?? null }
-      if (key !== '__subtitle' && !payload.uni) return
+        : key === COMMON_ID
+          ? { action: 'common', items: local.common, base: a.server?.common ?? null }
+          : { action: 'save', uni: local.unis.find((u) => u.id === key), base: a.server?.unis.find((u) => u.id === key) ?? null }
+      if (payload.action === 'save' && !payload.uni) return
       try {
         const r = await fetch(`/api/admin/lk/${studentId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         const body = await r.json().catch(() => null)
@@ -143,6 +147,11 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
       const cur = auto.current.local
       if (!cur) return
       schedule(uniId, { ...cur, unis: cur.unis.map((u) => (u.id === uniId ? { ...u, ...p } : u)) })
+    },
+    setCommon: (items) => {
+      const cur = auto.current.local
+      if (!cur) return
+      schedule(COMMON_ID, { ...cur, common: items })
     },
     setSubtitle: (v) => {
       const cur = auto.current.local
@@ -259,6 +268,11 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
             query={`?student=${encodeURIComponent(studentId)}`}
             admin={adminApi}
             onMove={(uniId, itemId, stage) => {
+              if (uniId === COMMON_ID) {
+                const common = auto.current.local?.common
+                if (common) adminApi.setCommon(common.map((t) => (t.id === itemId ? withStage(t, stage) : t)))
+                return
+              }
               const u = auto.current.local?.unis.find((x) => x.id === uniId)
               if (u) adminApi.patchUni(uniId, { items: u.items.map((t) => (t.id === itemId ? withStage(t, stage) : t)) })
             }}
@@ -287,6 +301,8 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
               Сохранить
             </button>
           </div>
+
+          <CommonBlock lk={lk} busy={busy} post={post} onDirty={(on) => { if (on) dirty.current.add(COMMON_ID); else dirty.current.delete(COMMON_ID) }} />
 
           <AddUni onAdd={addUni} disabled={busy !== null} existing={lk.unis} />
 
@@ -609,7 +625,7 @@ const newId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? c
 const input = 'rounded-lg border border-study-lightgray px-3 py-2 text-sm w-full bg-study-card'
 const label = 'block text-xs font-semibold text-study-gray mb-1'
 const TONE_LABEL: Record<Tone, string> = { navy: 'Синий', coral: 'Коралловый', cream: 'Кремовый', tint: 'Сиреневый' }
-const newItem = (group: GroupKey, text = '', stage: string = firstStage(group)): LkItem => ({ id: newId(), group, text, owner: 'student', stage, done: stage === 'done', due: null, note: null, comment: null, done_at: null })
+const newItem = (group: GroupKey, text = '', stage: string = firstStage(group), note: string | null = null): LkItem => ({ id: newId(), group, text, owner: 'student', stage, done: stage === 'done', start: null, due: null, note, comment: null, done_at: null })
 
 function UniBlock({ u, isOpen, onToggle, first, last, busy, post, onDirty }: {
   u: LkUniPublic
@@ -780,7 +796,7 @@ function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | nu
         <p className="text-[11px] text-study-gray">Пароль хранится в зашифрованном виде. Семья видит его только по кнопке «Показать».</p>
       </section>
 
-      <ChecklistEditor items={d.items} onChange={(items) => set('items', items)} />
+      <ChecklistEditor items={d.items} onChange={(items) => set('items', items)} starter={STARTER_UNI} />
 
       {/* contacts (family sees) and internal notes (admin only) */}
       <section className="grid sm:grid-cols-2 gap-3">
@@ -829,9 +845,48 @@ function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | nu
   )
 }
 
-/* ---------- checklist: Iana's «План действий» for this university ---------- */
+/* ---------- the common checklist, shared by every university ---------- */
 
-function ChecklistEditor({ items, onChange }: { items: LkItem[]; onChange: (items: LkItem[]) => void }) {
+function CommonBlock({ lk, busy, post, onDirty }: { lk: LkDataPublic; busy: string | null; post: Post; onDirty: (dirty: boolean) => void }) {
+  const [items, setItems] = useState(lk.common)
+  const [saved, setSaved] = useState(false)
+  useEffect(() => { setItems(lk.common) }, [lk.common])
+  const dirty = JSON.stringify(items) !== JSON.stringify(lk.common)
+  useEffect(() => { onDirty(dirty) }, [dirty, onDirty])
+
+  async function save() {
+    const body = await post('common', { action: 'common', items, base: lk.common })
+    if (body?.lk) setSaved(true)
+  }
+
+  return (
+    <div className="rounded-xl bg-study-bg p-4 space-y-3">
+      <div>
+        <h4 className="text-sm font-bold text-study-dark">Общие документы</h4>
+        <p className="text-[11px] text-study-gray">То, что нужно для всех вузов сразу: паспорт, экзамены, аттестат. У семьи этот список стоит слева, а справа документы выбранного вуза. В чек-листе вуза оставьте только то, что просит именно он.</p>
+      </div>
+      <ChecklistEditor items={items} onChange={(next) => { setItems(next); setSaved(false) }} starter={STARTER_COMMON} starterDocs />
+      <div className="flex items-center justify-end gap-3">
+        {saved && !dirty && <span className="text-sm text-study-green font-semibold">Сохранено</span>}
+        {dirty && <span className="text-sm text-study-orange font-semibold">Есть несохранённые изменения</span>}
+        {dirty && <button onClick={() => setItems(lk.common)} className="px-3 py-2 rounded-lg bg-study-card text-sm font-semibold">Отменить</button>}
+        <button onClick={save} disabled={!dirty || busy !== null} className="px-4 py-2 rounded-lg bg-study-brown text-white text-sm font-semibold disabled:opacity-40">
+          {busy === 'common' ? 'Сохраняю…' : 'Сохранить общие документы'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- checklist: Iana's «План действий» (common, or one university's) ---------- */
+
+function ChecklistEditor({ items, onChange, starter, starterDocs }: {
+  items: LkItem[]
+  onChange: (items: LkItem[]) => void
+  /** What «Типовой список» puts on an empty list. */
+  starter: { group: GroupKey; text: string; note?: string }[]
+  starterDocs?: boolean
+}) {
   const [paste, setPaste] = useState<{ group: GroupKey; text: string } | null>(null)
   const done = items.filter((i) => i.done).length
 
@@ -851,7 +906,7 @@ function ChecklistEditor({ items, onChange }: { items: LkItem[]; onChange: (item
         </div>
         <div className="flex gap-2 shrink-0">
           {items.length === 0 && (
-            <button onClick={() => onChange(STARTER_ITEMS.map((s) => newItem(s.group, s.text)))} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-study-bg text-sm font-semibold">
+            <button onClick={() => onChange(starter.map((s) => newItem(s.group, s.text, undefined, s.note ?? null)))} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-study-bg text-sm font-semibold">
               <ListPlus className="w-4 h-4" /> Типовой список
             </button>
           )}
@@ -887,6 +942,7 @@ function ChecklistEditor({ items, onChange }: { items: LkItem[]; onChange: (item
           onMove={(id, stage) => onChange(items.map((t) => (t.id === id ? withStage(t, stage) : t)))}
           edit={onChange}
           showEmpty
+          starterDocs={starterDocs}
         />
       </div>
     </section>

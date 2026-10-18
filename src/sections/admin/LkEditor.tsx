@@ -644,9 +644,10 @@ function UniBlock({ u, isOpen, onToggle, first, last, busy, post, onDirty }: {
         <button onClick={onToggle} className="flex-1 min-w-0 flex items-center gap-3 text-left">
           <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           <span className="min-w-0">
-            <span className="block font-bold text-study-dark truncate">{u.short}</span>
+            <span className="block font-bold text-study-dark break-words">{u.short}</span>
             <span className="block text-xs text-study-gray truncate">
               {STATUS_LABEL[u.status]} · готово {p.done}/{p.total}
+              {u.applyBy ? ` · подаём до ${u.applyBy}` : ''}
               {u.deadline.date ? ` · ${u.deadline.label}: ${u.deadline.date}` : ''}
               {u.ref.kind === 'free' ? ' · добавлен вручную' : ''}
             </span>
@@ -743,9 +744,10 @@ function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | nu
       </section>
 
       {/* application window, money */}
-      <section className="grid sm:grid-cols-[180px_1fr_180px] gap-3">
+      <section className="grid sm:grid-cols-[170px_1fr_170px_170px] gap-3">
         <Field l="Приём заявок открывается"><DatePicker value={d.opens} onChange={(v) => set('opens', v)} placeholder="Не указано" /></Field>
         <Field l="Дедлайн: как называется"><input className={input} value={d.deadline.label} onChange={(e) => set('deadline', { ...d.deadline, label: e.target.value })} placeholder="Дедлайн подачи" /></Field>
+        <Field l="Подаём до (наша дата)"><DatePicker value={d.applyBy} onChange={(v) => set('applyBy', v)} placeholder="Не указано" /></Field>
         <Field l="Дата дедлайна"><DatePicker value={d.deadline.date} onChange={(v) => set('deadline', { ...d.deadline, date: v })} /></Field>
         <Field l="Стоимость"><input className={input} value={d.cost ?? ''} onChange={(e) => set('cost', e.target.value || null)} placeholder="35 000 ¥" /></Field>
         <Field l="Стипендии (каждая с новой строки)" wide>
@@ -761,17 +763,27 @@ function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | nu
 
       {/* portal */}
       <section className="rounded-xl bg-study-card p-3 space-y-3">
-        <h4 className="text-sm font-bold text-study-dark">Портал для подачи: доступ для студента</h4>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Field l="Ссылка на портал"><input className={input} value={d.portal.url ?? ''} onChange={(e) => set('portal', { ...d.portal, url: e.target.value || null })} placeholder="https://…" /></Field>
-          <Field l="Логин"><input className={input} value={d.portal.login ?? ''} onChange={(e) => set('portal', { ...d.portal, login: e.target.value || null })} autoComplete="off" /></Field>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h4 className="text-sm font-bold text-study-dark">Портал для подачи: доступ для студента</h4>
+          {/* «Пока нет информации»: the family sees that the login is coming. What is typed below is kept but not shown. */}
+          <label className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold cursor-pointer ${d.portal.pending ? 'bg-study-orange/15 text-study-orange' : 'bg-study-bg text-study-dark'}`}>
+            <input type="checkbox" className="accent-[rgb(var(--study-orange))]" checked={d.portal.pending} onChange={(e) => set('portal', { ...d.portal, pending: e.target.checked })} />
+            Пока нет информации
+          </label>
+        </div>
+        {d.portal.pending && (
+          <p className="text-xs text-study-gray">Семья видит: «Данные для входа пока не готовы. Яна добавит их, как только они появятся». Снимите галочку, когда заполните поля.</p>
+        )}
+        <fieldset disabled={d.portal.pending} className={`grid sm:grid-cols-2 gap-3 ${d.portal.pending ? 'opacity-50' : ''}`}>
+          <Field l="Ссылка на портал"><input className={input} value={d.portal.pending ? '' : d.portal.url ?? ''} onChange={(e) => set('portal', { ...d.portal, url: e.target.value || null })} placeholder={d.portal.pending ? 'Появится позже' : 'https://…'} /></Field>
+          <Field l="Логин"><input className={input} value={d.portal.pending ? '' : d.portal.login ?? ''} onChange={(e) => set('portal', { ...d.portal, login: e.target.value || null })} placeholder={d.portal.pending ? 'Появится позже' : ''} autoComplete="off" /></Field>
           <Field l={u.portal.hasPassword ? 'Пароль (сохранён; введите новый, чтобы заменить)' : 'Пароль'}>
             <input
               className={input}
               type="text"
               value={pw}
               onChange={(e) => { setPw(e.target.value); setClearPw(false) }}
-              placeholder={u.portal.hasPassword ? (clearPw ? 'Будет удалён при сохранении' : '••••••••') : 'Пароль от портала'}
+              placeholder={d.portal.pending ? 'Появится позже' : u.portal.hasPassword ? (clearPw ? 'Будет удалён при сохранении' : '••••••••') : 'Пароль от портала'}
               autoComplete="off"
               spellCheck={false}
             />
@@ -790,9 +802,9 @@ function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | nu
             {revealed !== null && <code className="px-2 py-1 rounded bg-study-bg text-sm">{revealed || '(пусто)'}</code>}
           </div>
           <Field l="Пояснение для семьи" wide>
-            <input className={input} value={d.portal.note ?? ''} onChange={(e) => set('portal', { ...d.portal, note: e.target.value || null })} placeholder="Например: аккаунт создан на почту студента" />
+            <input className={input} value={d.portal.pending ? '' : d.portal.note ?? ''} onChange={(e) => set('portal', { ...d.portal, note: e.target.value || null })} placeholder={d.portal.pending ? 'Появится позже' : 'Например: аккаунт создан на почту студента'} />
           </Field>
-        </div>
+        </fieldset>
         <p className="text-[11px] text-study-gray">Пароль хранится в зашифрованном виде. Семья видит его только по кнопке «Показать».</p>
       </section>
 

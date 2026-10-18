@@ -39,13 +39,21 @@ const daysTo = (ymd: string) => Math.round((new Date(`${ymd}T00:00:00`).getTime(
 const daysWord = (n: number) => `${n} ${plural(n, 'день', 'дня', 'дней')}`
 const untilWord = (n: number) => (n > 0 ? `через ${daysWord(n)}` : n === 0 ? 'сегодня' : `${daysWord(-n)} назад`)
 
-/** Where the application window stands today, in one line. */
-function windowLine(u: LkUniPublic): { text: string; hot: boolean } | null {
-  if (u.opens && daysTo(u.opens) > 0) return { text: `Приём заявок откроется ${day(u.opens)}, ${untilWord(daysTo(u.opens))}`, hot: false }
-  if (!u.deadline.date) return null
-  const left = daysTo(u.deadline.date)
-  if (left < 0) return { text: `${u.deadline.label}: ${day(u.deadline.date)}, прошёл`, hot: false }
-  return { text: `${u.deadline.label}: ${day(u.deadline.date)}, ${untilWord(left)}`, hot: left <= 30 }
+/**
+ * The three dates of an application, as short lines: when the window opens
+ * (while it is still ahead), «Подаём до» (our own target) and the
+ * university's deadline. A date within 30 days is highlighted.
+ */
+function windowLines(u: LkUniPublic): { text: string; hot: boolean }[] {
+  const lines: { text: string; hot: boolean }[] = []
+  if (u.opens && daysTo(u.opens) > 0) lines.push({ text: `Приём заявок откроется ${day(u.opens)}, ${untilWord(daysTo(u.opens))}`, hot: false })
+  const line = (label: string, ymd: string) => {
+    const left = daysTo(ymd)
+    lines.push(left < 0 ? { text: `${label}: ${day(ymd)}, прошёл`, hot: false } : { text: `${label}: ${day(ymd)}, ${untilWord(left)}`, hot: left <= 30 })
+  }
+  if (u.applyBy) line('Подаём до', u.applyBy)
+  if (u.deadline.date) line(u.deadline.label, u.deadline.date)
+  return lines
 }
 
 type Loaded = { preview: boolean; demo?: boolean; student: { id: string; fullName: string }; lk: LkDataPublic }
@@ -555,14 +563,14 @@ function T({ v, patch, k, ph, area }: { v: string | null; patch?: (val: string |
 /** Top of the university card: name, status, readiness (common + its own), deadline. */
 function UniHead({ u, common, patch }: { u: LkUniPublic; common: LkItem[]; patch?: Patch }) {
   const p = progressWith(common, u)
-  const w = windowLine(u)
+  const lines = windowLines(u)
   return (
     <div className="v2-lk-pathhead">
       <div>
         <div className="v2-kicker">{[u.country, u.city].filter(Boolean).join(' · ')}</div>
         {patch ? (
           <h2 className="is-edit">
-            <input className="v2-lk-edit h" value={u.short} onChange={(e) => patch({ short: e.target.value })} placeholder="Короткое название" />
+            <textarea className="v2-lk-edit h" rows={1} value={u.short} onChange={(e) => patch({ short: e.target.value.replace(/\n/g, ' ') })} placeholder="Короткое название" />
             <input className="v2-lk-edit cn" value={u.nameCn ?? ''} onChange={(e) => patch({ nameCn: e.target.value || null })} placeholder="中文名" />
           </h2>
         ) : (
@@ -574,7 +582,7 @@ function UniHead({ u, common, patch }: { u: LkUniPublic; common: LkItem[]; patch
         <StatusPill s={u.status} patch={patch} />
         <div className="bar"><motion.i initial={{ width: 0 }} animate={{ width: `${p.total ? (p.done / p.total) * 100 : 0}%` }} transition={{ duration: 0.9, ease: EASE }} /></div>
         <span>{p.total ? `Готово ${p.done} из ${p.total}` : 'Список для подачи Яна ещё составляет'}</span>
-        {w && <span className={`dl${w.hot ? ' is-hot' : ''}`}><CalendarClock aria-hidden /> {w.text}</span>}
+        {lines.map((w) => <span key={w.text} className={`dl${w.hot ? ' is-hot' : ''}`}><CalendarClock aria-hidden /> {w.text}</span>)}
       </div>
     </div>
   )
@@ -619,7 +627,7 @@ function UniSheet({ u, query, patch, onClose }: { u: LkUniPublic; query: string;
             <div className="v2-kicker">{[u.country, u.city].filter(Boolean).join(' · ')}</div>
             {patch ? (
               <h2 className="is-edit">
-                <input className="v2-lk-edit h" value={u.short} onChange={(e) => patch({ short: e.target.value })} placeholder="Короткое название" />
+                <textarea className="v2-lk-edit h" rows={1} value={u.short} onChange={(e) => patch({ short: e.target.value.replace(/\n/g, ' ') })} placeholder="Короткое название" />
                 <input className="v2-lk-edit cn" value={u.nameCn ?? ''} onChange={(e) => patch({ nameCn: e.target.value || null })} placeholder="中文名" />
               </h2>
             ) : (
@@ -636,7 +644,7 @@ function UniSheet({ u, query, patch, onClose }: { u: LkUniPublic; query: string;
 
 function UniSide({ u, query, patch }: { u: LkUniPublic; query: string; patch?: Patch }) {
   const checked = useMemo(() => u.sources.map((s) => s.checked).filter(Boolean).sort().pop(), [u.sources])
-  const hasPortal = !!(u.portal.url || u.portal.login || u.portal.hasPassword || u.portal.note)
+  const hasPortal = !!(u.portal.pending || u.portal.url || u.portal.login || u.portal.hasPassword || u.portal.note)
   const period = u.deadline.date ? (u.opens ? `${day(u.opens)} – ${day(u.deadline.date)}` : `до ${day(u.deadline.date)}`) : null
   const e = !!patch
   const fact = (dt: string, v: string | null, set: (v: string | null) => void, ph?: string) =>
@@ -664,6 +672,11 @@ function UniSide({ u, query, patch }: { u: LkUniPublic; query: string; patch?: P
           </div>
         ) : (
           period && <div><dt>Приём заявок</dt><dd>{period}</dd></div>
+        )}
+        {e ? (
+          <div><dt>Подаём до</dt><dd><DatePicker value={u.applyBy} onChange={(v) => patch!({ applyBy: v })} placeholder="Наша дата" /></dd></div>
+        ) : (
+          u.applyBy && <div><dt>Подаём до</dt><dd>{day(u.applyBy)}</dd></div>
         )}
         {fact('Стоимость', u.cost, (v) => patch?.({ cost: v }), '35 000 ¥')}
         {fact('Язык обучения', u.language, (v) => patch?.({ language: v ?? '' }))}
@@ -751,6 +764,21 @@ function Portal({ u, query }: { u: LkUniPublic; query: string }) {
     await navigator.clipboard.writeText(value).catch(() => null)
     setCopied(what)
     window.setTimeout(() => setCopied((c) => (c === what ? null : c)), 1600)
+  }
+
+  // Iana marked the login as «not there yet»: say so instead of showing fields.
+  if (u.portal.pending) {
+    return (
+      <div className="v2-lk-portal">
+        <div className="v2-lk-portal-head">
+          <KeyRound aria-hidden />
+          <span>
+            <b>Ваша заявка на портале вуза</b>
+            <small>Данные для входа пока не готовы. Яна добавит их, как только они появятся.</small>
+          </span>
+        </div>
+      </div>
+    )
   }
 
   return (

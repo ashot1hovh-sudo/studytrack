@@ -78,7 +78,7 @@ export async function buildDemoLk(studentId: string, tracker: TrackerUni[]): Pro
     return normalizeUni({
       id: `demo-${i}`,
       ref: { kind: 'free', key: null },
-      short: short.length > 40 ? short.slice(0, 40) : short,
+      short,
       name: c?.name ?? t.name,
       nameCn: c?.nameCn ?? null,
       country: 'Китай',

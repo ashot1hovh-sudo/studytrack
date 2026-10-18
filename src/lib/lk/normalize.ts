@@ -146,11 +146,15 @@ export function normalizeUni(v: unknown): LkUni {
   const comment = obj(legacy ? legacy.comment : u.comment)
   const commentText = str(comment.text, 4000)
   const name = str(u.name, 200)
+  // Short names used to be cut at 40 characters («…Science and Techn»). A cut
+  // one that is the start of the full name gets the full name back.
+  let short = str(u.short, 120)
+  if (short.length === 40 && name.length > 40 && name.startsWith(short)) short = name.slice(0, 120)
   return {
     id: id(u.id),
     ref: ref(u.ref),
-    short: str(u.short, 40) || name.slice(0, 40) || 'Вуз',
-    name: name || str(u.short, 40) || 'Вуз',
+    short: short || name.slice(0, 120) || 'Вуз',
+    name: name || short || 'Вуз',
     nameCn: strOrNull(u.nameCn, 60),
     country: str(u.country, 60) || 'Китай',
     city: str(u.city, 80),
@@ -161,6 +165,7 @@ export function normalizeUni(v: unknown): LkUni {
     website: url(u.website),
     rankChina: strOrNull(u.rankChina, 60),
     opens: ymd(u.opens),
+    applyBy: ymd(u.applyBy),
     deadline: { label: str(deadline.label, 80) || 'Дедлайн подачи', date: ymd(deadline.date) },
     cost: strOrNull(u.cost, 120),
     scholarships: arr(u.scholarships).map((s) => str(s, 200)).filter(Boolean).slice(0, 12),
@@ -168,7 +173,7 @@ export function normalizeUni(v: unknown): LkUni {
     notes_internal: strOrNull(u.notes_internal, 4000),
     status: isStatus(u.status) ? u.status : 'preparing',
     comment: commentText ? { text: commentText, at: ymd(comment.at) ?? new Date().toLocaleDateString('sv-SE') } : null,
-    portal: { url: url(portal.url), login: strOrNull(portal.login, 200), note: strOrNull(portal.note, 500) },
+    portal: { url: url(portal.url), login: strOrNull(portal.login, 200), note: strOrNull(portal.note, 500), pending: portal.pending === true },
     items: normalizeItems(legacy ? legacy.items : u.items),
     sources: arr(u.sources).map(source).filter((s): s is LkSource => !!s).slice(0, 10),
     updated_at: typeof u.updated_at === 'string' ? u.updated_at : new Date().toISOString(),

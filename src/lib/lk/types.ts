@@ -150,8 +150,10 @@ export type LkUni = {
   website: string | null
   /** Free text: «12», «1 международный». */
   rankChina: string | null
-  /** Application window: opens (optional) and the deadline. */
+  /** Application window: opens (optional), our own «Подаём до» target, and the university's deadline. */
   opens: string | null
+  /** YYYY-MM-DD: the date Iana and the family aim to apply by, before the official deadline. */
+  applyBy: string | null
   deadline: { label: string; date: string | null }
   /** Free text, e.g. «35 000 ¥». */
   cost: string | null
@@ -167,6 +169,8 @@ export type LkUni = {
     url: string | null
     login: string | null
     note: string | null
+    /** «Пока нет информации»: the family sees that the login is coming; stored fields stay hidden. */
+    pending: boolean
     /** Encrypted on disk; never sent to a browser. Use hasPassword + the reveal action. */
     password_enc?: string | null
   }
@@ -219,7 +223,7 @@ export type LkData = {
 
 /** What the family's browser gets: no password, no internal notes or fields. */
 export type LkUniPublic = Omit<LkUni, 'portal' | 'notes_internal'> & {
-  portal: { url: string | null; login: string | null; note: string | null; hasPassword: boolean }
+  portal: { url: string | null; login: string | null; note: string | null; pending: boolean; hasPassword: boolean }
   notes_internal?: string | null
 }
 export type LkDataPublic = Omit<LkData, 'unis' | 'internal'> & { unis: LkUniPublic[]; internal?: LkInternal }

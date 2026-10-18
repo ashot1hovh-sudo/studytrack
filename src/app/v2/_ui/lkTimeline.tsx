@@ -62,7 +62,8 @@ export default function LkTimeline({ common, uni }: { common: LkItem[]; uni: LkU
   // The axis: from a week before the earliest start (or today) to ten days
   // after the latest deadline (or the university's), at least two months.
   const deadline = uni?.deadline.date ?? null
-  const lo = Math.min(toMs(today), ...bars.map((b) => toMs(b.start))) - 7 * DAY
+  const applyBy = uni?.applyBy ?? null
+  const lo = Math.min(toMs(today), ...bars.map((b) => toMs(b.start)), applyBy ? toMs(applyBy) : Infinity) - 7 * DAY
   let hi = Math.max(toMs(today), ...bars.map((b) => toMs(b.end)), deadline ? toMs(deadline) : 0) + 10 * DAY
   if (hi - lo < 60 * DAY) hi = lo + 60 * DAY
   const at = (ms: number) => ((ms - lo) / (hi - lo)) * 100
@@ -87,6 +88,7 @@ export default function LkTimeline({ common, uni }: { common: LkItem[]; uni: LkU
   const has = (s: Status) => bars.some((b) => statusOf(b, today) === s)
   const todayAt = pct(today)
   const deadlineAt = deadline ? pct(deadline) : null
+  const applyAt = applyBy ? pct(applyBy) : null
   let n = 0 // stagger index for the entrance
 
   return (
@@ -107,6 +109,7 @@ export default function LkTimeline({ common, uni }: { common: LkItem[]; uni: LkU
             {weeks.map((w) => <i key={`w${w}`} className="wk" style={{ left: `${w}%` }} />)}
             {months.map((m) => <i key={`m${m.left}`} className="mo" style={{ left: `${m.left}%` }} />)}
             {deadlineAt !== null && <i className="dl" style={{ left: `${deadlineAt}%` }} />}
+            {applyAt !== null && <i className="ab" style={{ left: `${applyAt}%` }} />}
             <i className="td" style={{ left: `${todayAt}%` }} />
           </div>
 
@@ -117,6 +120,12 @@ export default function LkTimeline({ common, uni }: { common: LkItem[]; uni: LkU
               {deadlineAt !== null && (
                 <span className={`v2-tl-flag is-deadline${deadlineAt > 82 ? ' is-flip' : ''}`} style={{ left: `${deadlineAt}%` }}>
                   Дедлайн {uni!.short} · {short(deadline!)}
+                </span>
+              )}
+              {applyAt !== null && (
+                // Top row next to «Сегодня» unless the two would touch; then the bottom row.
+                <span className={`v2-tl-flag is-apply${Math.abs(applyAt - todayAt) < 12 ? ' is-low' : ''}${applyAt > 82 ? ' is-flip' : ''}`} style={{ left: `${applyAt}%` }}>
+                  Подаём до · {short(applyBy!)}
                 </span>
               )}
               <span className={`v2-tl-flag is-today${todayAt > 82 ? ' is-flip' : ''}`} style={{ left: `${todayAt}%` }}>Сегодня</span>

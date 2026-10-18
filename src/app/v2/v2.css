@@ -2262,3 +2262,12 @@ select.v2-lk-status-edit { appearance: none; -webkit-appearance: none; border: 0
 @media (max-width: 640px) {
   .v2-lkb-lanecards { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* long university names: the name field in the family view wraps instead of cutting off (2026-10-19) */
+.v2-lk-pathhead h2.is-edit, .v2-lk-info-head h2.is-edit { flex-wrap: wrap; align-items: flex-start; }
+textarea.v2-lk-edit.h { flex: 1 1 100%; min-width: 0; resize: none; overflow: hidden; field-sizing: content; line-height: 1.15; }
+.v2-lk-pathhead .v2-lk-edit.cn, .v2-lk-info-head .v2-lk-edit.cn { flex: 0 1 220px; }
+/* «Подаём до» on the timeline axis */
+.v2-tl-bg .ab { width: 0; border-left: 1.5px dashed rgba(253, 77, 16, 0.6); z-index: 2; }
+.v2-tl-flag.is-apply.is-low { top: auto; bottom: 5px; }
+.v2-tl-flag.is-apply { background: #fff0e8; color: var(--coral-ink); box-shadow: inset 0 0 0 1px rgba(255, 79, 19, 0.35); }

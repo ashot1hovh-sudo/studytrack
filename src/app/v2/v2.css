@@ -2271,3 +2271,26 @@ textarea.v2-lk-edit.h { flex: 1 1 100%; min-width: 0; resize: none; overflow: hi
 .v2-tl-bg .ab { width: 0; border-left: 1.5px dashed rgba(253, 77, 16, 0.6); z-index: 2; }
 .v2-tl-flag.is-apply.is-low { top: auto; bottom: 5px; }
 .v2-tl-flag.is-apply { background: #fff0e8; color: var(--coral-ink); box-shadow: inset 0 0 0 1px rgba(255, 79, 19, 0.35); }
+
+/* Timeline sections: «Общие документы», then one block per university */
+.v2-tl-sec { position: relative; margin-top: 22px; border-top: 2px solid var(--navy); }
+.v2-tl-sec.is-common { margin-top: 0; }
+.v2-tl-row.is-sec { min-height: 64px; }
+.v2-tl-row.is-sec .v2-tl-track { height: 64px; }
+.v2-tl-row.is-sec .v2-tl-month { bottom: 6px; opacity: 0.75; }
+.v2-tl-row.is-sec .v2-tl-flag { top: 4px; bottom: auto; }
+.v2-tl-row.is-sec .v2-tl-flag.is-low { top: 25px; }
+.v2-tl-lab .sec { display: grid; gap: 3px; min-width: 0; }
+.v2-tl-lab .sec .kick { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v2-tl-sec.is-on .v2-tl-lab .sec .kick { color: var(--coral-ink); }
+.v2-tl-lab .sec b { font: 700 16px/1.15 var(--display); color: var(--navy); letter-spacing: -0.01em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.v2-tl-lab .sec .kick .num { font-variant-numeric: tabular-nums; }
+.v2-tl-row.is-sec .v2-tl-lab { padding-top: 8px; padding-bottom: 8px; }
+.v2-tl-sec > .v2-tl-group:first-of-type { border-top: 0; }
+.v2-tl-row.is-empty .v2-tl-lab .name { color: var(--muted); font-style: italic; white-space: normal; }
+.v2-tl-legend .ln { width: 0; height: 12px; }
+.v2-tl-legend .ln.is-apply { border-left: 1.5px dashed rgba(253, 77, 16, 0.75); }
+.v2-tl-legend .ln.is-deadline { border-left: 1.5px dashed rgba(26, 35, 126, 0.7); }
+@media (max-width: 760px) {
+  .v2-tl-lab .sec b { font-size: 14px; }
+}

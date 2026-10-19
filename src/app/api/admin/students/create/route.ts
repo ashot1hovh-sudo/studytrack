@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { accessExpiryFromNow, getConsultantUser, missingSupabaseEnv, setupErrorResponse } from '@/lib/api'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { passwordError, saveAccountPassword } from '@/lib/accountPassword'
 
 const defaultDocumentsPackage = [
   'Аттестат о среднем образовании',
@@ -58,8 +59,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Email и пароль обязательны' }, { status: 400 })
   }
 
-  if (password.length < 6) {
-    return NextResponse.json({ error: 'Пароль должен быть минимум 6 символов' }, { status: 400 })
+  const invalidPassword = passwordError(password)
+  if (invalidPassword) {
+    return NextResponse.json({ error: invalidPassword }, { status: 400 })
   }
 
   if (!validPrograms.has(program)) {
@@ -95,6 +97,15 @@ export async function POST(request: Request) {
   if (profileError) {
     await admin.auth.admin.deleteUser(studentId)
     return NextResponse.json({ error: profileError.message }, { status: 500 })
+  }
+
+  // Keep a copy for the admin. The account works without it, so a failure
+  // here is reported, not fatal.
+  let passwordWarning: string | null = null
+  try {
+    await saveAccountPassword(studentId, password)
+  } catch (err) {
+    passwordWarning = `Аккаунт создан, но пароль не сохранился в админке (${(err as Error).message}). Запишите его.`
   }
 
   // The default document package is consultant-era onboarding. DIY students get
@@ -139,5 +150,6 @@ export async function POST(request: Request) {
       universitiesTotal: universityRows.length,
       urgentDeadlines: 0,
     },
+    passwordWarning,
   })
 }

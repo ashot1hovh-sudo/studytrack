@@ -31,6 +31,7 @@ import LkBoard from '@/app/v2/_ui/lkBoard'
 import { LkView, type LkAdminApi } from '@/app/v2/_ui/lk'
 import { display } from '@/app/v2/_ui/font'
 import { photoUrl, uploadPhoto } from '@/sections/admin/StudentCard'
+import { AutosaveContext, SaveChip, useAutosave, type AutosaveRegistry } from '@/sections/admin/useAutosave'
 import '@/app/v2/v2.css'
 
 /**
@@ -39,7 +40,8 @@ import '@/app/v2/v2.css'
  * by hand), and for each one sets the application status, the facts from
  * her «Университеты» sheet, the portal login and password, and the checklist
  * from her «План действий» (no fixed order; done when everything is ticked).
- * Each university is saved on its own.
+ * Both views save by themselves; in «Редактор» each block (and each
+ * university) autosaves on its own (useAutosave).
  */
 type View = 'form' | 'family'
 const VIEW_KEY = 'lk-editor-view'
@@ -49,10 +51,9 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [open, setOpen] = useState<string | null>(null)
-  const [subtitle, setSubtitle] = useState('')
   const [view, setView] = useState<View>('form')
-  // Universities with unsaved edits in the form view.
-  const dirty = useRef(new Set<string>())
+  // Every autosaving block in the form view, so a view switch can flush them.
+  const registry = useRef<AutosaveRegistry>(new Map()).current
 
   useEffect(() => {
     try { if (localStorage.getItem(VIEW_KEY) === 'family') setView('family') } catch {}
@@ -60,7 +61,6 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
 
   const apply = useCallback((d: LkDataPublic) => {
     setLk(d)
-    setSubtitle(d.subtitle ?? '')
     auto.current.server = d
     auto.current.local = d
   }, [])
@@ -68,7 +68,6 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
   useEffect(() => {
     setLk(null)
     setOpen(null)
-    dirty.current.clear()
     fetch(`/api/admin/lk/${studentId}`, { cache: 'no-store' })
       .then(async (r) => {
         const body = await r.json().catch(() => null)
@@ -94,6 +93,18 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
       } finally {
         setBusy(null)
       }
+    },
+    [studentId, apply, onChanged],
+  )
+
+  /** Form-view autosave: no busy flag (it would lock the page every few seconds), throws on error. */
+  const autoPost = useCallback<AutoPost>(
+    async (payload) => {
+      const r = await fetch(`/api/admin/lk/${studentId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      const body = await r.json().catch(() => null)
+      if (!r.ok) throw new Error(body?.error ?? 'ошибка сервера')
+      if (body?.lk) { apply(body.lk); onChanged?.() }
+      return body
     },
     [studentId, apply, onChanged],
   )
@@ -156,17 +167,18 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
     setSubtitle: (v) => {
       const cur = auto.current.local
       if (!cur) return
-      setSubtitle(v ?? '')
       schedule('__subtitle', { ...cur, subtitle: v })
     },
   }), [saveState, schedule])
 
   // Leaving the page with a save still waiting would drop Iana's last edit.
   useEffect(() => {
-    const warn = (e: BeforeUnloadEvent) => { if (auto.current.timers.size) e.preventDefault() }
+    const warn = (e: BeforeUnloadEvent) => {
+      if (auto.current.timers.size || Array.from(registry.values()).some((b) => b.pending())) e.preventDefault()
+    }
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
-  }, [])
+  }, [registry])
 
   /** Finish pending family-view saves, then show the saved (cleaned) data. */
   async function settle() {
@@ -178,9 +190,9 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
 
   async function switchView(v: View) {
     if (v === view) return
-    if (v === 'family' && dirty.current.size && !window.confirm('В форме есть несохранённые изменения. Переключиться без сохранения?')) return
+    // Send whatever is still waiting, so the other view shows it.
+    if (view === 'form') await Promise.all(Array.from(registry.values()).map((b) => b.flush()))
     if (view === 'family') await settle()
-    dirty.current.clear()
     setView(v)
     try { localStorage.setItem(VIEW_KEY, v) } catch {}
   }
@@ -281,28 +293,14 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
       )}
 
       {lk && view === 'form' && (
-        <>
-          <ProfileBlock studentId={studentId} lk={lk} busy={busy} post={post} onPhoto={(d) => { apply(d); onChanged?.() }} />
-          <InternalBlock lk={lk} busy={busy} post={post} />
-          <PaymentsBlock lk={lk} busy={busy} post={post} />
+        <AutosaveContext.Provider value={registry}>
+          <p className="text-[11px] text-study-gray">Изменения сохраняются сами, через секунду после ввода.</p>
+          <ProfileBlock studentId={studentId} lk={lk} autoPost={autoPost} onPhoto={(d) => { apply(d); onChanged?.() }} />
+          <InternalBlock lk={lk} autoPost={autoPost} />
+          <PaymentsBlock lk={lk} autoPost={autoPost} />
+          <SubtitleBlock lk={lk} autoPost={autoPost} />
 
-          <div className="grid sm:grid-cols-[1fr_auto] gap-2">
-            <input
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Подпись над именем, например «11 класс · поступление 2027»"
-              className="rounded-lg border border-study-lightgray px-3 py-2 text-sm"
-            />
-            <button
-              onClick={() => post('subtitle', { action: 'subtitle', subtitle })}
-              disabled={busy !== null || subtitle === (lk.subtitle ?? '')}
-              className="px-4 py-2 rounded-lg bg-study-brown text-white text-sm font-semibold disabled:opacity-40"
-            >
-              Сохранить
-            </button>
-          </div>
-
-          <CommonBlock lk={lk} busy={busy} post={post} onDirty={(on) => { if (on) dirty.current.add(COMMON_ID); else dirty.current.delete(COMMON_ID) }} />
+          <CommonBlock lk={lk} autoPost={autoPost} />
 
           <AddUni onAdd={addUni} disabled={busy !== null} existing={lk.unis} />
 
@@ -318,11 +316,11 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
                 last={i === lk.unis.length - 1}
                 busy={busy}
                 post={post}
-                onDirty={(on) => { if (on) dirty.current.add(u.id); else dirty.current.delete(u.id) }}
+                autoPost={autoPost}
               />
             ))}
           </div>
-        </>
+        </AutosaveContext.Provider>
       )}
     </div>
   )
@@ -330,14 +328,13 @@ export default function LkEditor({ studentId, studentName, onChanged }: { studen
 
 /* ---------- Iana's card for this student: track, major, photo ---------- */
 
-function ProfileBlock({ studentId, lk, busy, post, onPhoto }: { studentId: string; lk: LkDataPublic; busy: string | null; post: Post; onPhoto: (d: LkDataPublic) => void }) {
+function ProfileBlock({ studentId, lk, autoPost, onPhoto }: { studentId: string; lk: LkDataPublic; autoPost: AutoPost; onPhoto: (d: LkDataPublic) => void }) {
   const [track, setTrack] = useState<TrackKey | ''>(lk.profile.track ?? '')
   const [major, setMajor] = useState(lk.profile.major ?? '')
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoErr, setPhotoErr] = useState<string | null>(null)
   const file = useRef<HTMLInputElement>(null)
-  useEffect(() => { setTrack(lk.profile.track ?? ''); setMajor(lk.profile.major ?? '') }, [lk.profile.track, lk.profile.major])
-  const changed = (track || null) !== lk.profile.track || (major.trim() || null) !== lk.profile.major
+  const saving = useAutosave({ track, major }, async (p) => { await autoPost({ action: 'profile', profile: { track: p.track || null, major: p.major } }) })
 
   async function photo(f: File | null) {
     setPhotoBusy(true)
@@ -380,20 +377,16 @@ function ProfileBlock({ studentId, lk, busy, post, onPhoto }: { studentId: strin
         <input ref={file} type="file" accept="image/jpeg,image/png,image/webp,image/heic" className="sr-only" onChange={(e) => photo(e.target.files?.[0] ?? null)} />
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-study-gray">Карточка студента в списке (видите только вы)</p>
-        <div className="grid sm:grid-cols-[180px_1fr_auto] gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-semibold text-study-gray">Карточка студента в списке (видите только вы)</p>
+          <SaveChip s={saving} />
+        </div>
+        <div className="grid sm:grid-cols-[180px_1fr] gap-2">
           <select className={input} value={track} onChange={(e) => setTrack(e.target.value as TrackKey | '')} aria-label="Программа">
             <option value="">Программа: не указана</option>
             {TRACKS.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
           </select>
           <input className={input} value={major} onChange={(e) => setMajor(e.target.value)} placeholder="Специальность, например Business Administration" aria-label="Специальность" />
-          <button
-            onClick={() => post('profile', { action: 'profile', profile: { track: track || null, major } })}
-            disabled={!changed || busy !== null}
-            className="px-4 py-2 rounded-lg bg-study-brown text-white text-sm font-semibold disabled:opacity-40"
-          >
-            Сохранить
-          </button>
         </div>
         {photoErr && <p className="text-xs font-semibold text-study-red">{photoErr}</p>}
       </div>
@@ -403,26 +396,25 @@ function ProfileBlock({ studentId, lk, busy, post, onPhoto }: { studentId: strin
 
 /* ---------- Iana only: the family's budget and the student's Telegram channel ---------- */
 
-function InternalBlock({ lk, busy, post }: { lk: LkDataPublic; busy: string | null; post: Post }) {
+function InternalBlock({ lk, autoPost }: { lk: LkDataPublic; autoPost: AutoPost }) {
   const saved = { budget: lk.internal?.budget ?? '', telegram: lk.internal?.telegram ?? '', notes: lk.internal?.notes ?? '' }
   const [budget, setBudget] = useState(saved.budget)
   const [telegram, setTelegram] = useState(saved.telegram)
   const [notes, setNotes] = useState(saved.notes)
   const [err, setErr] = useState<string | null>(null)
-  useEffect(() => { setBudget(saved.budget); setTelegram(saved.telegram); setNotes(saved.notes) }, [saved.budget, saved.telegram, saved.notes])
-  const changed = budget.trim() !== saved.budget || telegram.trim() !== saved.telegram || notes.trim() !== saved.notes
-
-  async function save() {
-    setErr(null)
-    const body = await post('internal', { action: 'internal', internal: { budget, telegram, notes } })
+  const saving = useAutosave({ budget, telegram, notes }, async (v) => {
+    const body = await autoPost({ action: 'internal', internal: v })
     // The server drops a link it can't read as http(s): say so instead of losing it silently.
-    if (body?.lk && telegram.trim() && !body.lk.internal?.telegram) setErr('Ссылка не распознана. Нужна ссылка вида https://t.me/+…')
-  }
+    setErr(body?.lk && v.telegram.trim() && !body.lk.internal?.telegram ? 'Ссылка не распознана. Нужна ссылка вида https://t.me/+…' : null)
+  })
 
   return (
     <section className="rounded-xl bg-study-bg p-3 space-y-2">
-      <p className="text-xs font-semibold text-study-gray"><Lock className="w-3 h-3 inline -mt-0.5" /> Только для вас, семья это не видит</p>
-      <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-study-gray"><Lock className="w-3 h-3 inline -mt-0.5" /> Только для вас, семья это не видит</p>
+        <SaveChip s={saving} />
+      </div>
+      <div className="grid sm:grid-cols-2 gap-2">
         <label className="text-xs text-study-gray space-y-1">
           <span>Бюджет семьи на обучение</span>
           <input className={input} value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Например, до 40 000 ¥ в год за обучение и общежитие" />
@@ -438,9 +430,6 @@ function InternalBlock({ lk, busy, post }: { lk: LkDataPublic; busy: string | nu
             )}
           </div>
         </label>
-        <button onClick={save} disabled={!changed || busy !== null} className="self-end px-4 py-2 rounded-lg bg-study-brown text-white text-sm font-semibold disabled:opacity-40">
-          Сохранить
-        </button>
       </div>
       <label className="block text-xs text-study-gray space-y-1">
         <span>Заметки</span>
@@ -462,17 +451,10 @@ type PayDraft = { id: string; date: string | null; amount: string; note: string 
 const toDraft = (e: LkPayment): PayDraft => ({ id: e.id, date: e.date, amount: String(e.amount), note: e.note ?? '' })
 const rubNum = (v: string) => { const n = Number(v.replace(/[\s ₽]/g, '').replace(',', '.')); return Number.isFinite(n) && n > 0 ? Math.round(n) : null }
 
-function PaymentsBlock({ lk, busy, post }: { lk: LkDataPublic; busy: string | null; post: Post }) {
-  const savedKey = JSON.stringify(lk.payments)
+function PaymentsBlock({ lk, autoPost }: { lk: LkDataPublic; autoPost: AutoPost }) {
   const [total, setTotal] = useState(lk.payments.total === null ? '' : String(lk.payments.total))
   const [due, setDue] = useState<string | null>(lk.payments.due)
   const [rows, setRows] = useState<PayDraft[]>(() => lk.payments.entries.map(toDraft))
-  useEffect(() => {
-    const p = JSON.parse(savedKey) as LkDataPublic['payments']
-    setTotal(p.total === null ? '' : String(p.total))
-    setDue(p.due)
-    setRows(p.entries.map(toDraft))
-  }, [savedKey])
 
   const draft = {
     total: total.trim() ? rubNum(total) ?? (Number(total) === 0 ? 0 : null) : null,
@@ -480,7 +462,8 @@ function PaymentsBlock({ lk, busy, post }: { lk: LkDataPublic; busy: string | nu
     entries: rows.map((r) => ({ id: r.id, date: r.date, amount: rubNum(r.amount), note: r.note.trim() || null })),
   }
   const bad = (total.trim() !== '' && draft.total === null) || draft.entries.some((e) => e.amount === null)
-  const changed = JSON.stringify(draft) !== JSON.stringify({ total: lk.payments.total, due: lk.payments.due, entries: lk.payments.entries.map((e) => ({ id: e.id, date: e.date, amount: e.amount, note: e.note })) })
+  // A new payment row waits for its amount before anything is sent.
+  const saving = useAutosave(draft, async (payments) => { await autoPost({ action: 'payments', payments }) }, { valid: !bad })
   const sum = paymentsSummary({ total: draft.total, due, entries: draft.entries.filter((e): e is LkPayment => e.amount !== null) })
   const upd = (id: string, p: Partial<PayDraft>) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...p } : r)))
 
@@ -523,16 +506,27 @@ function PaymentsBlock({ lk, busy, post }: { lk: LkDataPublic; busy: string | nu
         >
           <Plus className="w-4 h-4" /> Платёж
         </button>
-        <button
-          onClick={() => post('payments', { action: 'payments', payments: draft })}
-          disabled={!changed || bad || busy !== null}
-          className="px-4 py-2 rounded-lg bg-study-brown text-white text-sm font-semibold disabled:opacity-40"
-        >
-          Сохранить оплату
-        </button>
-        {bad && <span className="text-xs font-semibold text-study-red">Проверьте суммы: только числа больше нуля</span>}
+        <SaveChip s={saving} invalidText="Введите сумму числом больше нуля: тогда сохранится" />
       </div>
     </section>
+  )
+}
+
+/* ---------- the line above the student's name on the family page ---------- */
+
+function SubtitleBlock({ lk, autoPost }: { lk: LkDataPublic; autoPost: AutoPost }) {
+  const [subtitle, setSubtitle] = useState(lk.subtitle ?? '')
+  const saving = useAutosave(subtitle, async (v) => { await autoPost({ action: 'subtitle', subtitle: v }) })
+  return (
+    <div className="space-y-1">
+      <input
+        value={subtitle}
+        onChange={(e) => setSubtitle(e.target.value)}
+        placeholder="Подпись над именем, например «11 класс · поступление 2027»"
+        className="w-full rounded-lg border border-study-lightgray px-3 py-2 text-sm"
+      />
+      <div className="min-h-[16px]"><SaveChip s={saving} /></div>
+    </div>
   )
 }
 
@@ -619,6 +613,7 @@ function AddUni({ onAdd, disabled, existing }: { onAdd: (seed: Partial<LkUniPubl
 /* ---------- one university ---------- */
 
 type Post = (label: string, payload: Record<string, unknown>) => Promise<{ lk?: LkDataPublic; password?: string | null } | null>
+type AutoPost = (payload: Record<string, unknown>) => Promise<{ lk?: LkDataPublic } | null>
 
 const today = () => new Date().toLocaleDateString('sv-SE')
 const newId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`)
@@ -627,7 +622,7 @@ const label = 'block text-xs font-semibold text-study-gray mb-1'
 const TONE_LABEL: Record<Tone, string> = { navy: 'Синий', coral: 'Коралловый', cream: 'Кремовый', tint: 'Сиреневый' }
 const newItem = (group: GroupKey, text = '', stage: string = firstStage(group), note: string | null = null): LkItem => ({ id: newId(), group, text, owner: 'student', stage, done: stage === 'done', start: null, due: null, note, comment: null, done_at: null })
 
-function UniBlock({ u, isOpen, onToggle, first, last, busy, post, onDirty }: {
+function UniBlock({ u, isOpen, onToggle, first, last, busy, post, autoPost }: {
   u: LkUniPublic
   isOpen: boolean
   onToggle: () => void
@@ -635,7 +630,7 @@ function UniBlock({ u, isOpen, onToggle, first, last, busy, post, onDirty }: {
   last: boolean
   busy: string | null
   post: Post
-  onDirty: (dirty: boolean) => void
+  autoPost: AutoPost
 }) {
   const p = progressOf(u)
   return (
@@ -664,38 +659,32 @@ function UniBlock({ u, isOpen, onToggle, first, last, busy, post, onDirty }: {
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
-      {isOpen && <UniForm u={u} busy={busy} post={post} onDirty={onDirty} />}
+      {isOpen && <UniForm u={u} busy={busy} post={post} autoPost={autoPost} />}
     </div>
   )
 }
 
-function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | null; post: Post; onDirty: (dirty: boolean) => void }) {
+function UniForm({ u, busy, post, autoPost }: { u: LkUniPublic; busy: string | null; post: Post; autoPost: AutoPost }) {
+  // The draft is loaded once, when the form opens; saves never reload it.
   const [d, setD] = useState<LkUniPublic>(u)
-  // Reload the draft only when this university was saved, not when another
-  // one is moved or deleted, so an open form keeps its unsaved edits.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setD(u), [u.updated_at])
   const [pw, setPw] = useState('')
   const [clearPw, setClearPw] = useState(false)
   const [revealed, setRevealed] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
+  // `base` = the version this form last sent: the server keeps the family's
+  // card moves made since then (keepFamilyMoves).
+  const base = useRef<LkUniPublic>(u)
+  // The portal password last sent: undefined = untouched, '' = cleared.
+  const sentPw = useRef<string | undefined>(undefined)
 
-  const dirty = JSON.stringify(d) !== JSON.stringify(u) || pw !== '' || clearPw
-  useEffect(() => { onDirty(dirty); return () => onDirty(false) }, [dirty, onDirty])
+  const saving = useAutosave({ d, pw, clearPw }, async (v) => {
+    const payload: Record<string, unknown> = { action: 'save', uni: v.d, base: base.current }
+    const want = v.clearPw ? '' : v.pw || undefined
+    if (want !== undefined && want !== sentPw.current) payload.password = want
+    await autoPost(payload)
+    base.current = v.d
+    if ('password' in payload) { sentPw.current = want; setRevealed(null) }
+  })
   const set = <K extends keyof LkUniPublic>(k: K, v: LkUniPublic[K]) => setD((x) => ({ ...x, [k]: v }))
-
-  async function save() {
-    const payload: Record<string, unknown> = { action: 'save', uni: d, base: u }
-    if (clearPw) payload.password = ''
-    else if (pw) payload.password = pw
-    const body = await post('save', payload)
-    if (body?.lk) {
-      setSaved(true)
-      setPw('')
-      setClearPw(false)
-      setRevealed(null)
-    }
-  }
 
   async function reveal() {
     const body = await post('reveal', { action: 'password', id: u.id })
@@ -783,20 +772,23 @@ function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | nu
               type="text"
               value={pw}
               onChange={(e) => { setPw(e.target.value); setClearPw(false) }}
-              placeholder={d.portal.pending ? 'Появится позже' : u.portal.hasPassword ? (clearPw ? 'Будет удалён при сохранении' : '••••••••') : 'Пароль от портала'}
+              placeholder={d.portal.pending ? 'Появится позже' : u.portal.hasPassword ? '••••••••' : 'Пароль от портала'}
               autoComplete="off"
               spellCheck={false}
             />
           </Field>
           <div className="flex items-end gap-2 flex-wrap">
-            {u.portal.hasPassword && !clearPw && (
+            {u.portal.hasPassword && (
               <button onClick={revealed === null ? reveal : () => setRevealed(null)} disabled={busy !== null} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-study-bg text-sm font-semibold">
                 <Eye className="w-4 h-4" /> {revealed === null ? 'Показать сохранённый' : 'Скрыть'}
               </button>
             )}
             {u.portal.hasPassword && (
-              <button onClick={() => { setClearPw((c) => !c); setPw('') }} className="px-3 py-2 rounded-lg bg-study-bg text-sm font-semibold text-study-red">
-                {clearPw ? 'Не удалять' : 'Удалить пароль'}
+              <button
+                onClick={() => { if (window.confirm('Удалить сохранённый пароль портала?')) { setClearPw(true); setPw('') } }}
+                className="px-3 py-2 rounded-lg bg-study-bg text-sm font-semibold text-study-red"
+              >
+                Удалить пароль
               </button>
             )}
             {revealed !== null && <code className="px-2 py-1 rounded bg-study-bg text-sm">{revealed || '(пусто)'}</code>}
@@ -845,47 +837,36 @@ function UniForm({ u, busy, post, onDirty }: { u: LkUniPublic; busy: string | nu
         })}
       </section>
 
-      <div className="sticky bottom-2 flex items-center justify-end gap-3 rounded-xl bg-study-card/95 backdrop-blur p-2 shadow">
-        {saved && !dirty && <span className="text-sm text-study-green font-semibold">Сохранено</span>}
-        {dirty && <span className="text-sm text-study-orange font-semibold">Есть несохранённые изменения</span>}
-        {dirty && <button onClick={() => { setD(u); setPw(''); setClearPw(false) }} className="px-3 py-2 rounded-lg bg-study-bg text-sm font-semibold">Отменить</button>}
-        <button onClick={save} disabled={!dirty || busy !== null} className="px-4 py-2 rounded-lg bg-study-brown text-white text-sm font-semibold disabled:opacity-40">
-          {busy === 'save' ? 'Сохраняю…' : `Сохранить ${d.short}`}
-        </button>
-      </div>
+      {saving.state !== 'idle' && (
+        <div className="sticky bottom-2 flex justify-end">
+          <span className="rounded-lg bg-study-card/95 backdrop-blur px-3 py-1.5 shadow"><SaveChip s={saving} /></span>
+        </div>
+      )}
     </div>
   )
 }
 
 /* ---------- the common checklist, shared by every university ---------- */
 
-function CommonBlock({ lk, busy, post, onDirty }: { lk: LkDataPublic; busy: string | null; post: Post; onDirty: (dirty: boolean) => void }) {
+function CommonBlock({ lk, autoPost }: { lk: LkDataPublic; autoPost: AutoPost }) {
   const [items, setItems] = useState(lk.common)
-  const [saved, setSaved] = useState(false)
-  useEffect(() => { setItems(lk.common) }, [lk.common])
-  const dirty = JSON.stringify(items) !== JSON.stringify(lk.common)
-  useEffect(() => { onDirty(dirty) }, [dirty, onDirty])
-
-  async function save() {
-    const body = await post('common', { action: 'common', items, base: lk.common })
-    if (body?.lk) setSaved(true)
-  }
+  // As in UniForm: the version last sent, so the family's moves since then survive.
+  const base = useRef(lk.common)
+  const saving = useAutosave(items, async (next) => {
+    await autoPost({ action: 'common', items: next, base: base.current })
+    base.current = next
+  })
 
   return (
     <div className="rounded-xl bg-study-bg p-4 space-y-3">
-      <div>
-        <h4 className="text-sm font-bold text-study-dark">Общие документы</h4>
-        <p className="text-[11px] text-study-gray">То, что нужно для всех вузов сразу: паспорт, экзамены, аттестат. У семьи этот список стоит слева, а справа документы выбранного вуза. В чек-листе вуза оставьте только то, что просит именно он.</p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h4 className="text-sm font-bold text-study-dark">Общие документы</h4>
+          <p className="text-[11px] text-study-gray">То, что нужно для всех вузов сразу: паспорт, экзамены, аттестат. У семьи этот список стоит слева, а справа документы выбранного вуза. В чек-листе вуза оставьте только то, что просит именно он.</p>
+        </div>
+        <SaveChip s={saving} />
       </div>
-      <ChecklistEditor items={items} onChange={(next) => { setItems(next); setSaved(false) }} starter={STARTER_COMMON} starterDocs />
-      <div className="flex items-center justify-end gap-3">
-        {saved && !dirty && <span className="text-sm text-study-green font-semibold">Сохранено</span>}
-        {dirty && <span className="text-sm text-study-orange font-semibold">Есть несохранённые изменения</span>}
-        {dirty && <button onClick={() => setItems(lk.common)} className="px-3 py-2 rounded-lg bg-study-card text-sm font-semibold">Отменить</button>}
-        <button onClick={save} disabled={!dirty || busy !== null} className="px-4 py-2 rounded-lg bg-study-brown text-white text-sm font-semibold disabled:opacity-40">
-          {busy === 'common' ? 'Сохраняю…' : 'Сохранить общие документы'}
-        </button>
-      </div>
+      <ChecklistEditor items={items} onChange={setItems} starter={STARTER_COMMON} starterDocs />
     </div>
   )
 }

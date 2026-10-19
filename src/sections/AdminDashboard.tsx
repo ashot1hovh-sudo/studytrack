@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertCircle, Check, ChevronLeft, ChevronRight, GraduationCap, LogOut, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-react'
+import { AlertCircle, Check, ChevronLeft, ChevronRight, GraduationCap, KeyRound, LogOut, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/SectionState'
 import UniversityBankTool from '@/sections/admin/UniversityBankTool'
@@ -7,6 +7,7 @@ import LkEditor from '@/sections/admin/LkEditor'
 import StudentCard from '@/sections/admin/StudentCard'
 import type { LkCard } from '@/lib/lk/types'
 import UserAccessTools from '@/sections/admin/UserAccessTools'
+import AccountPassword from '@/sections/admin/AccountPassword'
 import type { AdminStudentSummary } from '@/types/studytrack'
 
 type StudentProgram = 'language_year' | 'bachelor' | 'master'
@@ -44,6 +45,8 @@ export default function AdminDashboard() {
   const [diyPinSaved, setDiyPinSaved] = useState<Record<string, boolean>>({})
   const [diyPinErrors, setDiyPinErrors] = useState<Record<string, string>>({})
   const [payOpen, setPayOpen] = useState<Record<string, boolean>>({})
+  // DIY rows: «Логин и пароль» panel open per student.
+  const [loginOpen, setLoginOpen] = useState<Record<string, boolean>>({})
   // ЛК facts for the premium cards (photo, track, major, progress).
   const [lkCards, setLkCards] = useState<Record<string, LkCard>>({})
 
@@ -126,6 +129,8 @@ export default function AdminDashboard() {
       })
       const data = await response.json().catch(() => null)
       if (!response.ok) throw new Error(data?.error ?? 'Не удалось создать студента')
+      // The account exists; only the admin copy of the password failed.
+      if (data?.passwordWarning) alert(data.passwordWarning)
 
       setNewStudent(emptyStudentForm)
       setIsCreateOpen(false)
@@ -292,7 +297,8 @@ export default function AdminDashboard() {
                       className="rounded-lg border border-study-lightgray px-3 py-2 text-sm"
                     />
                     <input
-                      type="password"
+                      type="text"
+                      autoComplete="new-password"
                       value={newStudent.password}
                       onChange={(event) => setNewStudent((current) => ({ ...current, password: event.target.value }))}
                       placeholder="Пароль"
@@ -517,14 +523,30 @@ export default function AdminDashboard() {
                               </div>
                             </div>
                           )}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); deleteStudent(student.id) }}
-                            className="w-8 h-8 rounded-lg hover:bg-study-red/10 flex items-center justify-center text-study-gray hover:text-study-red transition-colors shrink-0"
-                            title="Удалить пользователя"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {isDiy && (
+                              <button
+                                onClick={() => setLoginOpen((m) => ({ ...m, [student.id]: !m[student.id] }))}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${loginOpen[student.id] ? 'bg-study-brown/10 text-study-brown' : 'text-study-gray hover:bg-study-bg hover:text-study-dark'}`}
+                                title="Логин и пароль"
+                              >
+                                <KeyRound className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); deleteStudent(student.id) }}
+                              className="w-8 h-8 rounded-lg hover:bg-study-red/10 flex items-center justify-center text-study-gray hover:text-study-red transition-colors"
+                              title="Удалить пользователя"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
+                        {isDiy && loginOpen[student.id] && (
+                          <div className="mt-3">
+                            <AccountPassword studentId={student.id} email={student.email} />
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -588,6 +610,7 @@ export default function AdminDashboard() {
             {/* The ЛК lives in its own store: shown even if the
                 universities/documents request fails. */}
             <div className="space-y-4 mb-4">
+              <AccountPassword key={`pw-${selectedStudent.id}`} studentId={selectedStudent.id} email={selectedStudent.email} />
               <LkEditor key={selectedStudent.id} studentId={selectedStudent.id} studentName={selectedStudent.fullName} onChanged={loadLkCards} />
             </div>
           </div>

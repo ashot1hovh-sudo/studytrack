@@ -203,7 +203,12 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
   const active = unis.find((u) => u.id === activeId) ?? unis[0] ?? null
   const info = unis.find((u) => u.id === infoId) ?? null
   const yourTurn = [...lk.common, ...unis.flatMap((u) => u.items)].filter((t) => !t.done && t.owner !== 'iana')
-  const nearest = unis.filter((u) => u.deadline.date && daysTo(u.deadline.date) >= 0).sort((a, b) => (a.deadline.date! < b.deadline.date! ? -1 : 1))[0]
+  // The hero counts down to our own date («Подаём до»); a university without
+  // one yet falls back to its official deadline.
+  const nearest = unis
+    .map((u) => (u.applyBy ? { u, date: u.applyBy, ours: true } : u.deadline.date ? { u, date: u.deadline.date, ours: false } : null))
+    .filter((x): x is { u: LkUniPublic; date: string; ours: boolean } => !!x && daysTo(x.date) >= 0)
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))[0]
   const canMove = (t: LkItem) => !!admin || (!preview && t.owner !== 'iana')
   const patch = admin && active ? (p: Partial<LkUniPublic>) => admin.patchUni(active.id, p) : undefined
   const infoPatch = admin && info ? (p: Partial<LkUniPublic>) => admin.patchUni(info.id, p) : undefined
@@ -281,8 +286,14 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
               <span>{plural(unis.length, 'вуз', 'вуза', 'вузов')} в плане</span>
             </div>
             <div>
-              <b className="num">{nearest ? daysWord(daysTo(nearest.deadline.date!)) : '—'}</b>
-              <span>{nearest ? `до ближайшего дедлайна: ${nearest.short}, ${day(nearest.deadline.date!)}` : 'ближайших дедлайнов пока нет'}</span>
+              <b className="num">{nearest ? daysWord(daysTo(nearest.date)) : '—'}</b>
+              <span>
+                {!nearest
+                  ? 'ближайших дедлайнов пока нет'
+                  : nearest.ours
+                    ? `до подачи: ${nearest.u.short}, подаём до ${day(nearest.date)}`
+                    : `до дедлайна: ${nearest.u.short}, ${day(nearest.date)}`}
+              </span>
             </div>
             <div className={yourTurn.length ? 'is-hot' : ''}>
               <b className="num">{yourTurn.length}</b>
@@ -423,9 +434,12 @@ export function LkView({ lk, studentName, preview, demo = false, query, onMove, 
               >
                 <div className="v2-lk-tl-head">
                   <h2>Таймлайн подготовки</h2>
-                  <p>Общие документы и {active.short} на одной шкале. Наведите на полоску, чтобы увидеть этап и сроки.</p>
+                  <p>
+                    Общие документы, затем {active.short}{unis.length > 1 ? ' и остальные вузы' : ''} на одной шкале.
+                    Наведите на полоску, чтобы увидеть этап и сроки.
+                  </p>
                 </div>
-                <LkTimeline common={lk.common} uni={active} />
+                <LkTimeline common={lk.common} unis={unis} activeId={active.id} />
                 {admin && <p className="v2-lk-fine">Даты меняются на карточках в виде «Доски»: «Начало» и «Срок».</p>}
               </motion.section>
             )}

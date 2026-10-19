@@ -52,7 +52,9 @@ export default function UserAccessTools({ onChanged }: { onChanged: () => void }
       })
       const body = await r.json().catch(() => null)
       if (!r.ok) throw new Error(body?.error ?? 'Не удалось создать пользователя')
-      setMsg({ ok: true, text: `Создан пробный аккаунт: ${form.email.trim()}. Отправьте ученику email и пароль. После оплаты нажмите «Оплатил» в его строке.` })
+      setMsg(body?.passwordWarning
+        ? { ok: false, text: body.passwordWarning }
+        : { ok: true, text: `Создан пробный аккаунт: ${form.email.trim()}. Отправьте ученику email и пароль (они сохранены: значок ключа в его строке). После оплаты нажмите «Оплатил».` })
       setForm({ fullName: '', email: '', password: '' })
       onChanged()
     } catch (e) {

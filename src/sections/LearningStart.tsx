@@ -32,6 +32,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { ErrorState, LoadingState } from '@/components/SectionState'
+import { setView, trackLocked } from '@/lib/analytics/tracker'
 import DirectionCitiesMatrix from '@/components/modules/program-choice/DirectionCitiesMatrix'
 import ProgramCategorySignals from '@/components/modules/program-choice/ProgramCategorySignals'
 import ProgramComparisonTable from '@/components/modules/program-choice/ProgramComparisonTable'
@@ -447,6 +448,13 @@ export default function LearningStart() {
   const [isLessonLoading, setIsLessonLoading] = useState(false)
   const [lessonError, setLessonError] = useState<string | null>(null)
 
+  // Analytics: the open lesson, else the open module, else the section.
+  useEffect(() => {
+    if (activeLessonKey) setView('learning-start', activeLessonKey, lesson?.title ?? null)
+    else if (activeModule) setView('learning-start', `module:${activeModule.id}`, activeModule.title)
+    else setView('learning-start')
+  }, [activeLessonKey, lesson?.title, activeModule])
+
   // Back button: close lesson or module when user navigates back
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
@@ -612,6 +620,7 @@ export default function LearningStart() {
                 if (isSubscribed) {
                   openLesson(box.lessonId, `/api/learning/module/${box.lessonId}`)
                 } else {
+                  trackLocked('learning-start', box.lessonId, box.title)
                   setLockedBox(box)
                   setPinCode('')
                   setPinError(null)
@@ -798,7 +807,11 @@ export default function LearningStart() {
         </button>
 
         <button
-          onClick={() => isSubscribed ? openLesson('apply-guide', '/api/learning/module/apply-guide') : setVideoOpen(true)}
+          onClick={() => {
+            if (isSubscribed) return openLesson('apply-guide', '/api/learning/module/apply-guide')
+            trackLocked('learning-start', 'apply-guide', 'Пошаговая инструкция: Как подать в университет в Китае')
+            setVideoOpen(true)
+          }}
           className="relative text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
         >
           <div className="flex items-start justify-between gap-4 mb-4">
@@ -819,7 +832,11 @@ export default function LearningStart() {
       {/* Locked info cards */}
       <div className="grid sm:grid-cols-2 gap-4">
         <button
-          onClick={() => isSubscribed ? openLesson('scholarships', '/api/learning/module/scholarships') : setVideoOpen(true)}
+          onClick={() => {
+            if (isSubscribed) return openLesson('scholarships', '/api/learning/module/scholarships')
+            trackLocked('learning-start', 'scholarships', 'Введение в стипендии')
+            setVideoOpen(true)
+          }}
           className="relative text-left bg-study-card rounded-xl card-shadow p-5 sm:p-6 hover:card-shadow-hover transition-all"
         >
           <div className="flex items-start justify-between gap-4 mb-4">

@@ -7,13 +7,14 @@
  * row opens. Styled with the v2 brand (navy/coral on cream, Unbounded).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { LayoutGrid, LogOut, RefreshCw, Search, Star, User, GraduationCap, X } from 'lucide-react'
+import { BarChart3, LayoutGrid, LogOut, RefreshCw, Search, Star, User, GraduationCap, X } from 'lucide-react'
 import type { LkDataPublic } from '@/lib/lk/types'
 import { display } from '@/app/v2/_ui/font'
 import { actorLabel, allEvents, eventColor, eventText, greeting, isoDay, relTime, stageOf, type DashStudent, type StudentStage } from './derive'
 import WeekView from './WeekView'
 import StudentsView from './StudentsView'
 import TimelineView from './TimelineView'
+import AnalyticsView from './AnalyticsView'
 import '@/app/v2/v2.css'
 import './dashboard.css'
 
@@ -38,6 +39,9 @@ export default function Dashboard({ students, userName, navTabs = ['premium', 'd
   const [view, setView] = useState<View>(() => {
     try { const v = sessionStorage.getItem('dash-view'); return v === 'students' || v === 'timeline' ? v : 'week' } catch { return 'week' }
   })
+  const [page, setPage] = useState<'dash' | 'analytics'>(() => {
+    try { return sessionStorage.getItem('dash-page') === 'analytics' ? 'analytics' : 'dash' } catch { return 'dash' }
+  })
   const [query, setQuery] = useState('')
   const [stage, setStage] = useState<'all' | StudentStage>('all')
   const [logOpen, setLogOpen] = useState(false)
@@ -59,6 +63,7 @@ export default function Dashboard({ students, userName, navTabs = ['premium', 'd
   }, [])
   useEffect(() => { load() }, [load])
   useEffect(() => { try { sessionStorage.setItem('dash-view', view) } catch {} }, [view])
+  useEffect(() => { try { sessionStorage.setItem('dash-page', page) } catch {} }, [page])
   // Keep «today» right if the tab stays open past midnight.
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 60_000); return () => clearInterval(t) }, [])
 
@@ -85,7 +90,8 @@ export default function Dashboard({ students, userName, navTabs = ['premium', 'd
         <aside className="dash-sidebar">
           <div className="dash-brand"><span>КайКитай</span><em>АДМИН</em></div>
           <div className="dash-navlabel">Обзор</div>
-          <button type="button" className="dash-nav is-on"><LayoutGrid />Дашборд</button>
+          <button type="button" className={`dash-nav${page === 'dash' ? ' is-on' : ''}`} onClick={() => setPage('dash')}><LayoutGrid />Дашборд</button>
+          <button type="button" className={`dash-nav${page === 'analytics' ? ' is-on' : ''}`} onClick={() => setPage('analytics')}><BarChart3 />Аналитика</button>
           <div className="dash-navlabel">Клиенты</div>
           <button type="button" className="dash-nav" onClick={() => onNav('premium')}><Star />Премиум клиенты</button>
           <button type="button" className="dash-nav" onClick={() => onNav('diy')}><User />DIY клиенты</button>
@@ -99,6 +105,7 @@ export default function Dashboard({ students, userName, navTabs = ['premium', 'd
           </div>
         </aside>
 
+        {page === 'analytics' ? <main className="dash-main"><AnalyticsView /></main> : (
         <main className="dash-main">
           <div className="dash-top">
             <span className="dash-muted">Сегодня {now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
@@ -140,6 +147,7 @@ export default function Dashboard({ students, userName, navTabs = ['premium', 'd
           {lk && view === 'students' && <StudentsView students={shown} today={today} stage={stage} onStage={setStage} onOpenStudent={onOpenStudent} />}
           {lk && view === 'timeline' && <TimelineView students={shown} today={today} onOpenStudent={onOpenStudent} />}
         </main>
+        )}
       </div>
 
       {logOpen && <LogModal students={all} today={today} onClose={() => setLogOpen(false)} onOpenStudent={(id) => { setLogOpen(false); onOpenStudent(id) }} />}

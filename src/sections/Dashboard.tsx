@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useApp } from '@/context/AppContext'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { setView, stopTracking } from '@/lib/analytics/tracker'
 import ThemeSwitch from '@/components/ThemeSwitch'
 import NextActionBanner from '@/sections/NextActionBanner'
 import Roadmap from '@/sections/Roadmap'
@@ -12,6 +14,11 @@ import ChancesEvaluator from '@/sections/ChancesEvaluator'
 export default function Dashboard() {
   const { activeTab, user } = useApp()
   const isDashboard = activeTab === 'dashboard'
+
+  // Time per section for the admin «Аналитика». «Начало обучения» reports
+  // itself, because it knows which lesson is open.
+  useEffect(() => { if (activeTab !== 'learning-start') setView(activeTab) }, [activeTab])
+  useEffect(() => stopTracking, [])
 
   const pageMeta = {
 'learning-start': {

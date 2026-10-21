@@ -8,6 +8,7 @@ import StudentCard from '@/sections/admin/StudentCard'
 import type { LkCard } from '@/lib/lk/types'
 import UserAccessTools from '@/sections/admin/UserAccessTools'
 import AccountPassword from '@/sections/admin/AccountPassword'
+import Dashboard from '@/sections/admin/dashboard/Dashboard'
 import type { AdminStudentSummary } from '@/types/studytrack'
 
 type StudentProgram = 'language_year' | 'bachelor' | 'master'
@@ -28,11 +29,12 @@ const emptyStudentForm = {
   program: 'bachelor' as StudentProgram,
 }
 
-type AdminTab = 'premium' | 'diy' | 'shortlists'
+type AdminTab = 'dashboard' | 'premium' | 'diy' | 'shortlists'
 
 export default function AdminDashboard() {
   const { user, logout } = useApp()
-  const [adminTab, setAdminTab] = useState<AdminTab>('premium')
+  // Iana starts her day on the dashboard.
+  const [adminTab, setAdminTab] = useState<AdminTab>('dashboard')
   const [students, setStudents] = useState<AdminStudentSummary[]>([])
   const [selectedStudent, setSelectedStudent] = useState<AdminStudentSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -194,6 +196,24 @@ export default function AdminDashboard() {
     }
   }
 
+  if (adminTab === 'dashboard') {
+    return (
+      <Dashboard
+        students={students.filter((s) => s.serviceType === 'premium')}
+        userName={user?.fullName ?? null}
+        onNav={(tab) => { if (tab !== 'sync') setAdminTab(tab); setSelectedStudent(null); window.scrollTo(0, 0) }}
+        onOpenStudent={(id) => {
+          const student = students.find((s) => s.id === id)
+          if (!student) return
+          setAdminTab('premium')
+          openStudent(student)
+        }}
+        onRefresh={loadDashboard}
+        onLogout={logout}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-study-bg p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -226,6 +246,12 @@ export default function AdminDashboard() {
         {/* Tabs */}
         {!isLoading && !error && (
           <div className="mb-5 p-1 bg-study-card rounded-xl card-shadow inline-flex max-w-full overflow-x-auto">
+            <button
+              onClick={() => { setAdminTab('dashboard'); setSelectedStudent(null); window.scrollTo(0, 0) }}
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors text-study-gray hover:text-study-dark"
+            >
+              Дашборд
+            </button>
             <button
               onClick={() => { setAdminTab('premium'); setSelectedStudent(null) }}
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${

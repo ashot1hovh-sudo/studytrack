@@ -8,9 +8,10 @@ import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { getSupabaseConfig } from '@/lib/supabase/config'
+import { appendLog, diffLk, normalizeLog } from './changelog'
 import { normalizeInternal, normalizeItems, normalizePayments, normalizeProfile, normalizeUni } from './normalize'
 import { decryptSecret, encryptSecret } from './secret'
-import { COMMON_ID, emptyLk, isStageOf, LK_VERSION, RENAMED_STARTERS, stagesOf, withStage, type LkData, type LkDataPublic, type LkInternal, type LkItem, type LkPayments, type LkProfile, type LkUni } from './types'
+import { COMMON_ID, emptyLk, isStageOf, LK_VERSION, RENAMED_STARTERS, stagesOf, withStage, type LkData, type LkDataPublic, type LkEvent, type LkInternal, type LkItem, type LkPayments, type LkProfile, type LkUni } from './types'
 
 export interface LkStore {
   get(studentId: string): Promise<LkData>
@@ -82,6 +83,7 @@ function normalizeData(raw: Partial<LkData> | null | undefined): LkData {
   d.payments = normalizePayments(d.payments)
   d.internal = normalizeInternal(d.internal)
   d.common = normalizeItems(d.common)
+  d.log = normalizeLog(raw?.log)
   d.unis = (d.unis ?? []).map((u) => {
     const n = normalizeUni(u)
     n.portal.password_enc = u.portal?.password_enc ?? null
@@ -124,34 +126,44 @@ abstract class BaseLkStore implements LkStore {
     return u
   }
 
+  /** Wrap a change so what it did lands in the change log, in the same write. */
+  private logged(actor: LkEvent['actor'], fn: (d: LkData) => void) {
+    return (d: LkData) => {
+      const before = structuredClone(d)
+      fn(d)
+      const events = diffLk(before, d, actor)
+      if (events.length) d.log = appendLog(d.log, events)
+    }
+  }
+
   setSubtitle(studentId: string, subtitle: string | null) {
     return this.mutate(studentId, (d) => { d.subtitle = subtitle })
   }
 
   addUni(studentId: string, uni: LkUni) {
     uni.updated_at = new Date().toISOString()
-    return this.mutate(studentId, (d) => { d.unis = [...d.unis, uni] })
+    return this.mutate(studentId, this.logged('iana', (d) => { d.unis = [...d.unis, uni] }))
   }
 
   saveUni(studentId: string, uni: LkUni, base: LkUni | null, password?: string) {
     // Encrypt before entering the write, so a missing key fails cleanly.
     const enc = password === undefined || password === '' ? null : encryptSecret(password)
-    return this.mutate(studentId, (d) => {
+    return this.mutate(studentId, this.logged('iana', (d) => {
       const cur = this.uni(d, uni.id)
       // Work on a copy: a retried write (Supabase version clash) runs fn again.
       const next: LkUni = { ...uni, portal: { ...uni.portal }, items: keepFamilyMoves(uni.items, cur.items, base?.items ?? null) }
       next.updated_at = new Date().toISOString()
       next.portal.password_enc = password === undefined ? cur.portal.password_enc ?? null : enc
       d.unis = d.unis.map((x) => (x.id === next.id ? next : x))
-    })
+    }))
   }
 
   saveCommon(studentId: string, items: LkItem[], base: LkItem[] | null) {
-    return this.mutate(studentId, (d) => { d.common = keepFamilyMoves(items, d.common, base) })
+    return this.mutate(studentId, this.logged('iana', (d) => { d.common = keepFamilyMoves(items, d.common, base) }))
   }
 
   deleteUni(studentId: string, uniId: string) {
-    return this.mutate(studentId, (d) => { d.unis = d.unis.filter((x) => x.id !== uniId) })
+    return this.mutate(studentId, this.logged('iana', (d) => { d.unis = d.unis.filter((x) => x.id !== uniId) }))
   }
 
   moveUni(studentId: string, uniId: string, dir: -1 | 1) {
@@ -166,7 +178,7 @@ abstract class BaseLkStore implements LkStore {
   }
 
   familyStage(studentId: string, uniId: string, itemId: string, stage: string) {
-    return this.mutate(studentId, (d) => {
+    return this.mutate(studentId, this.logged('family', (d) => {
       const list = uniId === COMMON_ID ? d.common : this.uni(d, uniId).items
       const t = list.find((x) => x.id === itemId)
       if (!t) throw new NotFoundError('Пункт не найден')
@@ -175,7 +187,7 @@ abstract class BaseLkStore implements LkStore {
       const moved = list.map((x) => (x.id === itemId ? withStage(x, stage) : x))
       if (uniId === COMMON_ID) d.common = moved
       else this.uni(d, uniId).items = moved
-    }, false)
+    }), false)
   }
 
   setProfile(studentId: string, profile: Pick<LkProfile, 'track' | 'major'>) {
@@ -339,10 +351,10 @@ class SupabaseLkStore extends BaseLkStore {
  * and Iana's internal notes and fields are kept only for the admin editor.
  */
 export function toPublic(d: LkData, { internal = false } = {}): LkDataPublic {
-  const { internal: fields, ...rest } = d
+  const { internal: fields, log, ...rest } = d
   return {
     ...rest,
-    ...(internal ? { internal: fields } : {}),
+    ...(internal ? { internal: fields, log: log ?? [] } : {}),
     unis: d.unis.map(({ portal: { password_enc, ...portal }, notes_internal, ...u }) => ({
       ...u,
       ...(internal ? { notes_internal: notes_internal ?? null } : {}),

@@ -200,12 +200,32 @@ export type LkInternal = {
   notes: string | null
 }
 
+/**
+ * One line of the change log on Iana's dashboard: who moved what, from where
+ * to where. Written by the store in the same save as the change itself.
+ * `uni` is the university's short name, null for the common checklist.
+ */
+export type LkEventKind = 'stage' | 'status' | 'due' | 'uni_add' | 'uni_remove'
+export type LkEvent = {
+  at: string
+  actor: 'iana' | 'family'
+  kind: LkEventKind
+  uni: string | null
+  item: string | null
+  from: string | null
+  to: string | null
+}
+/** How many log lines one ЛК keeps; older ones fall off. */
+export const LK_LOG_MAX = 300
+
 export type LkData = {
   /**
    * Shape version. 2 = «Собрать» documents live in `common`, not in each
    * university (store.ts moves them once, on read, from older data).
    */
   v: number
+  /** Change log, newest first. Admin only: never sent to the family. */
+  log?: LkEvent[]
   /** Line above the name in the hero, e.g. «11 класс · поступление 2027». */
   subtitle: string | null
   profile: LkProfile
@@ -226,7 +246,7 @@ export type LkUniPublic = Omit<LkUni, 'portal' | 'notes_internal'> & {
   portal: { url: string | null; login: string | null; note: string | null; pending: boolean; hasPassword: boolean }
   notes_internal?: string | null
 }
-export type LkDataPublic = Omit<LkData, 'unis' | 'internal'> & { unis: LkUniPublic[]; internal?: LkInternal }
+export type LkDataPublic = Omit<LkData, 'unis' | 'internal' | 'log'> & { unis: LkUniPublic[]; internal?: LkInternal; log?: LkEvent[] }
 
 export const emptyProfile = (): LkProfile => ({ track: null, major: null, photo: null })
 export const emptyPayments = (): LkPayments => ({ total: null, due: null, entries: [] })

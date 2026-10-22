@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>约会邀请 · komisooo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      background: #FFE6EF;
+      font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #374151;
+      overflow-x: hidden;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    }
+    .page {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 448px;
+      min-height: 90vh;
+      min-height: 90dvh;
+      animation: fadeIn 0.4s ease-out;
+    }
+    .page.active { display: flex; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .center { text-align: center; }
+    .emoji-big { font-size: 48px; margin-bottom: 24px; }
+    h1 {
+      font-size: clamp(1.4rem, 5vw, 1.9rem);
+      color: #FF8FA3;
+      font-weight: 500;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+    .btn-group { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 32px; }
+    button {
+      font: inherit;
+      border: none;
+      cursor: pointer;
+      border-radius: 9999px;
+      touch-action: manipulation;
+    }
+    .btn-yes {
+      background: linear-gradient(135deg, #FFB6C1, #FF8FA3);
+      color: #fff;
+      transition: all 0.25s ease;
+    }
+    .btn-yes:active { transform: scale(0.96); }
+    .btn-main {
+      width: 224px;
+      padding: 14px 0;
+      font-size: 18px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+    }
+    .btn-no {
+      width: 224px;
+      padding: 14px 0;
+      font-size: 16px;
+      background: #fff;
+      color: #FF8FA3;
+      border: 1px solid #FFB6C1;
+      transition: left 0.18s ease, top 0.18s ease;
+      z-index: 50;
+    }
+    .card {
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(255,143,163,0.25);
+    }
+    h2 { font-size: 20px; color: #FF8FA3; font-weight: 500; margin-bottom: 20px; text-align: center; }
+    .options { display: flex; flex-direction: column; gap: 12px; }
+    .options label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 12px;
+      border: 1px solid #FFE6EF;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .options label:has(input:checked) { border-color: #FF8FA3; background: #FFF5F8; }
+    .options input { accent-color: #FF8FA3; width: 18px; height: 18px; }
+    .btn-full { width: 100%; padding: 12px 0; font-size: 16px; margin-top: 24px; }
+    textarea {
+      width: 100%;
+      height: 144px;
+      border: 1px solid #FFE6EF;
+      border-radius: 12px;
+      padding: 16px;
+      resize: none;
+      font: inherit;
+      font-size: 16px; /* 16px 防止 iPhone 自动放大 */
+      outline-color: #FF8FA3;
+    }
+    #cardBox { padding: 32px; text-align: center; }
+    #cardBox .emoji-mid { font-size: 36px; margin-bottom: 16px; }
+    #cardBox h2 { font-size: 24px; margin-bottom: 16px; }
+    .result { text-align: left; margin-top: 24px; display: flex; flex-direction: column; gap: 12px; word-break: break-word; }
+    .pink-sm { color: #FF8FA3; font-size: 14px; }
+    .mt-8 { margin-top: 32px; }
+    .mt-4 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- 页面1：首页邀请 -->
+  <div id="page1" class="page active">
+    <div class="center">
+      <div class="emoji-big">💌</div>
+      <h1>要不要和komisooo<br>赴一场约会?</h1>
+      <div class="btn-group">
+        <button id="yesBtn" class="btn-yes btn-main">愿意</button>
+        <button id="noBtn" class="btn-no">不要</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页面2：选择约会时段 -->
+  <div id="page2" class="page">
+    <div class="card">
+      <h2>🌸 选择约会时段</h2>
+      <div class="options">
+        <label><input type="radio" name="time" value="下午下午茶"><span>下午下午茶</span></label>
+        <label><input type="radio" name="time" value="傍晚晚餐"><span>傍晚晚餐</span></label>
+        <label><input type="radio" name="time" value="夜晚散步"><span>夜晚散步</span></label>
+      </div>
+      <button id="nextPage2" class="btn-yes btn-full">下一步</button>
+    </div>
+  </div>
+
+  <!-- 页面3：选择餐厅类型 -->
+  <div id="page3" class="page">
+    <div class="card">
+      <h2>🍽️ 选择餐厅类型</h2>
+      <div class="options">
+        <label><input type="radio" name="food" value="浪漫西餐"><span>浪漫西餐</span></label>
+        <label><input type="radio" name="food" value="温馨日料"><span>温馨日料</span></label>
+        <label><input type="radio" name="food" value="特色火锅"><span>特色火锅</span></label>
+        <label><input type="radio" name="food" value="甜品小店"><span>甜品小店</span></label>
+      </div>
+      <button id="nextPage3" class="btn-yes btn-full">下一步</button>
+    </div>
+  </div>
+
+  <!-- 页面4：留言 -->
+  <div id="page4" class="page">
+    <div class="card">
+      <h2>💬 写下留言</h2>
+      <textarea id="msgInput" placeholder="想对komisooo说些什么..."></textarea>
+      <button id="submitBtn" class="btn-yes btn-full">生成约会确认卡</button>
+    </div>
+  </div>
+
+  <!-- 页面5：约会确认卡（可截图） -->
+  <div id="page5" class="page">
+    <div id="cardBox" class="card">
+      <div class="emoji-mid">💖</div>
+      <h2>约会确认卡</h2>
+      <div class="result">
+        <p>👤 邀约人：komisooo</p>
+        <p>⏰ 约会时段：<span id="resTime"></span></p>
+        <p>🍽️ 餐厅类型：<span id="resFood"></span></p>
+        <p>💌 留言：<span id="resMsg"></span></p>
+      </div>
+      <div class="mt-8 pink-sm">期待与你见面 ✨</div>
+    </div>
+    <p class="mt-4 pink-sm">截图保存这份邀约</p>
+  </div>
+
+<script>
+// 页面切换
+const pages = document.querySelectorAll('.page');
+function showPage(id){
+  pages.forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// 【不要】按钮逃逸逻辑（手机点一下就跑，电脑鼠标靠近就跑）
+const noBtn = document.getElementById('noBtn');
+function moveBtn(e){
+  if(e && e.cancelable) e.preventDefault();
+  const pad = 12;
+  const w = window.innerWidth - noBtn.offsetWidth - pad * 2;
+  const h = window.innerHeight - noBtn.offsetHeight - pad * 2;
+  noBtn.style.position = 'fixed';
+  noBtn.style.left = (pad + Math.random() * w) + 'px';
+  noBtn.style.top = (pad + Math.random() * h) + 'px';
+}
+noBtn.addEventListener('touchstart', moveBtn, { passive: false });
+noBtn.addEventListener('mouseover', moveBtn);
+noBtn.addEventListener('click', moveBtn);
+
+// 页面跳转事件
+document.getElementById('yesBtn').onclick = ()=> {
+  noBtn.style.display = 'none';
+  showPage('page2');
+};
+document.getElementById('nextPage2').onclick = ()=>{
+  if(!document.querySelector('input[name="time"]:checked')){ alert("请选择约会时段"); return; }
+  showPage('page3');
+};
+document.getElementById('nextPage3').onclick = ()=>{
+  if(!document.querySelector('input[name="food"]:checked')){ alert("请选择餐厅类型"); return; }
+  showPage('page4');
+};
+document.getElementById('submitBtn').onclick = ()=>{
+  document.getElementById('resTime').innerText = document.querySelector('input[name="time"]:checked').value;
+  document.getElementById('resFood').innerText = document.querySelector('input[name="food"]:checked').value;
+  document.getElementById('resMsg').innerText = document.getElementById('msgInput').value.trim() || "无";
+  showPage('page5');
+};
+</script>
+</body>
+</html>

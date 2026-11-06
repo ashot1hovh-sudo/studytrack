@@ -36,6 +36,8 @@ RUN addgroup --system --gid 1001 nodejs \
 
 # Standalone server + static assets + public dir.
 COPY --from=builder /app/public ./public
+# Login-gated share pages, served by src/app/s/[token]/[[...path]]/route.ts.
+COPY --from=builder /app/private ./private
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
